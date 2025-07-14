@@ -16,7 +16,7 @@ const Colors = {
   lightPurple: '#8B5CF6',
   darkPurple: '#7416B2',
 statusBar:'#7318B1',
-
+SplashHeadingColor:'#4D2161',
 
   // Reusable gradients
   gradients: {

@@ -67,7 +67,7 @@ const HealthUmbrellaScreen = () => {
        
         <View style={styles.bottomImageContainer}>
           <Image
-            source={require('../../Assets/clini.png')}
+            source={require('../../Assets/fourthscreen.png')}
             style={styles.bottomImage}
           />
           
@@ -135,7 +135,8 @@ const styles = StyleSheet.create({
      fontSize:  Fonts.size.PageHeading,
     color: '#666',
     textAlign: 'center',
-     fontFamily:Fonts.family.regular
+     fontFamily:Fonts.family.regular,
+     top:20
   },
   logoRow1: {
     flexDirection: 'row',
@@ -151,8 +152,8 @@ const styles = StyleSheet.create({
    
   },
   bottomImage: {
-    width: width * 0.8,
-    height: width * 0.8,
+    width: width * 1,
+    height: width * 1,
     resizeMode: 'contain',
   },
 });

@@ -139,33 +139,34 @@ const styles = StyleSheet.create({
   title2: {
     textAlign: 'center',
   fontSize:  Fonts.size.FlashScreenHeader,
-    fontWeight: 'bold',
+    fontWeight: '700',
     marginTop: height * 0.01,
-    color: '#000',
+    color:Colors.black ,
     fontFamily: Fonts.family.regular,
   },
   title1: {
     textAlign: 'center',
-      fontSize:  Fonts.size.FlashScreenSubHeading,
-    fontWeight: 'bold',
+      fontSize:  Fonts.size.PageHeading,
+    fontWeight: '700',
     marginTop: height * 0.01,
-    color: '#000',
+    color: Colors.black ,
     fontFamily: Fonts.family.regular,
   },
   description: {
     textAlign: 'center',
-         fontSize:  Fonts.size.PageHeading,
+         fontSize:  Fonts.size.PageSubheading,
     marginVertical: height * 0.015,
     paddingHorizontal: width * 0.05,
-    color: '#444',
+    color: '#4D4C4C',
     fontFamily: Fonts.family.regular,
+     lineHeight: 22, 
   },
   spinContainer: {
     marginTop: height * 0.02,
   },
   spinImage: {
-    width: width * 0.8,
-    height: width * 0.8,
+    width: width * 1,
+    height: width * 1,
     resizeMode: 'contain',
   },
   page: {
@@ -200,7 +201,7 @@ const styles = StyleSheet.create({
   logoText: {
       fontSize:  Fonts.size.FlashScreenSubHeading,
     color: Colors.statusBar,
-    fontWeight: '700',
+    fontWeight: '800',
     fontFamily: Fonts.family.regular,
   },
    dot: {

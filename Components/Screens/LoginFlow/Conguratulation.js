@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, StatusBar, Dimensions } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import LottieView from 'lottie-react-native';
 import Colors from '../../Colors/Colors';
-
+import Fonts from '../../Fonts/Fonts';
 const { width, height } = Dimensions.get('window');
 
 const CongratulationsScreen = ({ navigation }) => {
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   congratsText: {
-    fontSize: 35,
+       fontSize:  Fonts.size.FlashScreenSubHeading,
     fontWeight: '700',
     color: '#7518AA',
     textAlign: 'center',
@@ -59,8 +59,8 @@ const styles = StyleSheet.create({
    
   },
   lottieStyle: {
-    width: width * 0.9,
-    height: height * 0.6,
+    width: width * 0.7,
+    height: height * 0.7,
   },
 });
 

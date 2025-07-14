@@ -203,7 +203,7 @@ const AmbulanceBookingScreen = ({ navigation }) => {
           {/* Main Question */}
          <View style={styles.questionContainer}>
   <TouchableOpacity onPress={() => navigation.goBack()}>
-    <Icon name="chevron-left" size={24} color="#000" />
+    <Icon name="chevron-left" size={30} color="#000" />
   </TouchableOpacity>
   <Text style={styles.question}>Which ambulance variant do you choose?</Text>
 </View>
@@ -211,7 +211,7 @@ const AmbulanceBookingScreen = ({ navigation }) => {
 
           {/* Booking For Section */}
           <View style={styles.section}>
-            <Text style={{  fontFamily:Fonts.family.regular,fontSize:Fonts.size.PageHeading, marginBottom:15, fontWeight: '700',}}>Ambulance Booking For</Text>
+            <Text style={{  fontSize:Fonts.size.PageHeading, marginBottom:15, fontWeight: '700',}}>Ambulance Booking For</Text>
          <View style={styles.radioGroup}>
   {['Yourself', 'Others'].map((option) => {
     const isSelected = bookingFor === option;
@@ -250,7 +250,7 @@ const AmbulanceBookingScreen = ({ navigation }) => {
 
           {/* Booking Type Section */}
           <View style={{top:5}}>
-            <Text style={{  fontFamily:Fonts.family.regular,fontSize:Fonts.size.PageHeading, marginBottom:15, fontWeight: '700'}}>Select the Option</Text>
+            <Text style={{  fontSize:Fonts.size.PageHeading, marginBottom:15, fontWeight: '700'}}>Select the Option</Text>
           <View style={styles.bookingTypeGroup}>
   <TouchableOpacity
     style={[
@@ -359,9 +359,9 @@ const AmbulanceBookingScreen = ({ navigation }) => {
         >
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Schedule Booking</Text>
+              <Text style={styles.modalTitle}>Note</Text>
               <TouchableOpacity onPress={toggleScheduleModal}>
-                <Icon name="close" size={24} color="#000" />
+                <Icon name="close" size={30} color="#000" />
               </TouchableOpacity>
             </View>
             <Text style={styles.modalSubtitle}>Pick the date and time for your ambulance</Text>
@@ -475,16 +475,16 @@ const styles = StyleSheet.create({
     marginLeft: wp('3%'),
   },
   greeting: {
-      fontSize: Fonts.size.TopHeading,
+     fontSize: Fonts.size.TopHeading,
     color: 'black',
-    opacity: 0.9,
-      fontFamily:Fonts.family.regular
+    fontWeight: '500'
+     
   },
   userName: {
     fontSize: Fonts.size.TopSubheading,
-    fontWeight: 'bold',
-    color: 'black',
-      fontFamily:Fonts.family.regular
+    fontWeight: '700',
+    color: '#000000',
+      
   },
   notificationButton: {
     width: wp('10%'),
@@ -499,15 +499,16 @@ const styles = StyleSheet.create({
    
   },
   question: {
-       fontSize: Fonts.size.PageHeading,
+       fontSize: Fonts.size.PageSubheading,
     fontWeight: '600',
     color: '#000',
     marginVertical: 16,
-      fontFamily:Fonts.family.regular
+     
   },
    categorySection: {
     marginVertical: 20,
     paddingHorizontal: 10,
+    
   },
 
   categoryHeader: {
@@ -515,10 +516,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: 'black',
     marginBottom: 16,
-     fontFamily:Fonts.family.regular
+   
   },
-
-
 
 categoryTitle: {
   fontSize: 16,
@@ -531,6 +530,11 @@ categoryTitle: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    borderWidth:1,
+    borderRadius:10,
+    backgroundColor:'#ffffff',
+    borderColor:'#E8E8E8',
+    padding:15
   },
   card: {
     width: '30%',
@@ -546,8 +550,8 @@ categoryTitle: {
     marginTop: 5,
     fontSize: Fonts.size.PageSubheading,
     textAlign: 'center',
-     fontFamily:Fonts.family.regular,
-    fontWeight:'700',
+   
+    fontWeight:'600',
     color:'#000000'
   },
   bottomModal: {
@@ -568,16 +572,16 @@ categoryTitle: {
     marginBottom: 15,
   },
   modalTitle: {
-    fontSize: 18,
+      fontSize: Fonts.size.PageHeading,
     fontWeight: 'bold',
     color: '#000',
-      fontFamily:Fonts.family.regular
+
   },
   modalSubtitle: {
-    fontSize: 14,
+      fontSize: Fonts.size.PageSubheading,
     color: '#666',
     marginBottom: 20,
-      fontFamily:Fonts.family.regular
+    
   },
   datePickerInput: {
     flexDirection: 'row',
@@ -604,7 +608,7 @@ categoryTitle: {
     backgroundColor: '#f8f8f8',
   },
   datePickerText: {
-    fontSize: 16,
+      fontSize: Fonts.size.PageSubheading,
     color: '#333',
       fontFamily:Fonts.family.regular
   },
@@ -620,6 +624,7 @@ categoryTitle: {
     borderWidth: 2,
     borderColor: '#ccc',
     justifyContent: 'center',
+    
     alignItems: 'center',
     marginRight: 10,
   },
@@ -668,10 +673,12 @@ radioOption: {
   padding: 12,
   borderRadius: 10,
   borderWidth: 1,
-  borderColor: '#ccc',
+  borderColor: '#E8E8E8',
   marginHorizontal: 5,
   flex: 1,
+  height: 60, 
 },
+
 
 radioOptionSelected: {
   borderColor: '#E8E8E8',
@@ -702,6 +709,7 @@ radioInner: {
 
 radioText: {
       fontSize: Fonts.size.PageSubheading,
+      
 },
 
 // Unique look for 'Yourself'
@@ -741,6 +749,7 @@ radioTextOthers: {
     borderColor: '#ccc',
     flex: 1,
     marginHorizontal: 5,
+    height: 60, 
   },
 
   bookingTypeSelected: {

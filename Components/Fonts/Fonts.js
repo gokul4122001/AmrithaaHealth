@@ -2,14 +2,14 @@ const Fonts = {
   // Font sizes
   size: {
     
-    TopHeading: 10,
-    TopSubheading:11,
-    PageHeading: 12,
-    PageSubheading: 10,
-    PageSubSubHeading:8,
-    BookingConformation:20,
-    FlashScreenHeader:25,
-    FlashScreenSubHeading:20
+    TopHeading: 11,
+    TopSubheading:12,
+    PageHeading: 13,
+    PageSubheading: 11,
+    PageSubSubHeading:9,
+    BookingConformation:17,
+    FlashScreenHeader:23,
+    FlashScreenSubHeading:18
   },
 
   weight: {

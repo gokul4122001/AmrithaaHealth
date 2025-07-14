@@ -133,7 +133,8 @@ const styles = StyleSheet.create({
     fontSize:  Fonts.size.PageHeading,
     color: '#666',
     textAlign: 'center',
-     fontFamily:Fonts.family.regular
+     fontFamily:Fonts.family,
+      lineHeight: 25, 
   },
   logoRow1: {
     flexDirection: 'row',

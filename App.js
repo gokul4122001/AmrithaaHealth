@@ -21,7 +21,7 @@ export default function App() {
   
       <NavigationContainer>
         <Stack.Navigator
-          initialRouteName="Login1"
+          initialRouteName="MainApp"
           screenOptions={{ headerShown: false }}
         >
           <Stack.Screen name="MainApp" component={BottomTabs} />

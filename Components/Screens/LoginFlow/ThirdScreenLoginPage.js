@@ -96,35 +96,36 @@ const styles = StyleSheet.create({
   title2: {
     textAlign: 'center',
   fontSize:  Fonts.size.FlashScreenHeader,
-    fontWeight: 'bold',
+     fontWeight: '700',
     marginTop: height * 0.01,
-    color: '#000',
-     fontFamily:Fonts.family.regular
+    color:Colors.black ,
+     fontFamily:Fonts.family.regular,
   },
   title1: {
     textAlign: 'center',
-        fontSize:  Fonts.size.PageHeading,
+        fontSize:  Fonts.size.PageSubheading,
     fontWeight: 'bold',
     marginTop: height * 0.01,
-    color: 'grey',
-     fontFamily:Fonts.family.regular
+    color: '#4D4C4C',
+     fontFamily:Fonts.family.regular,
+     top:10
   },
   description: {
     fontSize: width * 0.04,
     textAlign: 'center',
-    marginTop: 20,
+  
     color: '#ffff',
     paddingHorizontal: 20,
     lineHeight: 22,
      fontFamily:Fonts.family.regular
   },
   spinContainer: {
-    
+    top:'5%'
    
   },
   spinImage: {
-    width: width * 0.8,
-    height: width * 0.8,
+    width: width * 1,
+    height: width *1,
     resizeMode: 'contain',
   },
   skipContainer: {

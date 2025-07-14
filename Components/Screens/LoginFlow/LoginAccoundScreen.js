@@ -19,6 +19,7 @@ import Icons from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
+import { sendOtp } from '../APICall/LoginApi'; // update path as needed
 
 /* Toast Component with Slide Animation */
 const Toast = ({ visible, message, backgroundColor }) => {
@@ -70,26 +71,40 @@ const LoginScreen = () => {
     setToastVisible(true);
     setTimeout(() => setToastVisible(false), 2500);
   };
+const handleSendOTP = async () => {
+  Keyboard.dismiss();
 
-  const handleSendOTP = () => {
-    Keyboard.dismiss();
+  if (mobileNumber.length === 0) {
+    showToast('Invalid Number', '#FFA500');
+    return;
+  }
 
-    if (mobileNumber.length === 0) {
-      showToast('Invalid Number', '#FFA500'); // Orange
-      return;
+  const isValidNumber = /^[0-9]{10}$/.test(mobileNumber);
+  if (!isValidNumber) {
+    showToast('Please enter a valid 10-digit number', '#FF4C4C');
+    return;
+  }
+
+  try {
+    console.log('Sending OTP to:', mobileNumber); // ✅ Debug log
+    const result = await sendOtp(mobileNumber);
+
+    console.log('OTP response:', result); // ✅ Debug response
+
+    if (result.message === 'OTP sent successfully') {
+      showToast('OTP Sent', '#28a745');
+      navigation.navigate('Login7', {
+        phoneNumber: mobileNumber,
+      });
+    } else {
+      showToast(result.message || 'Failed to send OTP', '#FF4C4C');
     }
+  } catch (error) {
+    console.error('Send OTP Error:', error);
+    showToast('Error sending OTP', '#FF4C4C');
+  }
+};
 
-    const isValidNumber = /^[0-9]{10}$/.test(mobileNumber);
-    if (!isValidNumber) {
-      showToast('Please enter a valid 10-digit number', '#FF4C4C'); // Red
-      return;
-    }
-
-    navigation.navigate('Login7', {
-      phoneNumber: mobileNumber,
-      countryCode: selectedCountry.dial_code,
-    });
-  };
 
   const renderCountryItem = ({ item }) => (
     <TouchableOpacity
@@ -134,7 +149,7 @@ const LoginScreen = () => {
         {/* Login Content */}
         <View style={styles.content}>
           <Text style={styles.title}>
-            Login your <Text style={{ color: '#7518AA' }}>Account</Text>
+            Login your <Text style={{ color: '#7518AA' ,fontWeight:'bold'}}>Account</Text>
           </Text>
 
           <Text style={styles.label}>Enter Mobile Number</Text>
@@ -165,11 +180,19 @@ const LoginScreen = () => {
         </View>
 
         {/* Send OTP Button */}
-        <View style={styles.bottomButtonContainer}>
-          <TouchableOpacity style={styles.otpButton} onPress={handleSendOTP}>
-            <Text style={styles.otpButtonText}>Send OTP</Text>
-          </TouchableOpacity>
-        </View>
+        
+       <View style={styles.bottomButtonContainer}>
+  <TouchableOpacity onPress={handleSendOTP} activeOpacity={0.8}>
+    <LinearGradient
+      colors={['#7518AA', '#370B63']}
+      start={{x: 0, y: 0}}
+      end={{x: 1, y: 1}}
+      style={styles.otpButton}
+    >
+      <Text style={styles.otpButtonText}>Send OTP</Text>
+    </LinearGradient>
+  </TouchableOpacity>
+</View>
 
         {/* Modal */}
         <Modal visible={showModal} animationType="slide">
@@ -200,7 +223,7 @@ const styles = StyleSheet.create({
   title: {
    fontSize:  Fonts.size.FlashScreenHeader,
     fontWeight: 'bold',
-    color: '#333',
+    color:Colors.black ,
     marginBottom: 30,
     textAlign: 'center',
     fontFamily: Fonts.family.regular,
@@ -221,7 +244,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
     minHeight: 70,
-    top:20
+    top:10
   },
   countryPickerContainer: {
     flexDirection: 'row',
@@ -243,32 +266,32 @@ const styles = StyleSheet.create({
   },
   mobileInput: {
     flex: 1,
-    fontSize:  Fonts.size.PageHeading,
+    fontSize:  Fonts.size.PageSubSubHeading,
     color: '#333',
     paddingVertical: 10,
   },
   bottomButtonContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 100,
-    backgroundColor: 'transparent',
-  },
-  otpButton: {
-    backgroundColor: '#7518AA',
-    paddingVertical: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    shadowColor: '#7c3aed',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  otpButtonText: {
-    color: 'white',
-   fontSize:  Fonts.size.PageHeading,
-    fontWeight: '600',
-    fontFamily: Fonts.family.regular,
-  },
+  paddingHorizontal: 20,
+  paddingBottom: 100,
+  backgroundColor: 'transparent',
+},
+otpButton: {
+  paddingVertical: 16,
+  borderRadius: 8,
+  alignItems: 'center',
+  shadowColor: '#7c3aed',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.25,
+  shadowRadius: 3.84,
+  elevation: 5,
+},
+otpButtonText: {
+  color: 'white',
+  fontSize: Fonts.size.PageHeading,
+  fontWeight: '600',
+  fontFamily: Fonts.family.regular,
+},
+
   modalContainer: {
     flex: 1,
     paddingHorizontal: 20,
@@ -340,7 +363,7 @@ const styles = StyleSheet.create({
   },
   toastText: {
     color: '#fff',
-    fontSize: 16,
+  fontSize:  Fonts.size.PageHeading,
     textAlign: 'center',
   },
 });

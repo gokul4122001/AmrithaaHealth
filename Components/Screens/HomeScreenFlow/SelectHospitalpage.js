@@ -79,13 +79,13 @@ const SelectHospitalScreen = ({ navigation }) => {
            
             <View style={styles.titleContainer}>
   <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-    <Icon name="arrow-back" size={24} color="#000" />
+    <Icon name="arrow-back" size={30} color="#000" />
   </TouchableOpacity>
 
   <Text style={styles.title}>Select Hospital</Text>
 </View>
 
-
+<View style={{top:20}}>
             <Text style={styles.subtitle}>You can also choose hospitals on your own</Text>
 
             {/* Search Bar */}
@@ -111,6 +111,7 @@ const SelectHospitalScreen = ({ navigation }) => {
                   <Text style={styles.hospitalTagText}>+ {hospital}</Text>
                 </TouchableOpacity>
               ))}
+            </View>
             </View>
 
             {/* Selected Hospitals */}
@@ -184,8 +185,8 @@ fontSize: Fonts.size.PageHeading,
     resizeMode: 'contain',
   },
   greetingContainer: { flex: 1, marginLeft: wp('3%') },
-  greeting: {  fontSize: Fonts.size.TopHeading, color: 'black', fontFamily: Fonts.family.regular },
-  userName: {   fontSize: Fonts.size.TopSubheading, fontWeight: 'bold', color: 'black', fontFamily: Fonts.family.regular },
+  greeting: {  fontSize: Fonts.size.TopHeading, color: 'black' },
+  userName: {   fontSize: Fonts.size.TopSubheading, fontWeight: 'bold', color: 'black'},
   notificationButton: {
     width: wp('10%'),
     height: wp('10%'),
@@ -206,8 +207,8 @@ fontSize: Fonts.size.PageHeading,
     color: '#666',
     marginBottom: 12,
       fontFamily:Fonts.family.regular,
-        marginBottom:20,
-        alignSelf:'center'
+      
+        alignSelf:'center',
   },
 
   searchBarContainer: {
@@ -216,10 +217,11 @@ fontSize: Fonts.size.PageHeading,
     backgroundColor: '#fff',
     borderRadius: 10,
     paddingHorizontal: 15,
-    height: 50,
+    height: 70,
     marginBottom: 20,
     borderWidth:1,
-    borderColor:'#D9D9D9'
+    borderColor:'#D9D9D9',
+    
   },
   searchInput: {
     flex: 1,
