@@ -106,7 +106,10 @@ const AmbulanceBookingScreen = ({ navigation }) => {
                         <View style={[styles.minutesBadge, { backgroundColor: option.color }]}>
                           <Text style={styles.minutesText}>{option.minutes}</Text>
                         </View>
+                        <View>
                         <Image source={require('../../Assets/ambualnce.png')} style={styles.vehicleIcon} />
+                           <Text style={styles.minutesText1}>35 min</Text>
+                        </View>
                         <View style={styles.optionInfo}>
                           <Text style={styles.optionType}>{option.type}</Text>
                           {option.description ? (
@@ -268,10 +271,17 @@ const styles = StyleSheet.create({
                fontSize: Fonts.size.PageSubSubHeading,
 
   },
+  minutesText1: {
+    color: '#7518AA',
+    fontWeight: '600',
+               fontSize: Fonts.size.PageSubSubHeading,
+               left:10
+
+  },
   vehicleIcon: {
-    width: 40,
-    height: 24,
-    marginRight: 12,
+    width: 70,
+    height: 50,
+    
   },
   optionInfo: { flex: 1 },
   optionType: {

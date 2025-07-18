@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   },
   bottomImageContainer: {
     position: 'absolute',
-    bottom: '12%',
+    bottom: '10%',
     width: width,
     alignItems: 'center',
     justifyContent: 'center',

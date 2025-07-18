@@ -46,7 +46,7 @@ const CongratulationsScreen = ({ navigation }) => {
 
       <View style={styles.contentWrapper}>
         <LottieView
-          source={require('../../Assets/lottie/loading.json')}
+          source={require('../../Assets/lottie/Loading1.json')}
           autoPlay
           loop={!showModal}
           style={styles.lottieStyle}
@@ -114,19 +114,20 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   modalTitle: {
-    fontWeight: 'bold',
-    fontSize: 16,
+    fontWeight: '700',
+   
     color: '#000',
     marginBottom: 10,
-         fontSize: Fonts.size.PageHeading,
+         fontSize: Fonts.size.addition,
 
   },
   modalMessage: {
-    fontSize: 14,
+   
     textAlign: 'center',
     color: '#333',
     marginBottom: 25,
          fontSize: Fonts.size.PageSubheading,
+         lineHeight:16
 
   },
   buttonRow: {

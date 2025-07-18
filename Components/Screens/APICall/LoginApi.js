@@ -1,4 +1,4 @@
-// ../APICall/otpService.js or LoginApi.js — whichever you're using
+// src/APICall/LoginApi.js
 import axios from 'axios';
 
 const BASE_URL = 'https://www.myhealth.amrithaa.net/backend/api';
@@ -7,29 +7,33 @@ export const sendOtp = async (mobile) => {
   try {
     const response = await axios.post(
       `${BASE_URL}/otp/sms/request`,
-      { mobile }, // ✅ only mobile number
+      { mobile },
       {
         headers: {
           'Content-Type': 'application/json',
         },
+        timeout: 10000, // 10 seconds timeout
       }
     );
     return response.data;
   } catch (error) {
-    console.log('API ERROR', error?.response?.data || error.message); // 🔍 log exact error
+    console.log('OTP API ERROR:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
     throw error;
   }
 };
 
+
 export const verifyOtp = async (mobile, otp) => {
   try {
-    const response = await axios.post(
-      'https://www.myhealth.amrithaa.net/backend/api/otp/sms/verify',
-      {
-        mobile,
-        otp,
-      }
-    );
+    const response = await axios.post(`${BASE_URL}/otp/sms/verify`, {
+      mobile,
+      otp,
+    });
+
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Unknown error' };

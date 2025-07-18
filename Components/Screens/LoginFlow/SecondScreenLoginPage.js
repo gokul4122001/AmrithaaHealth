@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: '#ccc',
     marginHorizontal: 4,
-    bottom:50
+    bottom:30
   },
   activeDot: {
     width: 10,
@@ -218,6 +218,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: '#6c1d95',
     marginHorizontal: 4,
-      bottom:50
+      bottom:30
   },
 });

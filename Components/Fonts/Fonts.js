@@ -9,7 +9,9 @@ const Fonts = {
     PageSubSubHeading:9,
     BookingConformation:17,
     FlashScreenHeader:23,
-    FlashScreenSubHeading:18
+    FlashScreenSubHeading:18,
+    addition:15,
+    subaddition:14
   },
 
   weight: {

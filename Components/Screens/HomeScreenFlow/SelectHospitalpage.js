@@ -198,10 +198,9 @@ fontSize: Fonts.size.PageHeading,
   },
 
   contentContainer: {
-    paddingBottom: 180, // extra space to avoid overlap
+    paddingBottom: 180,
   },
 
- 
   subtitle: {
     fontSize: Fonts.size.PageSubheading,
     color: '#666',

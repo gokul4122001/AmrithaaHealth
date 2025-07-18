@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
      fontSize:  Fonts.size.PageHeading,
     color: '#666',
     textAlign: 'center',
-     fontFamily:Fonts.family.regular,
+      fontWeight: '500',
      top:20
   },
   logoRow1: {
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
   },
    bottomImageContainer: {
    
-    bottom: '20%',
+    bottom: '10%',
     width: width,
    
   },

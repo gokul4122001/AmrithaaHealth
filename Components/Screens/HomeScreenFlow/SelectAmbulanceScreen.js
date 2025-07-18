@@ -8,7 +8,7 @@ import {
   StatusBar,
   ScrollView,
   Image,
-  Dimensions
+  Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -23,15 +23,27 @@ import Colors from '../../Colors/Colors';
 import Icons from 'react-native-vector-icons/MaterialIcons';
 import * as Animatable from 'react-native-animatable';
 
-const { height } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const AmbulanceSelectionScreen = ({ navigation }) => {
   const [userName] = useState('Jeswanth Kumar');
   const [pickup] = useState('West Mambalam, Chennai L-33');
   const [destination] = useState('Apollo Hospital, Thousand Lights, Chennai');
   const [selectedAmbulance, setSelectedAmbulance] = useState(null);
+  const [isTransferSectionOpen, setIsTransferSectionOpen] = useState(false);
+  const [openAmbulanceOptions, setOpenAmbulanceOptions] = useState({});
 
   const ambulanceOptions = [
+    {
+      id: 'small',
+      type: 'Small',
+      description: 'ECO, Omni, etc.',
+      price: '₹ 1,500',
+      color: '#8B5CF6',
+      minutes: 15,
+      includes:
+        'Emergency kit, Oxygen Tanks, IV equipment, Cardiac Monitors, Ambulance Bed, Patient Stretchers',
+    },
     {
       id: 'large',
       type: 'Large',
@@ -39,7 +51,8 @@ const AmbulanceSelectionScreen = ({ navigation }) => {
       price: '₹ 2,500',
       color: '#8B5CF6',
       minutes: 35,
-      includes: 'Emergency kit, Oxygen Tanks, IV equipment, Cardiac Monitors, Ambulance Bed, Patient Stretchers',
+      includes:
+        'Emergency kit, Oxygen Tanks, IV equipment, Cardiac Monitors, Ambulance Bed, Patient Stretchers',
     },
     {
       id: 'basic',
@@ -47,7 +60,8 @@ const AmbulanceSelectionScreen = ({ navigation }) => {
       price: '₹ 2,000',
       color: '#8B5CF6',
       minutes: 15,
-      includes: 'Emergency kit, Oxygen Tanks, IV equipment, Cardiac Monitors, Ambulance Bed, Patient Stretchers',
+      includes:
+        'Emergency kit, Oxygen Tanks, IV equipment, Cardiac Monitors, Ambulance Bed, Patient Stretchers',
     },
     {
       id: 'advance',
@@ -55,13 +69,24 @@ const AmbulanceSelectionScreen = ({ navigation }) => {
       price: '₹ 2,000',
       color: '#8B5CF6',
       minutes: 15,
-      includes: 'Emergency kit, Oxygen Tanks, IV equipment, Cardiac Monitors, Ambulance Bed, Ventilator support with nursing Support',
+      includes:
+        'Emergency kit, Oxygen Tanks, IV equipment, Cardiac Monitors, Ambulance Bed, Ventilator support with nursing Support',
     },
-    
   ];
 
   const handleSelectAmbulance = (ambulanceId) => {
     setSelectedAmbulance(ambulanceId);
+  };
+
+  const toggleTransferSection = () => {
+    setIsTransferSectionOpen(!isTransferSectionOpen);
+  };
+
+  const toggleAmbulanceOption = (ambulanceId) => {
+    setOpenAmbulanceOptions(prev => ({
+      ...prev,
+      [ambulanceId]: !prev[ambulanceId]
+    }));
   };
 
   return (
@@ -88,49 +113,80 @@ const AmbulanceSelectionScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Location Info */}
         <View style={styles.locationContainer}>
-          <View style={styles.locationRow}>
-            <View style={styles.greenDot} />
-            <Text style={styles.locationText}>{pickup}</Text>
-          </View>
-          <View style={styles.locationRow}>
-            <View style={styles.redDot} />
-            <Text style={styles.locationText}>{destination}</Text>
-          </View>
-        </View>
-
-        {/* Map Placeholder */}
-        <View style={styles.mapContainer}>
-          <View style={styles.mapPlaceholder}>
-            <View style={styles.routeVisualization}>
-              <View style={styles.routeStart} />
-              <View style={styles.routePath} />
-              <View style={styles.routeEnd} />
+          <View style={styles.row}>
+            <View style={styles.iconColumn}>
+              <View style={styles.greenDot} />
+              <View style={styles.dashedLine} />
+              <View style={styles.redDot} />
+            </View>
+            <View style={styles.textColumn}>
+              <Text style={styles.locationText}>{pickup}</Text>
+              <View style={styles.separator} />
+              <Text style={styles.locationText}>{destination}</Text>
             </View>
           </View>
         </View>
 
+        {/* Map */}
+        <View style={styles.mapContainer}>
+          <Image
+            source={require('../../Assets/map.png')}
+            style={styles.mapImage}
+            resizeMode="cover"
+          />
+        </View>
+
         {/* Bottom Modal */}
         <Animatable.View animation="slideInUp" style={styles.bottomModal}>
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}   contentContainerStyle={{ paddingBottom: 100 }}>
-           <View style={styles.noteSection}>
-  <Icon name="arrow-back" size={20} color="#000" />
-  <Text style={styles.noteTitle}>Select the Ambulance</Text>
-</View>
-
+          <ScrollView
+            style={styles.content}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 100 }}
+          >
+            <View style={styles.noteSection}>
+              <Icon name="arrow-back" size={20} color="#000" />
+              <Text style={styles.noteTitle}>Select the Ambulance</Text>
+            </View>
 
             {/* Transfer Dropdown */}
             <View style={styles.transferSection}>
-              <View style={styles.transferRow}>
+              <TouchableOpacity 
+                style={styles.transferRow}
+                onPress={toggleTransferSection}
+              >
                 <Image source={require('../../Assets/ambualnce.png')} style={styles.ambulanceIcon} />
                 <View style={styles.transferTextContainer}>
                   <Text style={styles.transferText}>Patient transfer</Text>
                 </View>
-                <TouchableOpacity style={styles.dropdownButton}>
-                  <Icons name="keyboard-arrow-down" size={24} color="#666666" />
+                <TouchableOpacity style={styles.dropdownButton} onPress={toggleTransferSection}>
+                  <Icons 
+                    name={isTransferSectionOpen ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
+                    size={24} 
+                    color="#666666" 
+                  />
                 </TouchableOpacity>
-              </View>
+              </TouchableOpacity>
+              
+              {/* Collapsible Content */}
+              {isTransferSectionOpen && (
+                <Animatable.View 
+                  animation="slideInDown" 
+                  duration={300}
+                  style={styles.transferDetailsContainer}
+                >
+                  <Text style={styles.transferDetailsText}>
+                    Our ambulance service provides safe and reliable patient transportation 
+                    with trained medical staff and proper equipment.
+                  </Text>
+                  <View style={styles.transferFeatures}>
+                    <Text style={styles.featureItem}>• 24/7 availability</Text>
+                    <Text style={styles.featureItem}>• Trained medical staff</Text>
+                    <Text style={styles.featureItem}>• GPS tracking</Text>
+                    <Text style={styles.featureItem}>• Emergency equipment</Text>
+                  </View>
+                </Animatable.View>
+              )}
             </View>
 
             {/* Ambulance Cards */}
@@ -138,32 +194,39 @@ const AmbulanceSelectionScreen = ({ navigation }) => {
               {ambulanceOptions.map((option) => {
                 const isSelected = selectedAmbulance === option.id;
                 return (
-                  <View key={option.id} style={[
-                    styles.optionCard,
-                    isSelected && styles.selectedOptionCard,
-                  ]}>
+                  <View
+                    key={option.id}
+                    style={[
+                      styles.optionCard,
+                      isSelected && styles.selectedOptionCard,
+                    ]}
+                  >
                     <TouchableOpacity onPress={() => handleSelectAmbulance(option.id)}>
                       <View style={styles.optionHeader}>
                         <View style={styles.optionLeft}>
-                          <View style={[styles.minutesBadge, { backgroundColor: option.color }]}>
-                            <Text style={styles.minutesText}>{option.minutes}</Text>
-                          </View>
-                         <View style={styles.optionInfo}>
-  <View style={styles.typeRow}>
-    <Image
-      source={require('../../Assets/ambualnce.png')} // Replace with your image path
-      style={styles.typeIcon}
-    />
-    <Text style={styles.optionType}>{option.type}</Text>
+                          <View style={styles.ambulanceAndBadgeContainer}>
+                       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+  <View style={[styles.minutesBadge, { backgroundColor: option.color }]}>
+    <Text style={styles.minutesText}>{option.minutes}</Text>
   </View>
 
-  {option.description ? (
-    <Text style={styles.optionDescription}>{option.description}</Text>
-  ) : null}
-
-  <Text style={styles.optionTime}>{option.minutes} mins</Text>
+  <View style={{ flexDirection: 'column', alignItems: 'center', marginLeft: 10 }}>
+ 
+    <Image
+      source={require('../../Assets/ambualnce.png')}
+      style={styles.optionAmbulanceIcon}
+    />
+       <Text style={styles.optionTimeBelow}>{option.minutes} mins</Text>
+  </View>
 </View>
 
+                          </View>
+                          <View style={styles.optionInfo}>
+                            <Text style={styles.optionType}>{option.type}</Text>
+                            {option.description ? (
+                              <Text style={styles.optionDescription}>{option.description}</Text>
+                            ) : null}
+                          </View>
                         </View>
                         <Text style={styles.optionPrice}>{option.price}</Text>
                       </View>
@@ -173,7 +236,6 @@ const AmbulanceSelectionScreen = ({ navigation }) => {
                       </View>
                     </TouchableOpacity>
 
-                    {/* Inline Booking Button */}
                     {isSelected && (
                       <TouchableOpacity
                         style={styles.inlineBookingButton}
@@ -201,7 +263,10 @@ const AmbulanceSelectionScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   topBackground: {
     flex: 1,
     paddingTop: hp('4%'),
@@ -218,18 +283,19 @@ const styles = StyleSheet.create({
     height: hp('5%'),
     resizeMode: 'contain',
   },
-  typeRow: {
-  flexDirection: 'row',
-  alignItems: 'center',
-},
-typeIcon: {
-  width: 20,
-  height: 20,
-  marginRight: 8,
-},
-  greetingContainer: { flex: 1, marginLeft: wp('3%') },
-  greeting: { fontSize: Fonts.size.TopHeading, color: 'black' },
-  userName: { fontSize: Fonts.size.TopSubheading, fontWeight: 'bold', color: 'black' },
+  greetingContainer: {
+    flex: 1,
+    marginLeft: wp('3%'),
+  },
+  greeting: {
+    fontSize: Fonts.size.TopHeading,
+    color: 'black',
+  },
+  userName: {
+    fontSize: Fonts.size.TopSubheading,
+    fontWeight: 'bold',
+    color: 'black',
+  },
   notificationButton: {
     width: wp('10%'),
     height: wp('10%'),
@@ -239,18 +305,16 @@ typeIcon: {
     alignItems: 'center',
     marginLeft: wp('2%'),
   },
-  locationContainer: { paddingHorizontal: 20, paddingVertical: 10 },
-  locationRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  greenDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#22C55E', marginRight: 12 },
-  redDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#EF4444', marginRight: 12 },
-  locationText: { fontSize: Fonts.size.TopHeading, color: '#000', flex: 1 },
-  mapContainer: { height: 120, marginHorizontal: 20, marginBottom: 15, borderRadius: 8, overflow: 'hidden' },
-  mapPlaceholder: { flex: 1, backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center' },
-  routeVisualization: { flexDirection: 'row', alignItems: 'center' },
-  routeStart: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#22C55E' },
-  routePath: { width: 60, height: 2, backgroundColor: '#7C3AED', marginHorizontal: 10 },
-  routeEnd: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#EF4444' },
-
+  
+  mapContainer: {
+    width: '100%',
+    height: hp('30%'),
+    marginBottom: hp('1%'),
+  },
+  mapImage: {
+    width: '100%',
+    height: '100%',
+  },
   bottomModal: {
     position: 'absolute',
     bottom: 0,
@@ -266,24 +330,77 @@ typeIcon: {
     shadowOpacity: 0.25,
     shadowRadius: 10,
     elevation: 15,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
-  content: { paddingHorizontal: 16 },
-  noteSection: { marginTop: 12, marginBottom: 20 ,flexDirection:'row'},
-  noteTitle: { fontSize: Fonts.size.PageHeading, fontWeight: '600', color: '#333', textAlign: 'center',left:10 },
-  noteDescription: { fontSize: 14, color: '#666', textAlign: 'center', marginTop: 6 },
-  transferSection: { marginBottom: 20 },
+  content: {
+    paddingHorizontal: 16,
+  },
+  noteSection: {
+    marginTop: 12,
+    marginBottom: 20,
+    flexDirection: 'row',
+  },
+  noteTitle: {
+    fontSize: Fonts.size.PageHeading,
+    fontWeight: '600',
+    color: '#333',
+    textAlign: 'center',
+    left: 10,
+  },
+  transferSection: {
+    marginBottom: 20,
+  },
   transferRow: {
-    flexDirection: 'row', alignItems: 'center',
-    padding: 12, backgroundColor: '#F8F9FA',
-    borderRadius: 8, borderWidth: 1, borderColor: '#E5E5E5',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
   },
-  ambulanceIcon: { width: 80, height: 50, marginRight: 12 },
-  transferTextContainer: { flex: 1 },
-  transferText: { fontSize: Fonts.size.PageHeading,fontWeight: '500', color: '#333' },
-  dropdownButton: { padding: 4 },
-
-  optionsContainer: { marginBottom: 10 },
+  ambulanceIcon: {
+    width: 120, // Increased size
+    height: 70,  // Increased size
+    marginRight: 12,
+    resizeMode: 'contain',
+  },
+  transferTextContainer: {
+    flex: 1,
+  },
+  transferText: {
+    fontSize: Fonts.size.PageHeading,
+    fontWeight: '500',
+    color: '#333',
+  },
+  dropdownButton: {
+    padding: 4,
+  },
+  transferDetailsContainer: {
+    marginTop: 10,
+    padding: 12,
+    backgroundColor: '#F0F8FF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  transferDetailsText: {
+    fontSize: Fonts.size.PageSubheading,
+    color: '#333',
+    marginBottom: 10,
+    lineHeight: 18,
+  },
+  transferFeatures: {
+    marginTop: 5,
+  },
+  featureItem: {
+    fontSize: Fonts.size.PageSubSubHeading,
+    color: '#666',
+    marginBottom: 3,
+  },
+  optionsContainer: {
+    marginBottom: 10,
+  },
   optionCard: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -292,24 +409,82 @@ typeIcon: {
     padding: 16,
     marginBottom: 12,
   },
-  selectedOptionCard: { borderColor: '#8B5CF6', borderWidth: 2 },
-  optionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
-  optionLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  minutesBadge: {
-    width: 32, height: 32, borderRadius: 4,
-    justifyContent: 'center', alignItems: 'center',
+  selectedOptionCard: {
+    borderColor: '#8B5CF6',
+    borderWidth: 2,
+  },
+  optionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  optionLeft: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    flex: 1,
+  },
+  ambulanceAndBadgeContainer: {
+    alignItems: 'center',
     marginRight: 12,
   },
-  minutesText: { color: '#fff', fontWeight: '600',fontSize: Fonts.size.PageSubSubHeading, },
-  optionInfo: { flex: 1 },
-  optionType: { fontSize: Fonts.size.PageHeading, fontWeight: '600', color: '#333' },
-  optionDescription: { fontSize: Fonts.size.PageSubSubHeading, color: '#666' },
-  optionTime: {fontSize: Fonts.size.PageSubSubHeading, color: '#7518AA', marginTop: 2 },
-  optionPrice: { fontSize: Fonts.size.PageHeading, fontWeight: '600', color: '#333' },
-  includesSection: { borderTopWidth: 1, borderTopColor: '#eee', paddingTop: 8 },
-  includesTitle: { fontWeight: '600', fontSize: Fonts.size.PageSubheading, color: '#333' },
-  includesText: { fontSize: Fonts.size.PageSubSubHeading, color: '#666', lineHeight: 16 },
-
+  minutesBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  minutesText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: Fonts.size.PageSubSubHeading,
+  },
+  optionAmbulanceIcon: {
+    width: 60,  // Increased size
+    height: 40, // Increased size
+    marginBottom: 4,
+    resizeMode: 'contain',
+  },
+  optionTimeBelow: {
+    fontSize: Fonts.size.PageSubSubHeading,
+    color: '#7518AA',
+    textAlign: 'center',
+  },
+  optionInfo: {
+    flex: 1,
+  },
+  optionType: {
+    fontSize: Fonts.size.PageHeading,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 2,
+  },
+  optionDescription: {
+    fontSize: Fonts.size.PageSubSubHeading,
+    color: '#666',
+  },
+  optionPrice: {
+    fontSize: Fonts.size.PageHeading,
+    fontWeight: '600',
+    color: '#333',
+  },
+  includesSection: {
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    paddingTop: 8,
+  },
+  includesTitle: {
+    fontWeight: '600',
+    fontSize: Fonts.size.PageSubheading,
+    color: '#333',
+  },
+  includesText: {
+    fontSize: Fonts.size.PageSubSubHeading,
+    color: '#666',
+    lineHeight: 16,
+  },
   inlineBookingButton: {
     marginTop: 10,
     backgroundColor: '#7518AA',
@@ -321,6 +496,58 @@ typeIcon: {
     color: '#fff',
     fontSize: Fonts.size.PageSubheading,
     fontWeight: '600',
+  },
+  locationContainer: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 12,
+    elevation: 3,
+    margin: 10,
+  },
+  row: {
+    flexDirection: 'row',
+  },
+  iconColumn: {
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  greenDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: 'green',
+    marginTop: 4,
+  },
+  dashedLine: {
+    width: 1,
+    height: 50,
+    borderLeftWidth: 1,
+    borderColor: 'gray',
+    borderStyle: 'dashed',
+    marginVertical: 4,
+  },
+  redDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: 'red',
+    marginBottom: 4,
+  },
+  textColumn: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  locationText: {
+    fontSize: Fonts.size.PageSubheading,
+    fontWeight: '500',
+    color: '#000',
+    marginVertical: 4,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#ddd',
+    marginVertical: 4,
+    width: '100%',
   },
 });
 

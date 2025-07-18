@@ -77,7 +77,7 @@ const AmbulanceBookingScreen = ({ navigation }) => {
 
 <View style={{flexDirection:'row'}}>
   <Icons name="arrow-back" size={24} color="black" />
-  <Text style={{alignSelf:'center',left:10,fontSize: Fonts.size.PageHeading,}}>Booking Overview</Text>
+  <Text style={{alignSelf:'center',left:10,fontSize: Fonts.size.PageHeading,fontWeight:'700'}}>Booking Overview</Text>
 </View>
         
         <ScrollView
@@ -213,23 +213,23 @@ const AmbulanceBookingScreen = ({ navigation }) => {
 
             <View style={styles.formContainer}>
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Customer Name</Text>
+               
                 <TextInput
                   style={styles.textInput}
                   value={customerName}
                   onChangeText={setCustomerName}
-                  placeholder="Enter customer name"
+                  placeholder=" Customer Name"
                   placeholderTextColor="#999"
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Customer Mobile Number</Text>
+           
                 <TextInput
                   style={styles.textInput}
                   value={customerMobile}
                   onChangeText={setCustomerMobile}
-                  placeholder="Enter mobile number"
+                  placeholder="Customer Mobile Number"
                   placeholderTextColor="#999"
                   keyboardType="phone-pad"
                   maxLength={10}
@@ -237,12 +237,12 @@ const AmbulanceBookingScreen = ({ navigation }) => {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Write additional information here</Text>
+         
                 <TextInput
                   style={[styles.textInput, styles.textArea]}
                   value={additionalInfo}
                   onChangeText={setAdditionalInfo}
-                  placeholder="Additional information (optional)"
+                  placeholder="Write Additional information here "
                   placeholderTextColor="#999"
                   multiline
                   numberOfLines={3}
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#222',
     marginBottom: 12,
-    fontFamily: Fonts.family.regular,
+   
   },
  
   ambulanceCard: {
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#222',
     marginBottom: 16,
-    fontFamily: Fonts.family.regular,
+   
   },
   categoryGrid: {
     flexDirection: 'row',
@@ -412,8 +412,8 @@ const styles = StyleSheet.create({
 
     color: '#333',
     textAlign: 'center',
-    fontWeight: '500',
-    fontFamily: Fonts.family.regular,
+    fontWeight: '600',
+
   },
  
   expandableHeader: {
@@ -461,9 +461,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   priceLabel: {
-      fontSize: Fonts.size.PageSubheading,
-
-    color: '#666',
+      fontSize: Fonts.size.PageHeading,
+ fontWeight: '700',
+    color: '#00000',
   },
   priceValue: {
        fontSize: Fonts.size.PageHeading,
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
 
     color: '#333',
     fontWeight: '600',
-    fontFamily: Fonts.family.regular,
+   
   },
   totalValue: {
     fontSize: 18,
@@ -612,8 +612,8 @@ const styles = StyleSheet.create({
 changeLink: {
 fontSize: Fonts.size.PageSubheading,
   color: 'red',
-  fontWeight: '500',
-  fontFamily: Fonts.family.regular,
+  fontWeight: '700',
+ 
 },
 locationRow: {
   flexDirection: 'row',
@@ -632,7 +632,7 @@ iconCircle: {
 locationText: {
   fontSize: Fonts.size.PageSubheading,
   color: '#000',
-  fontFamily: Fonts.family.regular,
+
 },
 
 

@@ -103,11 +103,11 @@ const styles = StyleSheet.create({
   },
   title1: {
     textAlign: 'center',
-        fontSize:  Fonts.size.PageSubheading,
-    fontWeight: 'bold',
+        fontSize:  Fonts.size.PageHeading,
+    fontWeight: '500',
     marginTop: height * 0.01,
     color: '#4D4C4C',
-     fontFamily:Fonts.family.regular,
+   
      top:10
   },
   description: {
@@ -117,10 +117,10 @@ const styles = StyleSheet.create({
     color: '#ffff',
     paddingHorizontal: 20,
     lineHeight: 22,
-     fontFamily:Fonts.family.regular
+   
   },
   spinContainer: {
-    top:'5%'
+   
    
   },
   spinImage: {
