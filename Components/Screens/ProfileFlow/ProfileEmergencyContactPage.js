@@ -21,6 +21,7 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
+import LottieView from 'lottie-react-native';
 import {
   EmergencyAPI,
   AddEmergencyContactAPI,
@@ -240,16 +241,17 @@ const EmergencyContactScreen = ({ navigation }) => {
               {contacts.map(renderContactItem)}
             </View>
           ) : (
-            <View style={styles.emptyState}>
-              <Icon name="contacts" size={64} color="#D1D5DB" />
-              <Text style={styles.emptyStateTitle}>No Emergency Contacts</Text>
-              <Text style={styles.emptyStateText}>
-                Add emergency contacts to help in case of urgent situations
-              </Text>
-              <TouchableOpacity style={styles.addFirstContactButton} onPress={handleAddContact}>
-                <Text style={styles.addFirstContactText}>Add First Contact</Text>
-              </TouchableOpacity>
-            </View>
+         <View style={styles.emptyState}>
+  <LottieView
+    source={require('../../Assets/lottie/NoData.json')} // 👈 use your local Lottie JSON
+    autoPlay
+    loop
+    style={styles.lottie}
+  />
+  
+  
+</View>
+
           )}
         </ScrollView>
       </LinearGradient>
@@ -514,34 +516,40 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
     paddingHorizontal: 32,
   },
-  emptyStateTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginTop: 16,
-    marginBottom: 8,
-    fontFamily: Fonts.family.regular
-  },
-  emptyStateText: {
-    fontSize: 14,
-    color: '#6B7280',
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 24,
-    fontFamily: Fonts.family.regular
-  },
-  addFirstContactButton: {
-    backgroundColor: '#8B5CF6',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  addFirstContactText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '500',
-    fontFamily: Fonts.family.regular
-  },
+  
+lottie: {
+  width: 200,
+  height: 200,
+top:'50%'
+
+},
+ emptyStateTitle: {
+  fontSize: 20,
+  fontWeight: 'bold',
+  color: '#374151',
+  marginBottom: 8,
+},
+
+emptyStateText: {
+  fontSize: 14,
+  color: '#6B7280',
+  textAlign: 'center',
+  marginBottom: 20,
+},
+
+addFirstContactButton: {
+  backgroundColor: '#2563EB',
+  paddingVertical: 12,
+  paddingHorizontal: 20,
+  borderRadius: 8,
+},
+
+addFirstContactText: {
+  color: '#FFFFFF',
+  fontSize: 16,
+  fontWeight: '600',
+},
+
   topBackground: {
     paddingTop: hp('4%'),
     paddingBottom: hp('2%'),

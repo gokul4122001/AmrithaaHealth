@@ -43,10 +43,9 @@ const CongratulationsScreen = ({ navigation }) => {
       style={styles.gradientContainer}
     >
       <StatusBar backgroundColor={Colors.statusBar || '#6200EE'} barStyle="light-content" />
-
       <View style={styles.contentWrapper}>
         <LottieView
-          source={require('../../Assets/lottie/Loading1.json')}
+          source={require('../../Assets/lottie/Loading3.json')}
           autoPlay
           loop={!showModal}
           style={styles.lottieStyle}

@@ -39,7 +39,7 @@ const CongratulationsScreen = ({ navigation }) => {
           source={
             showConfirmation
               ? require('../../Assets/lottie/tick.json') // ✅ booking confirmed animation
-              : require('../../Assets/lottie/Loading1.json') // ⏳ initial loading animation
+              : require('../../Assets/lottie/Loading3.json') // ⏳ initial loading animation
           }
           autoPlay
           loop
