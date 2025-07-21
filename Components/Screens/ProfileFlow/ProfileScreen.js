@@ -73,10 +73,10 @@ const ProfileScreen = ({ navigation }) => {
   const checkProfileData = async () => {
     UserProfileAPI(token)
       .then(data => {
-        if (data.data.mobile&&data.data.email) {
-          navigation.navigate('Profileone');
+        if (data.data) {
+          navigation.navigate('ProfilTwo');
         } else {
-          navigation.navigate('ProfileTwo');
+          navigation.navigate('Profileone');
         }
       })
       .catch(error => {
