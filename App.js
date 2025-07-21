@@ -12,26 +12,30 @@ import Login5 from './Components/Screens/LoginFlow/FifthScreenLoginPage';
 import Login6 from './Components/Screens/LoginFlow/LoginAccoundScreen';
 import Login7 from './Components/Screens/LoginFlow/LoginOtpScreen';
 import Login8 from './Components/Screens/LoginFlow/Conguratulation';
+import { Provider } from 'react-redux';
+import store from './Components/redux/store';
 
 const Stack = createNativeStackNavigator();
-
+//hi
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Login1"
-        screenOptions={{ headerShown: false }}
-      >
-        <Stack.Screen name="MainApp" component={BottomTabs} />
-        <Stack.Screen name="Login1" component={Login1} />
-        <Stack.Screen name="Login2" component={Login2} />
-        <Stack.Screen name="Login3" component={Login3} />
-        <Stack.Screen name="Login4" component={Login4} />
-        <Stack.Screen name="Login5" component={Login5} />
-        <Stack.Screen name="Login6" component={Login6} />
-        <Stack.Screen name="Login7" component={Login7} />
-        <Stack.Screen name="Login8" component={Login8} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <Provider store={store}>
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Login1"
+          screenOptions={{ headerShown: false }}
+        >
+          <Stack.Screen name="MainApp" component={BottomTabs} />
+          <Stack.Screen name="Login1" component={Login1} />
+          <Stack.Screen name="Login2" component={Login2} />
+          <Stack.Screen name="Login3" component={Login3} />
+          <Stack.Screen name="Login4" component={Login4} />
+          <Stack.Screen name="Login5" component={Login5} />
+          <Stack.Screen name="Login6" component={Login6} />
+          <Stack.Screen name="Login7" component={Login7} />
+          <Stack.Screen name="Login8" component={Login8} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </Provider>
   );
 }

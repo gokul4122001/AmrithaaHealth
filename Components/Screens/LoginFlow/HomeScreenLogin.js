@@ -12,6 +12,10 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from 'react-redux';
+import { setAuthDetails } from '../../redux/slice/authSlice';
+
 
 const { width } = Dimensions.get('window');
 const radius = width * 0.35;
@@ -31,6 +35,27 @@ const icons = [
 export default function App() {
   const rotation = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
+  const dispatch = useDispatch();
+
+  const checkLoginStatus = async () => {
+    try {
+      const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
+      const token = await AsyncStorage.getItem('token');
+
+      if (isLoggedIn === 'true' && token) {
+        dispatch(
+          setAuthDetails({
+            access_token: token,
+          }),
+        );
+        navigation.navigate('MainApp')
+      } else {
+        navigation.navigate('Login2');
+      }
+    } catch (error) {
+      console.error('Error checking login status:', error);
+    }
+  };
 
   useEffect(() => {
     // Infinite slow rotation
@@ -40,12 +65,12 @@ export default function App() {
         duration: 10000, // slower spin (10 seconds per full circle)
         useNativeDriver: true,
         easing: Easing.linear,
-      })
+      }),
     ).start();
 
     // Navigate after 5 seconds
     const timer = setTimeout(() => {
-      navigation.navigate('Login2');
+      checkLoginStatus();
     }, 5000);
 
     return () => clearTimeout(timer);
@@ -64,7 +89,9 @@ export default function App() {
         <View style={styles.circleRing} />
 
         {/* Rotating Icons */}
-        <Animated.View style={[styles.iconGroup, { transform: [{ rotate: spin }] }]}>
+        <Animated.View
+          style={[styles.iconGroup, { transform: [{ rotate: spin }] }]}
+        >
           {icons.map((icon, index) => {
             const angle = (index / icons.length) * 2 * Math.PI;
             const x = radius * Math.cos(angle);
@@ -158,7 +185,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#fff',
-       fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     fontWeight: 'bold',
     fontFamily: Fonts.family.regular,
   },
@@ -166,7 +193,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: '15%',
     color: '#ffff',
-     fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     textAlign: 'center',
     fontFamily: Fonts.family.regular,
   },

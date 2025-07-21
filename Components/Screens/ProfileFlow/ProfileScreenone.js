@@ -1,4 +1,5 @@
-import React, {useState} from 'react';
+// screens/ProfileFormScreen.js
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -11,10 +12,13 @@ import {
   TextInput,
   Alert,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import {launchImageLibrary} from 'react-native-image-picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import LinearGradient from 'react-native-linear-gradient';
+import { MAX_IMAGE_SIZE, ALLOWED_IMAGE_TYPES,IMAGE_URL } from '../Config';
+import { updateUserProfile } from '../APICall/ProfileApi';
 import logo from '../../Assets/logos.png';
 import {
   widthPercentageToDP as wp,
@@ -24,156 +28,173 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
+import { useSelector } from 'react-redux';
+
 const ProfileFormScreen = ({ navigation }) => {
+  const authToken = useSelector(state => state.auth.token)
   const [profileData, setProfileData] = useState({
     name: '',
-    dateOfBirth: '',
-    emailId: '',
+    dob: '',
+    email: '',
     mobileNumber: '',
     age: '',
     gender: 'Select Gender',
-    profileImage: null,
+    profile_photo: null,
+    familyDetails: [],
   });
-
-  const [familyMembers, setFamilyMembers] = useState([
-    {
-      id: 1,
-      name: '',
-      dateOfBirth: '',
-      emailId: '',
-      mobileNumber: '',
-      age: '',
-      gender: 'Select Gender',
-    },
-  ]);
 
   const [includeFamilyMembers, setIncludeFamilyMembers] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showFamilyDatePickers, setShowFamilyDatePickers] = useState([]);
-  const [datePickerFor, setDatePickerFor] = useState('');
+  const [activeDatePickerFor, setActiveDatePickerFor] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Helper functions
   const updateProfileData = (field, value) => {
-    setProfileData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
+    setProfileData(prev => ({ ...prev, [field]: value }));
   };
 
   const updateFamilyMember = (index, field, value) => {
-    const updatedMembers = [...familyMembers];
-    updatedMembers[index][field] = value;
-    setFamilyMembers(updatedMembers);
+    const updatedMembers = [...profileData.familyDetails];
+    updatedMembers[index] = { ...updatedMembers[index], [field]: value };
+    setProfileData(prev => ({ ...prev, familyDetails: updatedMembers }));
   };
 
   const addFamilyMember = () => {
-    setFamilyMembers(prev => [
+    setProfileData(prev => ({
       ...prev,
-      {
-        id: Date.now(),
-        name: '',
-        dateOfBirth: '',
-        emailId: '',
-        mobileNumber: '',
-        age: '',
-        gender: 'Select Gender',
-      },
-    ]);
-    setShowFamilyDatePickers(prev => [...prev, false]);
-  };
-
-  const selectImage = () => {
-    const options = {
-      mediaType: 'photo',
-      includeBase64: false,
-      maxHeight: 2000,
-      maxWidth: 2000,
-    };
-
-    launchImageLibrary(options, response => {
-      if (response.didCancel || response.error) {
-        return;
-      }
-      if (response.assets && response.assets[0]) {
-        updateProfileData('profileImage', response.assets[0].uri);
-      }
-    });
-  };
-
-  const showGenderPicker = (isProfile = true, memberIndex = 0) => {
-    Alert.alert(
-      'Select Gender',
-      '',
-      [
+      familyDetails: [
+        ...prev.familyDetails,
         {
-          text: 'Male',
-          onPress: () => {
-            if (isProfile) {
-              updateProfileData('gender', 'Male');
-            } else {
-              updateFamilyMember(memberIndex, 'gender', 'Male');
-            }
-          },
+          name: '',
+          dob: '',
+          email: '',
+          mobile: '',
+          age: '',
+          gender: 'Select Gender',
         },
-        {
-          text: 'Female',
-          onPress: () => {
-            if (isProfile) {
-              updateProfileData('gender', 'Female');
-            } else {
-              updateFamilyMember(memberIndex, 'gender', 'Female');
-            }
-          },
-        },
-        {
-          text: 'Other',
-          onPress: () => {
-            if (isProfile) {
-              updateProfileData('gender', 'Other');
-            } else {
-              updateFamilyMember(memberIndex, 'gender', 'Other');
-            }
-          },
-        },
-        {text: 'Cancel', style: 'cancel'},
       ],
-    );
+    }));
+  };
+
+  const selectImage = async () => {
+    if (isSubmitting) return;
+
+    try {
+      const result = await launchImageLibrary({
+        mediaType: 'photo',
+        quality: 0.8,
+        maxWidth: 2000,
+        maxHeight: 2000,
+      });
+
+      if (result.didCancel) return;
+      if (result.errorCode) {
+        throw new Error(result.errorMessage || 'Image selection failed');
+      }
+
+      const selectedImage = result.assets?.[0];
+      if (!selectedImage) return;
+
+      if (selectedImage.fileSize > MAX_IMAGE_SIZE) {
+        throw new Error('Image size should be less than 2MB');
+      }
+
+      if (!ALLOWED_IMAGE_TYPES.includes(selectedImage.type)) {
+        throw new Error('Only JPEG and PNG images are allowed');
+      }
+
+      console.log(selectedImage, 'selectedImage');
+
+      updateProfileData('profile_photo', selectedImage.uri);
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
   };
 
   const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(false);
-    setShowFamilyDatePickers([]);
-    
-    if (selectedDate) {
-      const formattedDate = selectedDate.toISOString().split('T')[0];
-      
-      if (datePickerFor === 'profile') {
-        updateProfileData('dateOfBirth', formattedDate);
-      } else if (typeof datePickerFor === 'number') {
-        updateFamilyMember(datePickerFor, 'dateOfBirth', formattedDate);
-      }
+    setShowDatePicker(Platform.OS === 'ios');
+
+    if (!selectedDate) return;
+
+    const formattedDate = selectedDate.toISOString().split('T')[0];
+
+    if (activeDatePickerFor === 'profile') {
+      updateProfileData('dob', formattedDate);
+    } else if (typeof activeDatePickerFor === 'number') {
+      updateFamilyMember(activeDatePickerFor, 'dob', formattedDate);
     }
   };
 
-  const openDatePicker = (forWhom) => {
-    setDatePickerFor(forWhom);
-    if (forWhom === 'profile') {
-      setShowDatePicker(true);
-    } else {
-      const newPickers = familyMembers.map((_, i) => i === forWhom);
-      setShowFamilyDatePickers(newPickers);
-    }
-  };
-
-  const handleSave = () => {
-    console.log('Profile Data:', profileData);
-    console.log('Family Members:', familyMembers);
-
-    Alert.alert('Success', 'Profile saved successfully!', [
+  const showGenderPicker = (isProfile = true, memberIndex = 0) => {
+    Alert.alert('Select Gender', '', [
       {
-        text: 'OK',
-        onPress: () => navigation.navigate('ProfileTwo'),
+        text: 'Male',
+        onPress: () => updateGender('Male', isProfile, memberIndex),
       },
+      {
+        text: 'Female',
+        onPress: () => updateGender('Female', isProfile, memberIndex),
+      },
+      {
+        text: 'Other',
+        onPress: () => updateGender('Other', isProfile, memberIndex),
+      },
+      { text: 'Cancel', style: 'cancel' },
     ]);
+  };
+
+  const updateGender = (gender, isProfile, memberIndex) => {
+    if (isProfile) {
+      updateProfileData('gender', gender);
+    } else {
+      updateFamilyMember(memberIndex, 'gender', gender);
+    }
+  };
+
+  const validateForm = () => {
+    if (!profileData.name.trim()) {
+      Alert.alert('Error', 'Please enter your name');
+      return false;
+    }
+
+    if (!profileData.email.trim()) {
+      Alert.alert('Error', 'Please enter your email');
+      return false;
+    } else if (!/^\S+@\S+\.\S+$/.test(profileData.email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return false;
+    }
+
+    if (!profileData.dob) {
+      Alert.alert('Error', 'Please select your date of birth');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSave = async () => {
+    if (isSubmitting || !validateForm()) return;
+
+    setIsSubmitting(true);
+
+    try {
+      await updateUserProfile(
+        {
+          ...profileData,
+          familyDetails: includeFamilyMembers ? profileData.familyDetails : [],
+        },
+        authToken,
+      );
+
+      Alert.alert('Success', 'Profile updated successfully!', [
+        { text: 'OK', onPress: () => navigation.navigate('ProfileTwo') },
+      ]);
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Failed to update profile');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderFormField = (
@@ -183,12 +204,17 @@ const ProfileFormScreen = ({ navigation }) => {
     placeholder,
     isDropdown = false,
     onPress = () => {},
-    isDateField = false
+    isDateField = false,
+    keyboardType = 'default',
   ) => (
     <View style={styles.fieldContainer}>
       <Text style={styles.fieldLabel}>{label}</Text>
       {isDropdown ? (
-        <TouchableOpacity style={styles.dropdownContainer} onPress={onPress}>
+        <TouchableOpacity
+          style={styles.dropdownContainer}
+          onPress={onPress}
+          disabled={isSubmitting}
+        >
           <Text
             style={[
               styles.dropdownText,
@@ -201,15 +227,20 @@ const ProfileFormScreen = ({ navigation }) => {
         </TouchableOpacity>
       ) : isDateField ? (
         <View style={styles.dateInputContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.dateInput}
             onPress={onPress}
+            disabled={isSubmitting}
           >
             <Text style={value ? styles.dropdownText : styles.placeholderText}>
               {value || placeholder}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={onPress} style={styles.calendarIcon}>
+          <TouchableOpacity
+            onPress={onPress}
+            style={styles.calendarIcon}
+            disabled={isSubmitting}
+          >
             <Icon name="calendar-today" size={20} color="#7518AA" />
           </TouchableOpacity>
         </View>
@@ -217,9 +248,11 @@ const ProfileFormScreen = ({ navigation }) => {
         <TextInput
           style={styles.textInput}
           value={value}
-          onChangeText={onText => onChangeText(onText)}
+          onChangeText={onChangeText}
           placeholder={placeholder}
           placeholderTextColor="#9CA3AF"
+          editable={!isSubmitting}
+          keyboardType={keyboardType}
         />
       )}
     </View>
@@ -230,70 +263,93 @@ const ProfileFormScreen = ({ navigation }) => {
       <StatusBar barStyle="light-content" backgroundColor={Colors.statusBar} />
       <LinearGradient
         colors={['#ffffff', '#C3DFFF']}
-      start={{ x: 0, y: 0.3 }}
-      end={{ x: 0, y: 0 }}
+        start={{ x: 0, y: 0.3 }}
+        end={{ x: 0, y: 0 }}
         style={styles.topBackground}
       >
+        {/* Header Section - Fixed */}
         <View style={styles.header}>
-          <Image source={logo} style={styles.logo} />
+          <Image source={logo} style={styles.logo} resizeMode="contain" />
           <View style={styles.greetingContainer}>
             <Text style={styles.greeting}>Hi, Welcome</Text>
             <Text style={styles.userName}>Janmani Kumar</Text>
           </View>
-          <TouchableOpacity
-            style={[styles.notificationButton, { right: hp('2%') }]}
-          >
-            <Icon name="notifications-on" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.notificationButton, { backgroundColor: 'red' }]}
-          >
-            <MaterialCommunityIcons
-              name="alarm-light-outline"
-              size={24}
-              color="white"
-            />
-          </TouchableOpacity>
+          <View style={styles.notificationIcons}>
+            <TouchableOpacity
+              style={[styles.notificationButton, { right: hp('2%') }]}
+            >
+              <Icon name="notifications" size={24} color="black" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.notificationButton, { backgroundColor: 'red' }]}
+            >
+              <MaterialCommunityIcons
+                name="alarm-light-outline"
+                size={24}
+                color="white"
+              />
+            </TouchableOpacity>
+          </View>
         </View>
-        
+
         <View style={styles.headered}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+            disabled={isSubmitting}
+          >
             <Icon name="arrow-back" size={24} color="#000000" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>My Profile</Text>
         </View>
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {/* Profile Section */}
           <View style={styles.section}>
             {renderFormField(
-              'Name',
+              'Name*',
               profileData.name,
               text => updateProfileData('name', text),
-              'Enter Your Name'
+              'Enter Your Name',
             )}
 
             {renderFormField(
-              'Date of Birth',
-              profileData.dateOfBirth,
+              'Date of Birth*',
+              profileData.dob,
               null,
               'Select Date of Birth',
               false,
-              () => openDatePicker('profile'),
-              true
+              () => {
+                setActiveDatePickerFor('profile');
+                setShowDatePicker(true);
+              },
+              true,
             )}
 
             {renderFormField(
-              'E-mail ID',
-              profileData.emailId,
-              text => updateProfileData('emailId', text),
-              'Enter mail id'
+              'E-mail ID*',
+              profileData.email,
+              text => updateProfileData('email', text),
+              'Enter mail id',
+              false,
+              null,
+              false,
+              'email-address',
             )}
 
             {renderFormField(
               'Mobile Number',
               profileData.mobileNumber,
               text => updateProfileData('mobileNumber', text),
-              'Enter mobile number'
+              'Enter mobile number',
+              false,
+              null,
+              false,
+              'phone-pad',
             )}
 
             <View style={styles.rowContainer}>
@@ -302,27 +358,39 @@ const ProfileFormScreen = ({ navigation }) => {
                   'Age',
                   profileData.age,
                   text => updateProfileData('age', text),
-                  'Enter your Age'
+                  'Enter your Age',
+                  false,
+                  null,
+                  false,
+                  'numeric',
                 )}
               </View>
               <View style={styles.halfField}>
                 {renderFormField(
-                  'Gender',
+                  'Gender*',
                   profileData.gender,
                   null,
                   '',
                   true,
-                  () => showGenderPicker(true)
+                  () => showGenderPicker(true),
                 )}
               </View>
             </View>
 
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>Upload Profile Image</Text>
-              <TouchableOpacity style={styles.uploadContainer} onPress={selectImage}>
-                {profileData.profileImage ? (
+              <TouchableOpacity
+                style={styles.uploadContainer}
+                onPress={selectImage}
+                disabled={isSubmitting}
+              >
+                {profileData.profile_photo ? (
                   <Image
-                    source={{uri: profileData.profileImage}}
+                    source={{
+                      uri: profileData.profile_photo.startsWith('http')
+                        ? profileData.profile_photo
+                        : `${IMAGE_URL}${profileData.profile_photo}`,
+                    }}
                     style={styles.uploadedImage}
                   />
                 ) : (
@@ -336,9 +404,13 @@ const ProfileFormScreen = ({ navigation }) => {
 
             <TouchableOpacity
               style={styles.toggleContainer}
-              onPress={() => setIncludeFamilyMembers(!includeFamilyMembers)}>
+              onPress={() => setIncludeFamilyMembers(!includeFamilyMembers)}
+              disabled={isSubmitting}
+            >
               <Icon
-                name={includeFamilyMembers ? 'check-box' : 'check-box-outline-blank'}
+                name={
+                  includeFamilyMembers ? 'check-box' : 'check-box-outline-blank'
+                }
                 size={24}
                 color="#4CAF50"
               />
@@ -348,41 +420,56 @@ const ProfileFormScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
 
+          {/* Family Members Section */}
           {includeFamilyMembers && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Family Members Details</Text>
 
-              {familyMembers.map((member, index) => (
-                <View key={member.id} style={styles.familyMemberContainer}>
+              {profileData.familyDetails.map((member, index) => (
+                <View
+                  key={`member-${index}`}
+                  style={styles.familyMemberContainer}
+                >
                   {renderFormField(
                     'Name',
                     member.name,
                     text => updateFamilyMember(index, 'name', text),
-                    'Enter Your Name'
+                    'Enter Your Name',
                   )}
 
                   {renderFormField(
                     'Date of Birth',
-                    member.dateOfBirth,
+                    member.dob,
                     null,
                     'Select Date of Birth',
                     false,
-                    () => openDatePicker(index),
-                    true
+                    () => {
+                      setActiveDatePickerFor(index);
+                      setShowDatePicker(true);
+                    },
+                    true,
                   )}
 
                   {renderFormField(
                     'E-mail ID',
-                    member.emailId,
-                    text => updateFamilyMember(index, 'emailId', text),
-                    'Enter mail id'
+                    member.email,
+                    text => updateFamilyMember(index, 'email', text),
+                    'Enter mail id',
+                    false,
+                    null,
+                    false,
+                    'email-address',
                   )}
 
                   {renderFormField(
                     'Mobile Number',
-                    member.mobileNumber,
-                    text => updateFamilyMember(index, 'mobileNumber', text),
-                    'Enter mobile number'
+                    member.mobile,
+                    text => updateFamilyMember(index, 'mobile', text),
+                    'Enter mobile number',
+                    false,
+                    null,
+                    false,
+                    'phone-pad',
                   )}
 
                   <View style={styles.rowContainer}>
@@ -391,7 +478,11 @@ const ProfileFormScreen = ({ navigation }) => {
                         'Age',
                         member.age,
                         text => updateFamilyMember(index, 'age', text),
-                        'Enter your Age'
+                        'Enter your Age',
+                        false,
+                        null,
+                        false,
+                        'numeric',
                       )}
                     </View>
                     <View style={styles.halfField}>
@@ -401,55 +492,55 @@ const ProfileFormScreen = ({ navigation }) => {
                         null,
                         '',
                         true,
-                        () => showGenderPicker(false, index)
+                        () => showGenderPicker(false, index),
                       )}
                     </View>
                   </View>
                 </View>
               ))}
 
-              <TouchableOpacity style={styles.addButton} onPress={addFamilyMember}>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={addFamilyMember}
+                disabled={isSubmitting}
+              >
                 <Icon name="add" size={20} color="#8B5CF6" />
                 <Text style={styles.addButtonText}>Add one more Person</Text>
               </TouchableOpacity>
             </View>
           )}
 
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.saveButtonText}>Save</Text>
+          <TouchableOpacity
+            style={[styles.saveButton, isSubmitting && styles.disabledButton]}
+            onPress={handleSave}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={styles.saveButtonText}>Save</Text>
+            )}
           </TouchableOpacity>
         </ScrollView>
 
+        {/* Date Pickers */}
         {showDatePicker && (
           <DateTimePicker
-            value={profileData.dateOfBirth ? new Date(profileData.dateOfBirth) : new Date()}
+            value={
+              activeDatePickerFor === 'profile'
+                ? profileData.dob
+                  ? new Date(profileData.dob)
+                  : new Date()
+                : profileData.familyDetails[activeDatePickerFor]?.dob
+                ? new Date(profileData.familyDetails[activeDatePickerFor].dob)
+                : new Date()
+            }
             mode="date"
             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
             onChange={handleDateChange}
             maximumDate={new Date()}
           />
         )}
-
-        {showFamilyDatePickers.map((show, index) => (
-          show && (
-            <DateTimePicker
-              key={index}
-              value={familyMembers[index].dateOfBirth ? new Date(familyMembers[index].dateOfBirth) : new Date()}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={(event, date) => {
-                const newPickers = [...showFamilyDatePickers];
-                newPickers[index] = false;
-                setShowFamilyDatePickers(newPickers);
-                if (date) {
-                  const formattedDate = date.toISOString().split('T')[0];
-                  updateFamilyMember(index, 'dateOfBirth', formattedDate);
-                }
-              }}
-              maximumDate={new Date()}
-            />
-          )
-        ))}
       </LinearGradient>
     </SafeAreaView>
   );
@@ -460,52 +551,107 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F9FAFB',
   },
+  topBackground: {
+    flex: 1,
+    paddingTop: hp('2%'),
+    paddingHorizontal: wp('4%'),
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: hp('2%'),
+  },
+  logo: {
+    width: wp('12%'),
+    height: hp('6%'),
+  },
+  greetingContainer: {
+    flex: 1,
+    marginLeft: wp('3%'),
+  },
+  greeting: {
+    fontSize: Fonts.size.TopHeading,
+    color: 'black',
+    opacity: 0.9,
+    fontFamily: Fonts.family.regular,
+  },
+  userName: {
+    fontSize: Fonts.size.TopSubheading,
+    fontWeight: 'bold',
+    color: 'black',
+    fontFamily: Fonts.family.regular,
+  },
+  notificationIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  notificationButton: {
+    width: wp('10%'),
+    height: wp('10%'),
+    borderRadius: wp('5%'),
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: wp('2%'),
+  },
   headered: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
-    marginLeft: -10
+    marginBottom: hp('2%'),
   },
   backButton: {
-    padding: 8,
+    padding: wp('1%'),
   },
   headerTitle: {
     flex: 1,
-    fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     fontWeight: '600',
     color: '#1F2937',
-    marginLeft: 8,
-     fontFamily:Fonts.family.regular
+    marginLeft: wp('2%'),
+    fontFamily: Fonts.family.regular,
+  },
+  content: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: hp('10%'),
+  },
+  section: {
+    marginBottom: hp('2%'),
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: wp('4%'),
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
   },
   sectionTitle: {
-     fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     fontWeight: '600',
     color: '#1F2937',
-    marginBottom: 16,
-    marginTop: 10,
-     fontFamily:Fonts.family.regular
+    marginBottom: hp('2%'),
+    fontFamily: Fonts.family.regular,
   },
   fieldContainer: {
-    marginBottom: 16,
+    marginBottom: hp('2%'),
   },
   fieldLabel: {
-      fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     fontWeight: '500',
     color: '#4F4C4C',
-    marginBottom: 8,
-    fontFamily:Fonts.family.regular
+    marginBottom: hp('1%'),
+    fontFamily: Fonts.family.regular,
   },
   textInput: {
     borderWidth: 1,
     borderColor: '#D1D5DB',
     borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-     fontSize:  Fonts.size.PageHeading,
+    paddingHorizontal: wp('3%'),
+    paddingVertical: hp('1.5%'),
+    fontSize: Fonts.size.PageHeading,
     color: '#1F2937',
     backgroundColor: '#FFFFFF',
-    width: wp('92%'),
-    height: hp('6%'),
   },
   dropdownContainer: {
     flexDirection: 'row',
@@ -514,23 +660,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#D1D5DB',
     borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingHorizontal: wp('3%'),
+    paddingVertical: hp('1.5%'),
     backgroundColor: '#FFFFFF',
   },
   dropdownText: {
-     fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     color: '#1F2937',
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   placeholderText: {
     color: '#9CA3AF',
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   rowContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
   },
   halfField: {
     width: '48%',
@@ -542,63 +687,59 @@ const styles = StyleSheet.create({
     borderColor: '#D1D5DB',
     borderRadius: 8,
     backgroundColor: '#FFFFFF',
-    width: wp('92%'),
-    height: hp('6%'),
     overflow: 'hidden',
   },
   dateInput: {
     flex: 1,
-    paddingHorizontal: 12,
+    paddingHorizontal: wp('3%'),
+    paddingVertical: hp('1.5%'),
     justifyContent: 'center',
-    height: '100%',
   },
   calendarIcon: {
-    paddingHorizontal: 12,
-    height: '100%',
+    paddingHorizontal: wp('3%'),
     justifyContent: 'center',
-    backgroundColor: '#ffff',
-
+    backgroundColor: '#FFFFFF',
   },
   uploadContainer: {
     borderWidth: 2,
     borderColor: '#D1D5DB',
     borderStyle: 'dashed',
     borderRadius: 8,
-    padding: 24,
+    padding: wp('6%'),
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F9FAFB',
   },
   uploadedImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: wp('20%'),
+    height: wp('20%'),
+    borderRadius: wp('10%'),
   },
   uploadText: {
-    marginTop: 8,
-     fontSize:  Fonts.size.PageHeading,
+    marginTop: hp('1%'),
+    fontSize: Fonts.size.PageHeading,
     color: '#6B7280',
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   toggleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: hp('1.5%'),
+    paddingHorizontal: wp('4%'),
     backgroundColor: '#F0FDF4',
     borderRadius: 8,
-    marginTop: 8,
+    marginTop: hp('1%'),
   },
   toggleText: {
-    fontSize:  Fonts.size.PageSubheading,
- left:10,
+    fontSize: Fonts.size.PageSubheading,
+    marginLeft: wp('2%'),
     color: '#166534',
     flex: 1,
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   familyMemberContainer: {
-    marginBottom: 24,
-    paddingBottom: 16,
+    marginBottom: hp('3%'),
+    paddingBottom: hp('2%'),
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
@@ -606,75 +747,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: hp('1.5%'),
     borderWidth: 1,
     borderColor: '#8B5CF6',
     borderRadius: 8,
     backgroundColor: '#FAFAFA',
   },
   addButtonText: {
-    marginLeft: 8,
-   fontSize:  Fonts.size.PageHeading,
+    marginLeft: wp('2%'),
+    fontSize: Fonts.size.PageHeading,
     color: '#8B5CF6',
     fontWeight: '500',
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   saveButton: {
     backgroundColor: '#7518AA',
     borderRadius: 8,
-    paddingVertical: 16,
+    paddingVertical: hp('2%'),
     alignItems: 'center',
-    marginVertical: 24,
-    marginHorizontal: 16,
-    marginBottom: 100
+    marginVertical: hp('3%'),
+    marginHorizontal: wp('4%'),
+  },
+  disabledButton: {
+    backgroundColor: '#A0AEC0',
   },
   saveButtonText: {
     color: '#FFFFFF',
-    fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     fontWeight: '600',
-     fontFamily:Fonts.family.regular
-  },
-  topBackground: {
-    paddingTop: hp('4%'),
-    paddingBottom: hp('2%'),
-    paddingHorizontal: wp('4%'),
-    height: hp('100%'),
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logo: {
-    width: wp('10%'),
-    height: hp('5%'),
-    resizeMode: 'contain',
-  },
-  greetingContainer: {
-    flex: 1,
-    marginLeft: wp('3%'),
-  },
-  greeting: {
-  fontSize:  Fonts.size.TopHeading,
-    color: 'black',
-    opacity: 0.9,
-     fontFamily:Fonts.family.regular
-  },
-  userName: {
-    fontSize:  Fonts.size.TopSubheading,
-    fontWeight: 'bold',
-    color: 'black',
-     fontFamily:Fonts.family.regular
-  },
-  notificationButton: {
-    width: wp('10%'),
-    height: wp('10%'),
-    borderRadius: wp('5%'),
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  content: {
-    marginTop: 20
+    fontFamily: Fonts.family.regular,
   },
 });
 

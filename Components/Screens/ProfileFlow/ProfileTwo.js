@@ -19,28 +19,29 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
-const ProfileDisplayScreen = ({navigation}) => {
-  const profileData = {
-    name: 'Jeswanth Kumar',
-    dateOfBirth: '03/06/2002',
-    email: 'jeswanthkumar@gmail.com',
-    mobile: '9345565448',
-    age: '22',
-    gender: 'Male',
-    profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format',
-  };
+import { UserProfileAPI } from '../APICall/ProfileApi'; // API calls
+import { useState, useEffect } from 'react';
 
-  const familyMembers = [
-    {
-      id: 1,
-      name: 'Seetha',
-      dateOfBirth: '03/06/2002',
-      email: 'jeswanthkumar@gmail.com',
-      mobile: '9345565448',
-      age: '22',
-      gender: 'Male',
-    },
-  ];
+import { useSelector } from 'react-redux';
+import { IMAGE_URL } from '../Config';
+
+const ProfileDisplayScreen = ({ navigation }) => {
+  const [profileData, setProfileData] = useState(null);
+  const [familyMembers, setFamilyMembers] = useState([]);
+  const token = useSelector(state => state.auth.token);
+  console.log(profileData,"token");
+  
+
+  useEffect(() => {
+    UserProfileAPI(token)
+      .then(data => {
+        setProfileData(data.data);
+        setFamilyMembers(data.data.familyDetails);
+      })
+      .catch(error => {
+        console.error('Error fetching profile data:', error);
+      });
+  }, []);
 
   const handleEdit = () => {
     console.log('Edit profile pressed');
@@ -68,7 +69,10 @@ const ProfileDisplayScreen = ({navigation}) => {
     <View style={styles.profileCard}>
       {isMainProfile && (
         <View style={styles.profileHeader}>
-          <Image source={{uri: data.profileImage}} style={styles.avatar} />
+          <Image
+            source={{ uri: `${IMAGE_URL}${data.profile_photo}` }}
+            style={styles.avatar}
+          />
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>{data.name}</Text>
             <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
@@ -85,15 +89,13 @@ const ProfileDisplayScreen = ({navigation}) => {
             <Text style={styles.familyMemberName}>{data.name}</Text>
           </View>
         )}
-        
-        {renderInfoRow('Date of Birth', data.dateOfBirth)}
+
+        {renderInfoRow('Date of Birth', data.dob)}
         {renderInfoRow('Email Id', data.email)}
         {renderInfoRow('Mobile Number', data.mobile)}
-        
+
         <View style={styles.rowInfo}>
-          <View style={styles.halfInfo}>
-            {renderInfoRow('Age', data.age)}
-          </View>
+          <View style={styles.halfInfo}>{renderInfoRow('Age', data.age)}</View>
           <View style={styles.halfInfo}>
             {renderInfoRow('Gender', data.gender)}
           </View>
@@ -101,68 +103,98 @@ const ProfileDisplayScreen = ({navigation}) => {
       </View>
     </View>
   );
+  if (!profileData) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor={Colors.statusBar}
+        />
+        <LinearGradient
+          colors={['#ffffff', '#C3DFFF']}
+          start={{ x: 0, y: 0.3 }}
+          end={{ x: 0, y: 0 }}
+          style={styles.topBackground}
+        >
+          <View style={styles.header}>
+            <Image source={logo} style={styles.logo} />
+            <View style={styles.greetingContainer}>
+              <Text style={styles.greeting}>Loading...</Text>
+            </View>
+          </View>
+        </LinearGradient>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.statusBar} />
-      
-  <LinearGradient
-             colors={['#ffffff', '#C3DFFF']}
-      start={{ x: 0, y: 0.3 }}
-      end={{ x: 0, y: 0 }}
-           style={styles.topBackground}
-         >
-            <View style={styles.header}>
-                       <Image source={logo} style={styles.logo} />
-                       <View style={styles.greetingContainer}>
-                         <Text style={styles.greeting}>Hi, Welcome</Text>
-                         <Text style={styles.userName}>Janmani Kumar</Text>
-                       </View>
-                       <TouchableOpacity
-                         style={[styles.notificationButton, { right: hp('2%') }]}
-                       >
-                         <Icon name="notifications-on" size={24} color="black" />
-                       </TouchableOpacity>
-                       <TouchableOpacity
-                         style={[styles.notificationButton, { backgroundColor: 'red' }]}
-                       >
-                         <MaterialCommunityIcons
-                           name="alarm-light-outline"
-                           size={24}
-                           color="white"
-                         />
-                       </TouchableOpacity>
-                     </View>
 
-                      <View style={styles.headered}>
-  <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-    <Icon name="arrow-back" size={24} color="#000000" />
-  </TouchableOpacity>
-  <Text style={styles.headerTitle}>My Profile</Text>
-</View>
-
-
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}  contentContainerStyle={{ paddingBottom: 100 }}>
-        {/* Main Profile */}
-        {renderProfileCard(profileData, true)}
-
-        {/* Family Details Section */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Family Details</Text>
-          <TouchableOpacity style={styles.addPersonButton} onPress={handleAddPerson}>
-            <Icon name="add" size={16} color="#FFFFFF" />
-            <Text style={styles.addPersonText}>Add Person</Text>
+      <LinearGradient
+        colors={['#ffffff', '#C3DFFF']}
+        start={{ x: 0, y: 0.3 }}
+        end={{ x: 0, y: 0 }}
+        style={styles.topBackground}
+      >
+        <View style={styles.header}>
+          <Image source={logo} style={styles.logo} />
+          <View style={styles.greetingContainer}>
+            <Text style={styles.greeting}>Hi, Welcome</Text>
+            <Text style={styles.userName}>{profileData.name}</Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.notificationButton, { right: hp('2%') }]}
+          >
+            <Icon name="notifications-on" size={24} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.notificationButton, { backgroundColor: 'red' }]}
+          >
+            <MaterialCommunityIcons
+              name="alarm-light-outline"
+              size={24}
+              color="white"
+            />
           </TouchableOpacity>
         </View>
 
-        {/* Family Members */}
-        {familyMembers.map((member) => (
-          <View key={member.id}>
-            {renderProfileCard(member, false)}
+        <View style={styles.headered}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Icon name="arrow-back" size={24} color="#000000" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>My Profile</Text>
+        </View>
+
+        <ScrollView
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
+          {/* Main Profile */}
+          {renderProfileCard(profileData, true)}
+
+          {/* Family Details Section */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Family Details</Text>
+            <TouchableOpacity
+              style={styles.addPersonButton}
+              onPress={handleAddPerson}
+            >
+              <Icon name="add" size={16} color="#FFFFFF" />
+              <Text style={styles.addPersonText}>Add Person</Text>
+            </TouchableOpacity>
           </View>
-        ))}
-      </ScrollView>
-        </LinearGradient>
+
+          {/* Family Members */}
+          {familyMembers.map(member => (
+            <View key={member.id}>{renderProfileCard(member, false)}</View>
+          ))}
+        </ScrollView>
+      </LinearGradient>
     </SafeAreaView>
   );
 };
@@ -234,7 +266,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 10,
     paddingTop: 16,
-    
   },
   profileCard: {
     backgroundColor: '#FFFFFF',
@@ -269,10 +300,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   profileName: {
-    fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     fontWeight: '600',
     color: '#1F2937',
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   editButton: {
     flexDirection: 'row',
@@ -284,14 +315,13 @@ const styles = StyleSheet.create({
   },
   editButtonText: {
     color: '#FFFFFF',
-  fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     fontWeight: '500',
     marginLeft: 4,
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   infoContainer: {
     padding: 16,
-    
   },
   familyMemberHeader: {
     marginBottom: 12,
@@ -300,23 +330,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#1F2937',
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   infoRow: {
     marginBottom: 12,
   },
   infoLabel: {
- fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     color: '#6B7280',
     fontWeight: '500',
     marginBottom: 4,
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   infoValue: {
-   fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     color: '#1F2937',
     fontWeight: '400',
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   rowInfo: {
     flexDirection: 'row',
@@ -333,10 +363,10 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   sectionTitle: {
-   fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     fontWeight: '600',
     color: '#1F2937',
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   addPersonButton: {
     flexDirection: 'row',
@@ -348,18 +378,18 @@ const styles = StyleSheet.create({
   },
   addPersonText: {
     color: '#FFFFFF',
-   fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     fontWeight: '500',
     marginLeft: 4,
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
-   topBackground: {
-      paddingTop: hp('4%'),
-      paddingBottom: hp('2%'),
-      paddingHorizontal: wp('4%'),
-      height: hp('100%'),
-    },
-    header: {
+  topBackground: {
+    paddingTop: hp('4%'),
+    paddingBottom: hp('2%'),
+    paddingHorizontal: wp('4%'),
+    height: hp('100%'),
+  },
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -373,16 +403,16 @@ const styles = StyleSheet.create({
     marginLeft: wp('3%'),
   },
   greeting: {
-    fontSize:  Fonts.size.TopHeading,
+    fontSize: Fonts.size.TopHeading,
     color: 'black',
     opacity: 0.9,
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   userName: {
-   fontSize:  Fonts.size.TopSubheading,
+    fontSize: Fonts.size.TopSubheading,
     fontWeight: 'bold',
     color: 'black',
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   notificationButton: {
     width: wp('10%'),
@@ -392,25 +422,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-   headered: {
- 
+  headered: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop:10,
-  marginLeft:-10
-  
-    
+    marginTop: 10,
+    marginLeft: -10,
   },
   backButton: {
     padding: 8,
   },
   headerTitle: {
     flex: 1,
-   fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     fontWeight: '600',
     color: '#1F2937',
     marginLeft: 8,
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
 });
 

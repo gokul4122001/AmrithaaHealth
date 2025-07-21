@@ -16,6 +16,10 @@ import LinearGradient from 'react-native-linear-gradient';
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
 import { verifyOtp } from '../APICall/LoginApi';
+import { useDispatch } from 'react-redux';
+import { setAuthDetails } from '../../redux/slice/authSlice';
+import jwt_decode from 'jwt-decode';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Toast = ({ message, visible }) => {
   const slideAnim = useRef(new Animated.Value(-100)).current;
@@ -62,7 +66,7 @@ const Toast = ({ message, visible }) => {
 const OTPVerificationScreen = ({ route, navigation }) => {
   const [formData, setFormData] = useState({
     otp: ['', '', '', ''],
-    mobileNumber: route?.params?.mobileNumber || '9345665442'
+    mobileNumber: route?.params?.mobileNumber || '9345665442',
   });
   const [timer, setTimer] = useState(120);
   const [isResendEnabled, setIsResendEnabled] = useState(false);
@@ -70,13 +74,15 @@ const OTPVerificationScreen = ({ route, navigation }) => {
   const [toastMessage, setToastMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const inputRefs = useRef([]);
+  const dispatch = useDispatch();
 
   // Format the mobile number with +91 prefix
-  const formattedMobileNumber = `+91${formData.mobileNumber}`;
+  const formattedMobileNumber = `${formData.mobileNumber}`;
+  console.log(formattedMobileNumber, 'formattedMobileNumber');
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTimer((prev) => {
+      setTimer(prev => {
         if (prev <= 1) {
           setIsResendEnabled(true);
           clearInterval(interval);
@@ -88,31 +94,37 @@ const OTPVerificationScreen = ({ route, navigation }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const showToast = (msg) => {
+  const showToast = msg => {
     setToastMessage(msg);
     setToastVisible(true);
     setTimeout(() => setToastVisible(false), 4000);
   };
 
-  const formatTime = (seconds) => {
+  const formatTime = seconds => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, '0')}:${secs
+      .toString()
+      .padStart(2, '0')}`;
   };
 
   const handleOtpChange = (value, index) => {
     if (value.length > 1) return;
     const newOtp = [...formData.otp];
     newOtp[index] = value;
-    setFormData({...formData, otp: newOtp});
-    
+    setFormData({ ...formData, otp: newOtp });
+
     if (value && index < 3) {
       inputRefs.current[index + 1]?.focus();
     }
   };
 
   const handleKeyPress = (e, index) => {
-    if (e.nativeEvent.key === 'Backspace' && !formData.otp[index] && index > 0) {
+    if (
+      e.nativeEvent.key === 'Backspace' &&
+      !formData.otp[index] &&
+      index > 0
+    ) {
       inputRefs.current[index - 1]?.focus();
     }
   };
@@ -128,7 +140,17 @@ const OTPVerificationScreen = ({ route, navigation }) => {
     try {
       // Send the mobile number without +91 prefix to the API
       const response = await verifyOtp(formData.mobileNumber, enteredOtp);
-      if (response.success || response.status === true) {
+
+      if (response) {
+        await AsyncStorage.setItem('isLoggedIn', 'true'); 
+        await AsyncStorage.setItem('token', response.access_token);
+        dispatch(
+          setAuthDetails({
+            access_token: response.access_token,
+            user_type: response.user_type,
+          }),
+        );
+
         showToast('OTP verified successfully!');
         setTimeout(() => navigation.navigate('Login8'), 2000);
       } else {
@@ -145,7 +167,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
     if (!isResendEnabled) return;
     setTimer(120);
     setIsResendEnabled(false);
-    setFormData({...formData, otp: ['', '', '', '']});
+    setFormData({ ...formData, otp: ['', '', '', ''] });
     inputRefs.current[0]?.focus();
     showToast(`New OTP has been sent to ${formattedMobileNumber}`);
   };
@@ -155,8 +177,8 @@ const OTPVerificationScreen = ({ route, navigation }) => {
   };
 
   return (
-    <LinearGradient 
-      colors={['#ffffff', '#C3DFFF']} 
+    <LinearGradient
+      colors={['#ffffff', '#C3DFFF']}
       start={{ x: 0, y: 0.3 }}
       end={{ x: 0, y: 0 }}
       style={styles.gradientContainer}
@@ -169,9 +191,15 @@ const OTPVerificationScreen = ({ route, navigation }) => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 20}
       >
-        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 60 }}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.logoRow1}>
-            <Image source={require('../../Assets/logos.png')} style={styles.logoImage} />
+            <Image
+              source={require('../../Assets/logos.png')}
+              style={styles.logoImage}
+            />
             <View>
               <Text style={styles.logoBrand}>Health</Text>
               <Text style={styles.logoBrand}>Umbrella</Text>
@@ -180,20 +208,27 @@ const OTPVerificationScreen = ({ route, navigation }) => {
 
           <View style={styles.mainContent}>
             <View style={styles.content}>
-              <Text style={styles.title}>OTP Sent to {formattedMobileNumber}</Text>
+              <Text style={styles.title}>
+                OTP Sent to {formattedMobileNumber}
+              </Text>
               <TouchableOpacity onPress={handleChangeMobile}>
-                <Text style={styles.changeMobileText}>Change Mobile number</Text>
+                <Text style={styles.changeMobileText}>
+                  Change Mobile number
+                </Text>
               </TouchableOpacity>
 
               <View style={styles.otpContainer}>
                 {formData.otp.map((digit, index) => (
                   <TextInput
                     key={index}
-                    ref={(ref) => (inputRefs.current[index] = ref)}
-                    style={[styles.otpInput, digit ? styles.otpInputFilled : styles.otpInputEmpty]}
+                    ref={ref => (inputRefs.current[index] = ref)}
+                    style={[
+                      styles.otpInput,
+                      digit ? styles.otpInputFilled : styles.otpInputEmpty,
+                    ]}
                     value={digit}
-                    onChangeText={(value) => handleOtpChange(value, index)}
-                    onKeyPress={(e) => handleKeyPress(e, index)}
+                    onChangeText={value => handleOtpChange(value, index)}
+                    onKeyPress={e => handleKeyPress(e, index)}
                     keyboardType="numeric"
                     maxLength={1}
                     textAlign="center"
@@ -204,12 +239,19 @@ const OTPVerificationScreen = ({ route, navigation }) => {
               <Text style={styles.timerText}>{formatTime(timer)}</Text>
 
               <View style={styles.resendContainer}>
-                <Text style={styles.resendQuestion}>Didn't you receive any code?</Text>
-                <TouchableOpacity onPress={handleResend} disabled={!isResendEnabled}>
+                <Text style={styles.resendQuestion}>
+                  Didn't you receive any code?
+                </Text>
+                <TouchableOpacity
+                  onPress={handleResend}
+                  disabled={!isResendEnabled}
+                >
                   <Text
                     style={[
                       styles.resendLink,
-                      isResendEnabled ? styles.resendEnabled : styles.resendDisabled,
+                      isResendEnabled
+                        ? styles.resendEnabled
+                        : styles.resendDisabled,
                     ]}
                   >
                     Resend
@@ -221,7 +263,11 @@ const OTPVerificationScreen = ({ route, navigation }) => {
         </ScrollView>
 
         <View style={styles.submitContainer}>
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={isLoading}>
+          <TouchableOpacity
+            style={styles.submitButton}
+            onPress={handleSubmit}
+            disabled={isLoading}
+          >
             <Text style={styles.submitButtonText}>
               {isLoading ? 'Verifying...' : 'Submit'}
             </Text>
@@ -231,10 +277,6 @@ const OTPVerificationScreen = ({ route, navigation }) => {
     </LinearGradient>
   );
 };
-
-
-
-
 
 const styles = StyleSheet.create({
   gradientContainer: {

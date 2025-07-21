@@ -26,14 +26,10 @@ export const sendOtp = async (mobile) => {
   }
 };
 
-
+ 
 export const verifyOtp = async (mobile, otp) => {
   try {
-    const response = await axios.post(`${BASE_URL}/otp/sms/verify`, {
-      mobile,
-      otp,
-    });
-
+    const response = await axios.post(`${BASE_URL}/otp/sms/verify?mobile=${mobile}&otp=${otp}`);
     return response.data;
   } catch (error) {
     throw error.response?.data || { message: 'Unknown error' };
