@@ -28,9 +28,9 @@ import { IMAGE_URL } from '../Config';
 const ProfileDisplayScreen = ({ navigation }) => {
   const [profileData, setProfileData] = useState(null);
   const [familyMembers, setFamilyMembers] = useState([]);
+  console.log(profileData, 'profileData');
   const token = useSelector(state => state.auth.token);
-  console.log(profileData,"token");
-  
+  console.log(profileData, 'token');
 
   useEffect(() => {
     UserProfileAPI(token)
@@ -45,11 +45,12 @@ const ProfileDisplayScreen = ({ navigation }) => {
 
   const handleEdit = () => {
     console.log('Edit profile pressed');
-    // Add navigation to edit screen
+    navigation.navigate('Profileone', { profileData: profileData }); // <-- pass data here
   };
 
   const handleAddPerson = () => {
     console.log('Add person pressed');
+    navigation.navigate('Profileone', { addperson: true,profileData:profileData });
     // Add navigation to add family member screen
   };
 

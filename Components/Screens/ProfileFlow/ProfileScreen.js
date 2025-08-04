@@ -24,12 +24,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { UserProfileAPI } from '../APICall/ProfileApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setClear } from '../../redux/slice/authSlice';
+import { BASE_URL, IMAGE_URL } from '../Config';
 
 const ProfileScreen = ({ navigation }) => {
   const [isLogoutPopupVisible, setIsLogoutPopupVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const token = useSelector(state => state.auth.token);
-  const dispatch = useDispatch()
+  const UserProfile = useSelector(state => state.auth.UserProfile);
+  const dispatch = useDispatch();
 
   const menuItems = [
     {
@@ -74,7 +76,7 @@ const ProfileScreen = ({ navigation }) => {
     UserProfileAPI(token)
       .then(data => {
         if (data.data) {
-          navigation.navigate('ProfilTwo');
+          navigation.navigate('ProfileTwo');
         } else {
           navigation.navigate('Profileone');
         }
@@ -85,12 +87,12 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const handleMenuPress = item => {
-    setSelectedItem(item.id); 
+    setSelectedItem(item.id);
     console.log(`Pressed: ${item.title}`);
 
     switch (item.title) {
       case 'My Profile':
-        checkProfileData()
+        checkProfileData();
         break;
       case 'Change Password':
         navigation.navigate('ChangePassword');
@@ -112,13 +114,13 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
 
-  const handleLogout = async() => {
+  const handleLogout = async () => {
     setIsLogoutPopupVisible(false);
 
     await AsyncStorage.removeItem('isLoggedIn');
     await AsyncStorage.removeItem('token');
-    dispatch(setClear())
-    navigation.navigate("Login6")
+    dispatch(setClear());
+    navigation.navigate('Login6');
     // Add your logout logic here
     console.log('User logged out');
     // Example: navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
@@ -160,11 +162,13 @@ const ProfileScreen = ({ navigation }) => {
             <View style={styles.profileCard}>
               <Image
                 source={{
-                  uri: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format',
+                  uri: UserProfile?.profile_photo
+                    ? `${IMAGE_URL}${UserProfile.profile_photo}`
+                    : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
                 }}
                 style={styles.avatar}
               />
-              <Text style={styles.userName}>Jeswanth Kumar</Text>
+              <Text style={styles.userName}>{UserProfile?.name || "UserName"}</Text>
             </View>
           </ImageBackground>
 

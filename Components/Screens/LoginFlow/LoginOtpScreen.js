@@ -18,7 +18,6 @@ import Colors from '../../Colors/Colors';
 import { verifyOtp } from '../APICall/LoginApi';
 import { useDispatch } from 'react-redux';
 import { setAuthDetails } from '../../redux/slice/authSlice';
-import jwt_decode from 'jwt-decode';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Toast = ({ message, visible }) => {

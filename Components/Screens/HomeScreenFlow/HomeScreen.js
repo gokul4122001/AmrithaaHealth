@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -12,15 +12,13 @@ import {
   Dimensions
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import logo from '../../Assets/logos.png';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Iconed from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useState, useRef } from 'react';
+import CustomHeader from '../../../Header'; 
 import Colors from '../../Colors/Colors';
 import Fonts from '../../Fonts/Fonts';
 
@@ -50,7 +48,6 @@ const transactions = [
   { service: 'Pharmacy', date: 'April 2, 2025', amount: '- ₹150', icon: require('../../Assets/tr1.png'), bgColor: '#DFFFEF' },
 ];
 
-// Schedule data for swipeable cards
 const scheduleData = [
   {
     id: 1,
@@ -72,7 +69,7 @@ const scheduleData = [
   },
   {
     id: 3,
-    doctorName: 'Dr. Anandtha ',
+    doctorName: 'Dr. Anandtha',
     specialty: 'Orthopedics',
     date: 'Wednesday, 19 March',
     time: '14:00 to 15:30',
@@ -93,11 +90,9 @@ const scheduleData = [
 export default function App({ navigation }) {
   const [showAll, setShowAll] = useState(false);
   const [currentScheduleIndex, setCurrentScheduleIndex] = useState(0);
-
   const displayedTransactions = showAll ? transactions : transactions.slice(0, 2);
 
   const handleCardPress = () => {
-    // Move to next card, loop back to 0 when reaching the end
     setCurrentScheduleIndex((prevIndex) => (prevIndex + 1) % scheduleData.length);
   };
 
@@ -120,7 +115,6 @@ export default function App({ navigation }) {
             <Iconed name="calendar-month-outline" size={20} color="#555" />
             <Text style={styles.scheduleText}>{item.date}</Text>
           </View>
-
           <View style={styles.timeBox}>
             <Iconed name="clock-outline" size={20} color="#555" />
             <Text style={styles.scheduleText}>{item.time}</Text>
@@ -139,27 +133,12 @@ export default function App({ navigation }) {
         end={{ x: 0, y: 0 }}
         style={styles.topBackground}
       >
-        <View style={styles.header}>
-          <Image source={logo} style={styles.logo} />
-          <View style={styles.greetingContainer}>
-            <Text style={styles.greeting}>Hi, Welcome</Text>
-            <Text style={styles.userName}>Janmani Kumar</Text>
-          </View>
-          <TouchableOpacity
-            style={[styles.notificationButton, { right: hp('2%') }]}
-          >
-            <Icon name="notifications-on" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.notificationButton, { backgroundColor: 'red' }]}
-          >
-            <MaterialCommunityIcons
-              name="alarm-light-outline"
-              size={24}
-              color="white"
-            />
-          </TouchableOpacity>
-        </View>
+        {/* ✅ Replaced with Custom Header */}
+        <CustomHeader
+          username="Janmani Kumar"
+          onNotificationPress={() => navigation.navigate('Notifications')}
+          onWalletPress={() => console.log('Wallet pressed')}
+        />
 
         {/* Search */}
         <View style={styles.searchContainer}>
@@ -176,10 +155,7 @@ export default function App({ navigation }) {
           />
         </View>
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
-        >
+        <ScrollView showsVerticalScrollIndicator={false}>
           {/* Services */}
           <Text style={styles.sectionTitle}>Book Your Services</Text>
           <View style={styles.grid}>
@@ -187,17 +163,12 @@ export default function App({ navigation }) {
               <TouchableOpacity
                 key={index}
                 style={styles.card}
-                onPress={() => {
-                  if (item.screen) {
-                    navigation.navigate(item.screen);
-                  }
-                }}
+                onPress={() => item.screen && navigation.navigate(item.screen)}
               >
                 <Image source={item.image} style={styles.cardImage} />
                 <Text style={styles.cardTitle}>{item.title}</Text>
               </TouchableOpacity>
             ))}
-            {services.length % 3 === 2 && <View style={styles.card} />}
           </View>
 
           {/* Listings */}
@@ -209,19 +180,16 @@ export default function App({ navigation }) {
                 <Text style={styles.cardTitle}>{item.title}</Text>
               </View>
             ))}
-            {listings.length % 3 === 2 && <View style={styles.card} />}
           </View>
 
-          {/* Stacked Swipeable Schedule Cards */}
+          {/* Upcoming Schedules */}
           <Text style={styles.sectionTitle}>Upcoming Schedule</Text>
-          
           <View style={styles.stackedCardsContainer}>
             {scheduleData.map((item, index) => {
               const isVisible = index >= currentScheduleIndex;
               const cardIndex = index - currentScheduleIndex;
-              
               if (!isVisible) return null;
-              
+
               return (
                 <TouchableOpacity
                   key={item.id}
@@ -234,7 +202,7 @@ export default function App({ navigation }) {
                         { scale: 1 - cardIndex * 0.02 },
                       ],
                       opacity: cardIndex < 3 ? 1 - cardIndex * 0.1 : 0,
-                    }
+                    },
                   ]}
                   onPress={handleCardPress}
                   disabled={index !== currentScheduleIndex}
@@ -278,6 +246,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  topBackground: {
+    paddingTop: hp('2%'),
+    paddingBottom: hp('2%'),
+    paddingHorizontal: wp('4%'),
+    height: hp('100%'),
+  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -296,13 +270,38 @@ const styles = StyleSheet.create({
     fontSize: Fonts.size.PageSubheading,
     color: '#000',
   },
-  
-  // Stacked Schedule Card Styles
+  sectionTitle: {
+    fontSize: Fonts.size.PageHeading,
+    fontWeight: '600',
+    marginBottom: 15,
+    color: 'black'
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  card: {
+    width: '30%',
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  cardImage: {
+    width: 110,
+    height: 110,
+    resizeMode: 'contain',
+  },
+  cardTitle: {
+    marginTop: 5,
+    fontSize: Fonts.size.PageSubheading,
+    textAlign: 'center',
+    fontWeight: '500',
+    color: '#000000'
+  },
   stackedCardsContainer: {
     height: 200,
     position: 'relative',
-    top:'1%'
-  
+    top: '1%'
   },
   stackedCard: {
     position: 'absolute',
@@ -387,67 +386,6 @@ const styles = StyleSheet.create({
     color: '#333',
     fontFamily: Fonts.family.regular,
   },
-
-  // Existing Styles
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  card: {
-    width: '30%',
-    marginBottom: 16,
-    alignItems: 'center',
-  },
-  cardImage: {
-    width: 110,
-    height: 110,
-    resizeMode: 'contain',
-  },
-  cardTitle: {
-    marginTop: 5,
-    fontSize: Fonts.size.PageSubheading,
-    textAlign: 'center',
-    fontWeight: '500',
-    color: '#000000'
-  },
-  topBackground: {
-    paddingTop: hp('5%'),
-    paddingBottom: hp('2%'),
-    paddingHorizontal: wp('4%'),
-    height: hp('100%'),
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logo: {
-    width: wp('10%'),
-    height: hp('5%'),
-    resizeMode: 'contain',
-  },
-  greetingContainer: {
-    flex: 1,
-    marginLeft: wp('3%'),
-  },
-  greeting: {
-    fontSize: Fonts.size.TopHeading,
-    color: 'black',
-    fontWeight: '500'
-  },
-  userName: {
-    fontSize: Fonts.size.TopSubheading,
-    fontWeight: '700',
-    color: '#000000',
-  },
-  notificationButton: {
-    width: wp('10%'),
-    height: wp('10%'),
-    borderRadius: wp('5%'),
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   containers: {
     padding: 10,
     paddingBottom: 50
@@ -457,12 +395,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: Fonts.size.PageHeading,
-    fontWeight: '600',
-    marginBottom: 15,
-    color: 'black'
   },
   seeAll: {
     fontSize: Fonts.size.PageSubheading,

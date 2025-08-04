@@ -1,5 +1,5 @@
 // screens/ProfileFormScreen.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { launchImageLibrary } from 'react-native-image-picker';
 import LinearGradient from 'react-native-linear-gradient';
-import { MAX_IMAGE_SIZE, ALLOWED_IMAGE_TYPES,IMAGE_URL } from '../Config';
+import { MAX_IMAGE_SIZE, ALLOWED_IMAGE_TYPES, IMAGE_URL } from '../Config';
 import { updateUserProfile } from '../APICall/ProfileApi';
 import logo from '../../Assets/logos.png';
 import {
@@ -28,10 +28,12 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
-const ProfileFormScreen = ({ navigation }) => {
-  const authToken = useSelector(state => state.auth.token)
+const ProfileFormScreen = ({ navigation, route }) => {
+  const authToken = useSelector(state => state?.auth?.token);
+  const { profileData: initialData } = route.params || {};
+  const addperson = route?.params?.addperson || {};
   const [profileData, setProfileData] = useState({
     name: '',
     dob: '',
@@ -47,6 +49,21 @@ const ProfileFormScreen = ({ navigation }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [activeDatePickerFor, setActiveDatePickerFor] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (initialData) {
+      console.log(initialData, 'initialData');
+      setProfileData({
+        ...initialData,
+        age: initialData?.age?.toString(),
+        mobileNumber: initialData?.mobile,
+        profile_photo: initialData?.profile_photo || null,
+        gender: initialData?.gender || 'Select Gender',
+        familyDetails: initialData?.familyDetails || [],
+      });
+    }
+  }, [initialData]);
 
   // Helper functions
   const updateProfileData = (field, value) => {
@@ -76,6 +93,13 @@ const ProfileFormScreen = ({ navigation }) => {
     }));
   };
 
+  useEffect(()=>{
+    if(addperson){
+      setIncludeFamilyMembers(true)
+      addFamilyMember()
+    }
+  },[addperson])
+
   const selectImage = async () => {
     if (isSubmitting) return;
 
@@ -102,8 +126,6 @@ const ProfileFormScreen = ({ navigation }) => {
       if (!ALLOWED_IMAGE_TYPES.includes(selectedImage.type)) {
         throw new Error('Only JPEG and PNG images are allowed');
       }
-
-      console.log(selectedImage, 'selectedImage');
 
       updateProfileData('profile_photo', selectedImage.uri);
     } catch (error) {
@@ -185,13 +207,15 @@ const ProfileFormScreen = ({ navigation }) => {
           familyDetails: includeFamilyMembers ? profileData.familyDetails : [],
         },
         authToken,
+        dispatch,
       );
 
       Alert.alert('Success', 'Profile updated successfully!', [
         { text: 'OK', onPress: () => navigation.navigate('ProfileTwo') },
       ]);
     } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to update profile');
+      console.log('Error', error.message);
+      // Alert.alert('Error', error.message || 'Failed to update profile');
     } finally {
       setIsSubmitting(false);
     }
@@ -309,116 +333,120 @@ const ProfileFormScreen = ({ navigation }) => {
           contentContainerStyle={styles.scrollContent}
         >
           {/* Profile Section */}
-          <View style={styles.section}>
-            {renderFormField(
-              'Name*',
-              profileData.name,
-              text => updateProfileData('name', text),
-              'Enter Your Name',
-            )}
+          {!addperson && (
+            <View style={styles.section}>
+              {renderFormField(
+                'Name*',
+                profileData.name,
+                text => updateProfileData('name', text),
+                'Enter Your Name',
+              )}
 
-            {renderFormField(
-              'Date of Birth*',
-              profileData.dob,
-              null,
-              'Select Date of Birth',
-              false,
-              () => {
-                setActiveDatePickerFor('profile');
-                setShowDatePicker(true);
-              },
-              true,
-            )}
+              {renderFormField(
+                'Date of Birth*',
+                profileData.dob,
+                null,
+                'Select Date of Birth',
+                false,
+                () => {
+                  setActiveDatePickerFor('profile');
+                  setShowDatePicker(true);
+                },
+                true,
+              )}
 
-            {renderFormField(
-              'E-mail ID*',
-              profileData.email,
-              text => updateProfileData('email', text),
-              'Enter mail id',
-              false,
-              null,
-              false,
-              'email-address',
-            )}
+              {renderFormField(
+                'E-mail ID*',
+                profileData.email,
+                text => updateProfileData('email', text),
+                'Enter mail id',
+                false,
+                null,
+                false,
+                'email-address',
+              )}
 
-            {renderFormField(
-              'Mobile Number',
-              profileData.mobileNumber,
-              text => updateProfileData('mobileNumber', text),
-              'Enter mobile number',
-              false,
-              null,
-              false,
-              'phone-pad',
-            )}
+              {renderFormField(
+                'Mobile Number',
+                profileData.mobileNumber,
+                text => updateProfileData('mobileNumber', text),
+                'Enter mobile number',
+                false,
+                null,
+                false,
+                'phone-pad',
+              )}
 
-            <View style={styles.rowContainer}>
-              <View style={styles.halfField}>
-                {renderFormField(
-                  'Age',
-                  profileData.age,
-                  text => updateProfileData('age', text),
-                  'Enter your Age',
-                  false,
-                  null,
-                  false,
-                  'numeric',
-                )}
+              <View style={styles.rowContainer}>
+                <View style={styles.halfField}>
+                  {renderFormField(
+                    'Age',
+                    profileData.age,
+                    text => updateProfileData('age', text),
+                    'Enter your Age',
+                    false,
+                    null,
+                    false,
+                    'numeric',
+                  )}
+                </View>
+                <View style={styles.halfField}>
+                  {renderFormField(
+                    'Gender*',
+                    profileData.gender,
+                    null,
+                    '',
+                    true,
+                    () => showGenderPicker(true),
+                  )}
+                </View>
               </View>
-              <View style={styles.halfField}>
-                {renderFormField(
-                  'Gender*',
-                  profileData.gender,
-                  null,
-                  '',
-                  true,
-                  () => showGenderPicker(true),
-                )}
-              </View>
-            </View>
 
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Upload Profile Image</Text>
+              <View style={styles.fieldContainer}>
+                <Text style={styles.fieldLabel}>Upload Profile Image</Text>
+                <TouchableOpacity
+                  style={styles.uploadContainer}
+                  onPress={selectImage}
+                  disabled={isSubmitting}
+                >
+                  {profileData.profile_photo ? (
+                    <Image
+                      source={{
+                        uri: profileData.profile_photo.startsWith('http')
+                          ? profileData.profile_photo
+                          : `${IMAGE_URL}${profileData.profile_photo}`,
+                      }}
+                      style={styles.uploadedImage}
+                    />
+                  ) : (
+                    <>
+                      <Icon name="cloud-upload" size={40} color="#7518AA" />
+                      <Text style={styles.uploadText}>Upload image</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+
               <TouchableOpacity
-                style={styles.uploadContainer}
-                onPress={selectImage}
+                style={styles.toggleContainer}
+                onPress={() => setIncludeFamilyMembers(!includeFamilyMembers)}
                 disabled={isSubmitting}
               >
-                {profileData.profile_photo ? (
-                  <Image
-                    source={{
-                      uri: profileData.profile_photo.startsWith('http')
-                        ? profileData.profile_photo
-                        : `${IMAGE_URL}${profileData.profile_photo}`,
-                    }}
-                    style={styles.uploadedImage}
-                  />
-                ) : (
-                  <>
-                    <Icon name="cloud-upload" size={40} color="#7518AA" />
-                    <Text style={styles.uploadText}>Upload image</Text>
-                  </>
-                )}
+                <Icon
+                  name={
+                    includeFamilyMembers
+                      ? 'check-box'
+                      : 'check-box-outline-blank'
+                  }
+                  size={24}
+                  color="#4CAF50"
+                />
+                <Text style={styles.toggleText}>
+                  Would you like to include your family members details?
+                </Text>
               </TouchableOpacity>
             </View>
-
-            <TouchableOpacity
-              style={styles.toggleContainer}
-              onPress={() => setIncludeFamilyMembers(!includeFamilyMembers)}
-              disabled={isSubmitting}
-            >
-              <Icon
-                name={
-                  includeFamilyMembers ? 'check-box' : 'check-box-outline-blank'
-                }
-                size={24}
-                color="#4CAF50"
-              />
-              <Text style={styles.toggleText}>
-                Would you like to include your family members details?
-              </Text>
-            </TouchableOpacity>
-          </View>
+          )}
 
           {/* Family Members Section */}
           {includeFamilyMembers && (
@@ -553,7 +581,7 @@ const styles = StyleSheet.create({
   },
   topBackground: {
     flex: 1,
-    paddingTop: hp('2%'),
+    paddingTop: hp('4%'),
     paddingHorizontal: wp('4%'),
   },
   header: {

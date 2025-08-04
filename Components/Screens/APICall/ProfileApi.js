@@ -1,8 +1,10 @@
 // src/APICall/UserProfileApi.jsraja
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
+import { setUserName } from '../../redux/slice/authSlice';
 
 const BASE_URL = 'https://www.myhealth.amrithaa.net/backend/api'; // Define it here
+
 
 export const UserProfileAPI = async token => {
   try {
@@ -27,10 +29,8 @@ export const UserProfileAPI = async token => {
   }
 };
 
-export const updateUserProfile = async (profileData, token) => {
-  const dispatch = useDispatch()
+export const updateUserProfile = async (profileData, token,dispatch) => {
   const formData = new FormData();
-
   // Add main profile fields
   formData.append('name', profileData.name);
   formData.append('email', profileData.email);
@@ -77,9 +77,11 @@ export const updateUserProfile = async (profileData, token) => {
       },
     );
 
-    dispatch(setUserName({
-      userName:profileData.name
-    }))
+    dispatch(
+      setUserName({
+        userName: profileData.name,
+      }),
+    );
 
     // Log the response for debugging
     console.log('Response:', response.data);
