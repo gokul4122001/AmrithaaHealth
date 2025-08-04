@@ -13,15 +13,13 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
+import * as Animatable from 'react-native-animatable';
+import LottieView from 'lottie-react-native';
+
+import CustomHeader from '../../../Header';
 import logo from '../../Assets/logos.png';
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
-import Icons from 'react-native-vector-icons/MaterialIcons';
-import * as Animatable from 'react-native-animatable';
 
 const { width, height } = Dimensions.get('window');
 
@@ -31,7 +29,6 @@ const AmbulanceSelectionScreen = ({ navigation }) => {
   const [destination] = useState('Apollo Hospital, Thousand Lights, Chennai');
   const [selectedAmbulance, setSelectedAmbulance] = useState(null);
   const [isTransferSectionOpen, setIsTransferSectionOpen] = useState(false);
-  const [openAmbulanceOptions, setOpenAmbulanceOptions] = useState({});
 
   const ambulanceOptions = [
     {
@@ -82,13 +79,6 @@ const AmbulanceSelectionScreen = ({ navigation }) => {
     setIsTransferSectionOpen(!isTransferSectionOpen);
   };
 
-  const toggleAmbulanceOption = (ambulanceId) => {
-    setOpenAmbulanceOptions(prev => ({
-      ...prev,
-      [ambulanceId]: !prev[ambulanceId]
-    }));
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.statusBar} />
@@ -99,26 +89,29 @@ const AmbulanceSelectionScreen = ({ navigation }) => {
         style={styles.topBackground}
       >
         {/* Header */}
-        <View style={styles.header}>
-          <Image source={logo} style={styles.logo} />
-          <View style={styles.greetingContainer}>
-            <Text style={styles.greeting}>Hi, Welcome</Text>
-            <Text style={styles.userName}>{userName}</Text>
-          </View>
-          <TouchableOpacity style={[styles.notificationButton, { right: hp('2%') }]}>
-            <Icons name="notifications-on" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.notificationButton, { backgroundColor: 'red' }]}>
-            <MaterialCommunityIcons name="alarm-light-outline" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
+        <CustomHeader
+          username={userName}
+          onNotificationPress={() => console.log('Notification pressed')}
+          onWalletPress={() => console.log('Wallet pressed')}
+        />
 
+        {/* Pickup and Destination with Lottie dots */}
         <View style={styles.locationContainer}>
           <View style={styles.row}>
             <View style={styles.iconColumn}>
-              <View style={styles.greenDot} />
+              <LottieView
+                source={require('../../Assets/lottie/greendot.json')}
+                autoPlay
+                loop
+                style={styles.dotLottie}
+              />
               <View style={styles.dashedLine} />
-              <View style={styles.redDot} />
+              <LottieView
+                source={require('../../Assets/lottie/reddot.json')}
+                autoPlay
+                loop
+                style={styles.dotLottie}
+              />
             </View>
             <View style={styles.textColumn}>
               <Text style={styles.locationText}>{pickup}</Text>
@@ -137,44 +130,35 @@ const AmbulanceSelectionScreen = ({ navigation }) => {
           />
         </View>
 
-        {/* Bottom Modal */}
+        {/* Ambulance Options */}
         <Animatable.View animation="slideInUp" style={styles.bottomModal}>
-          <ScrollView
-            style={styles.content}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 100 }}
-          >
+          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
             <View style={styles.noteSection}>
               <Icon name="arrow-back" size={20} color="#000" />
               <Text style={styles.noteTitle}>Select the Ambulance</Text>
             </View>
 
-            {/* Transfer Dropdown */}
+            {/* Transfer Info */}
             <View style={styles.transferSection}>
-              <TouchableOpacity 
-                style={styles.transferRow}
-                onPress={toggleTransferSection}
-              >
-                <Image source={require('../../Assets/ambualnce.png')} style={styles.ambulanceIcon} />
+              <TouchableOpacity style={styles.transferRow} onPress={toggleTransferSection}>
+                <Image
+                  source={require('../../Assets/ambualnce.png')}
+                  style={styles.ambulanceIcon}
+                />
                 <View style={styles.transferTextContainer}>
                   <Text style={styles.transferText}>Patient transfer</Text>
                 </View>
                 <TouchableOpacity style={styles.dropdownButton} onPress={toggleTransferSection}>
-                  <Icons 
-                    name={isTransferSectionOpen ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
-                    size={24} 
-                    color="#666666" 
+                  <Icon
+                    name={isTransferSectionOpen ? "chevron-up" : "chevron-down"}
+                    size={24}
+                    color="#666666"
                   />
                 </TouchableOpacity>
               </TouchableOpacity>
-              
-              {/* Collapsible Content */}
+
               {isTransferSectionOpen && (
-                <Animatable.View 
-                  animation="slideInDown" 
-                  duration={300}
-                  style={styles.transferDetailsContainer}
-                >
+                <Animatable.View animation="slideInDown" duration={300} style={styles.transferDetailsContainer}>
                   <Text style={styles.transferDetailsText}>
                     Our ambulance service provides safe and reliable patient transportation 
                     with trained medical staff and proper equipment.
@@ -205,31 +189,29 @@ const AmbulanceSelectionScreen = ({ navigation }) => {
                       <View style={styles.optionHeader}>
                         <View style={styles.optionLeft}>
                           <View style={styles.ambulanceAndBadgeContainer}>
-                       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-  <View style={[styles.minutesBadge, { backgroundColor: option.color }]}>
-    <Text style={styles.minutesText}>{option.minutes}</Text>
-  </View>
-
-  <View style={{ flexDirection: 'column', alignItems: 'center', marginLeft: 10 }}>
- 
-    <Image
-      source={require('../../Assets/ambualnce.png')}
-      style={styles.optionAmbulanceIcon}
-    />
-       <Text style={styles.optionTimeBelow}>{option.minutes} mins</Text>
-  </View>
-</View>
-
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                              <View style={[styles.minutesBadge, { backgroundColor: option.color }]}>
+                                <Text style={styles.minutesText}>{option.minutes}</Text>
+                              </View>
+                              <View style={{ flexDirection: 'column', alignItems: 'center', marginLeft: 10 }}>
+                                <Image
+                                  source={require('../../Assets/ambualnce.png')}
+                                  style={styles.optionAmbulanceIcon}
+                                />
+                                <Text style={styles.optionTimeBelow}>{option.minutes} mins</Text>
+                              </View>
+                            </View>
                           </View>
                           <View style={styles.optionInfo}>
                             <Text style={styles.optionType}>{option.type}</Text>
-                            {option.description ? (
+                            {option.description && (
                               <Text style={styles.optionDescription}>{option.description}</Text>
-                            ) : null}
+                            )}
                           </View>
                         </View>
                         <Text style={styles.optionPrice}>{option.price}</Text>
                       </View>
+
                       <View style={styles.includesSection}>
                         <Text style={styles.includesTitle}>Includes :</Text>
                         <Text style={styles.includesText}>{option.includes}</Text>
@@ -263,53 +245,17 @@ const AmbulanceSelectionScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
   topBackground: {
     flex: 1,
-    paddingTop: hp('4%'),
-    paddingHorizontal: wp('5%'),
+    paddingTop: 20,
+    paddingHorizontal: 16,
     position: 'relative',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: hp('2%'),
-  },
-  logo: {
-    width: wp('10%'),
-    height: hp('5%'),
-    resizeMode: 'contain',
-  },
-  greetingContainer: {
-    flex: 1,
-    marginLeft: wp('3%'),
-  },
-  greeting: {
-    fontSize: Fonts.size.TopHeading,
-    color: 'black',
-  },
-  userName: {
-    fontSize: Fonts.size.TopSubheading,
-    fontWeight: 'bold',
-    color: 'black',
-  },
-  notificationButton: {
-    width: wp('10%'),
-    height: wp('10%'),
-    borderRadius: wp('5%'),
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: wp('2%'),
-  },
-  
   mapContainer: {
     width: '100%',
-    height: hp('30%'),
-    marginBottom: hp('1%'),
+    height: height * 0.3,
+    marginBottom: 10,
   },
   mapImage: {
     width: '100%',
@@ -332,24 +278,20 @@ const styles = StyleSheet.create({
     elevation: 15,
     alignSelf: 'center',
   },
-  content: {
-    paddingHorizontal: 16,
-  },
+  content: { paddingHorizontal: 16 },
   noteSection: {
     marginTop: 12,
     marginBottom: 20,
     flexDirection: 'row',
   },
   noteTitle: {
-    fontSize: Fonts.size.PageHeading,
+    fontSize: 18,
     fontWeight: '600',
     color: '#333',
     textAlign: 'center',
     left: 10,
   },
-  transferSection: {
-    marginBottom: 20,
-  },
+  transferSection: { marginBottom: 20 },
   transferRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -360,22 +302,18 @@ const styles = StyleSheet.create({
     borderColor: '#E5E5E5',
   },
   ambulanceIcon: {
-    width: 120, // Increased size
-    height: 70,  // Increased size
+    width: 120,
+    height: 70,
     marginRight: 12,
     resizeMode: 'contain',
   },
-  transferTextContainer: {
-    flex: 1,
-  },
+  transferTextContainer: { flex: 1 },
   transferText: {
-    fontSize: Fonts.size.PageHeading,
+    fontSize: 16,
     fontWeight: '500',
     color: '#333',
   },
-  dropdownButton: {
-    padding: 4,
-  },
+  dropdownButton: { padding: 4 },
   transferDetailsContainer: {
     marginTop: 10,
     padding: 12,
@@ -385,22 +323,18 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
   },
   transferDetailsText: {
-    fontSize: Fonts.size.PageSubheading,
+    fontSize: 14,
     color: '#333',
     marginBottom: 10,
     lineHeight: 18,
   },
-  transferFeatures: {
-    marginTop: 5,
-  },
+  transferFeatures: { marginTop: 5 },
   featureItem: {
-    fontSize: Fonts.size.PageSubSubHeading,
+    fontSize: 13,
     color: '#666',
     marginBottom: 3,
   },
-  optionsContainer: {
-    marginBottom: 10,
-  },
+  optionsContainer: { marginBottom: 10 },
   optionCard: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -439,34 +373,32 @@ const styles = StyleSheet.create({
   minutesText: {
     color: '#fff',
     fontWeight: '600',
-    fontSize: Fonts.size.PageSubSubHeading,
+    fontSize: 12,
   },
   optionAmbulanceIcon: {
-    width: 60,  // Increased size
-    height: 40, // Increased size
+    width: 60,
+    height: 40,
     marginBottom: 4,
     resizeMode: 'contain',
   },
   optionTimeBelow: {
-    fontSize: Fonts.size.PageSubSubHeading,
+    fontSize: 12,
     color: '#7518AA',
     textAlign: 'center',
   },
-  optionInfo: {
-    flex: 1,
-  },
+  optionInfo: { flex: 1 },
   optionType: {
-    fontSize: Fonts.size.PageHeading,
+    fontSize: 16,
     fontWeight: '600',
     color: '#333',
     marginBottom: 2,
   },
   optionDescription: {
-    fontSize: Fonts.size.PageSubSubHeading,
+    fontSize: 12,
     color: '#666',
   },
   optionPrice: {
-    fontSize: Fonts.size.PageHeading,
+    fontSize: 16,
     fontWeight: '600',
     color: '#333',
   },
@@ -477,11 +409,11 @@ const styles = StyleSheet.create({
   },
   includesTitle: {
     fontWeight: '600',
-    fontSize: Fonts.size.PageSubheading,
+    fontSize: 14,
     color: '#333',
   },
   includesText: {
-    fontSize: Fonts.size.PageSubSubHeading,
+    fontSize: 12,
     color: '#666',
     lineHeight: 16,
   },
@@ -494,7 +426,7 @@ const styles = StyleSheet.create({
   },
   bookNowText: {
     color: '#fff',
-    fontSize: Fonts.size.PageSubheading,
+    fontSize: 14,
     fontWeight: '600',
   },
   locationContainer: {
@@ -511,12 +443,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 10,
   },
-  greenDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: 'green',
-    marginTop: 4,
+  dotLottie: {
+    width: 30,
+    height: 30,
   },
   dashedLine: {
     width: 1,
@@ -526,19 +455,12 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     marginVertical: 4,
   },
-  redDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: 'red',
-    marginBottom: 4,
-  },
   textColumn: {
     flex: 1,
     justifyContent: 'space-between',
   },
   locationText: {
-    fontSize: Fonts.size.PageSubheading,
+    fontSize: 14,
     fontWeight: '500',
     color: '#000',
     marginVertical: 4,

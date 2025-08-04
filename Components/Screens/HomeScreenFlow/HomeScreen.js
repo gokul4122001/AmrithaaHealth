@@ -22,7 +22,7 @@ import CustomHeader from '../../../Header';
 import Colors from '../../Colors/Colors';
 import Fonts from '../../Fonts/Fonts';
 
-const { width: screenWidth } = Dimensions.get('window');
+
 
 const services = [
   { title: 'Ambulance', image: require('../../Assets/HomeAmbulance.png'), screen: 'AmbulanceBookingScreen' },
@@ -47,6 +47,33 @@ const transactions = [
   { service: 'Home care Nursing', date: 'April 20, 2025', amount: '- ₹550', icon: require('../../Assets/tr3.png'), bgColor: '#E8E6FF' },
   { service: 'Pharmacy', date: 'April 2, 2025', amount: '- ₹150', icon: require('../../Assets/tr1.png'), bgColor: '#DFFFEF' },
 ];
+
+const renderCustomGrid = (data, navigation) => {
+  const rows = [];
+  for (let i = 0; i < data.length; i += 3) {
+    const rowItems = data.slice(i, i + 3);
+    rows.push(
+      <View key={i} style={styles.gridRow}>
+        {rowItems.map((item, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.gridCard}
+            onPress={() => item?.screen && navigation.navigate(item.screen)}
+            disabled={!item?.screen}
+          >
+            <Image source={item.image} style={styles.cardImage} />
+            <Text style={styles.cardTitle}>{item.title}</Text>
+          </TouchableOpacity>
+        ))}
+        {rowItems.length < 3 &&
+          Array.from({ length: 3 - rowItems.length }).map((_, idx) => (
+            <View key={`empty-${idx}`} style={styles.gridCard} />
+          ))}
+      </View>
+    );
+  }
+  return rows;
+};
 
 const scheduleData = [
   {
@@ -127,13 +154,20 @@ export default function App({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.statusBar} />
+      
+     
       <LinearGradient
         colors={['#ffffff', '#C3DFFF']}
         start={{ x: 0, y: 0.3 }}
         end={{ x: 0, y: 0 }}
         style={styles.topBackground}
       >
-        {/* ✅ Replaced with Custom Header */}
+
+         <ScrollView
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{ paddingBottom: 100 }}
+>
+       
         <CustomHeader
           username="Janmani Kumar"
           onNotificationPress={() => navigation.navigate('Notifications')}
@@ -155,33 +189,13 @@ export default function App({ navigation }) {
           />
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false}>
           {/* Services */}
           <Text style={styles.sectionTitle}>Book Your Services</Text>
-          <View style={styles.grid}>
-            {services.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.card}
-                onPress={() => item.screen && navigation.navigate(item.screen)}
-              >
-                <Image source={item.image} style={styles.cardImage} />
-                <Text style={styles.cardTitle}>{item.title}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        {renderCustomGrid(services, navigation)}
 
           {/* Listings */}
           <Text style={styles.sectionTitle}>Listing</Text>
-          <View style={styles.grid}>
-            {listings.map((item, index) => (
-              <View key={index} style={styles.card}>
-                <Image source={item.image} style={styles.cardImage} />
-                <Text style={styles.cardTitle}>{item.title}</Text>
-              </View>
-            ))}
-          </View>
-
+            {renderCustomGrid(listings, navigation)}
           {/* Upcoming Schedules */}
           <Text style={styles.sectionTitle}>Upcoming Schedule</Text>
           <View style={styles.stackedCardsContainer}>
@@ -237,10 +251,10 @@ export default function App({ navigation }) {
           </View>
         </ScrollView>
       </LinearGradient>
+      
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -276,19 +290,19 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     color: 'black'
   },
-  grid: {
+  gridRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     justifyContent: 'space-between',
-  },
-  card: {
-    width: '30%',
     marginBottom: 16,
+  },
+  gridCard: {
+    width: '30%',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   cardImage: {
-    width: 110,
-    height: 110,
+    width: 80,
+    height: 80,
     resizeMode: 'contain',
   },
   cardTitle: {
@@ -296,12 +310,12 @@ const styles = StyleSheet.create({
     fontSize: Fonts.size.PageSubheading,
     textAlign: 'center',
     fontWeight: '500',
-    color: '#000000'
+    color: '#000000',
   },
   stackedCardsContainer: {
     height: 200,
     position: 'relative',
-    top: '1%'
+    top: '1%',
   },
   stackedCard: {
     position: 'absolute',
@@ -326,7 +340,7 @@ const styles = StyleSheet.create({
   scheduleHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: 10
+    paddingBottom: 10,
   },
   scheduleAvatar: {
     width: 40,
@@ -337,12 +351,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontFamily: Fonts.family.regular,
-    fontSize: Fonts.size.PageSubheading
+    fontSize: Fonts.size.PageSubheading,
   },
   specialty: {
     color: '#ddd',
     fontFamily: Fonts.family.regular,
-    fontSize: Fonts.size.PageSubSubHeading
+    fontSize: Fonts.size.PageSubSubHeading,
   },
   phoneIcon: {
     width: 34,
@@ -388,7 +402,7 @@ const styles = StyleSheet.create({
   },
   containers: {
     padding: 10,
-    paddingBottom: 50
+    paddingBottom: 50,
   },
   headers: {
     flexDirection: 'row',
@@ -400,7 +414,7 @@ const styles = StyleSheet.create({
     fontSize: Fonts.size.PageSubheading,
     color: '#4E4E4E',
     fontWeight: '500',
-    fontFamily: Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   transactionCard: {
     flexDirection: 'row',

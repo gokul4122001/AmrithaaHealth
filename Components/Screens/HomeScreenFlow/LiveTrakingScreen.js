@@ -12,9 +12,9 @@ import {
   ScrollView,
 } from 'react-native';
 
-import Icons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
+import LottieView from 'lottie-react-native';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -23,6 +23,7 @@ import {
 import logo from '../../Assets/logos.png';
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
+import CustomHeader from '../../../Header';
 
 const RideBookingScreen = ({ navigation }) => {
   const [pickup, setPickup] = useState('West Mambalam, Chennai-33');
@@ -50,34 +51,37 @@ const RideBookingScreen = ({ navigation }) => {
         style={styles.topBackground}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Image source={logo} style={styles.logo} />
-            <View style={styles.greetingContainer}>
-              <Text style={styles.greeting}>Hi, Welcome</Text>
-              <Text style={styles.userName}>Jeswanth Kumar</Text>
-            </View>
-            <TouchableOpacity style={styles.notificationButton}>
-              <Icons name="notifications-on" size={24} color="black" />
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.notificationButton, { backgroundColor: 'red' }]}>
-              <MaterialCommunityIcons name="alarm-light-outline" size={24} color="white" />
-            </TouchableOpacity>
-          </View>
+          
+          {/* Custom Header Integration */}
+          <CustomHeader
+            username="Jeswanth Kumar"
+            onNotificationPress={() => console.log('Notification Pressed')}
+            onWalletPress={() => console.log('Alarm Pressed')}
+          />
 
           {/* Pickup & Destination Card */}
           <View style={styles.cardContainer}>
             {/* Dots and Arrow */}
             <View style={styles.dotsContainer}>
               <View style={styles.dotRow}>
-                <View style={styles.dotGreen} />
+                <LottieView
+                  source={require('../../Assets/lottie/greendot.json')}
+                  autoPlay
+                  loop
+                  style={styles.lottieDot}
+                />
               </View>
               <View style={styles.verticalLine}>
                 <View style={styles.dashedLine} />
                 <MaterialCommunityIcons name="arrow-down-bold" size={18} color="#888" />
               </View>
               <View style={styles.dotRow}>
-                <View style={styles.dotRed} />
+                <LottieView
+                  source={require('../../Assets/lottie/reddot.json')}
+                  autoPlay
+                  loop
+                  style={styles.lottieDot}
+                />
               </View>
             </View>
 
@@ -128,43 +132,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingTop: hp('4%'),
+    paddingTop: hp('2%'),
     paddingHorizontal: wp('5%'),
-    paddingBottom: 30,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: hp('2%'),
-  },
-  logo: {
-    width: wp('10%'),
-    height: hp('5%'),
-    resizeMode: 'contain',
-  },
-  greetingContainer: {
-    flex: 1,
-    marginLeft: wp('3%'),
-  },
-  greeting: {
-    fontSize: Fonts.size.TopHeading,
-    color: 'black',
-   
-  },
-  userName: {
-    fontSize: Fonts.size.TopSubheading,
-    fontWeight: 'bold',
-    color: 'black',
-  
-  },
-  notificationButton: {
-    width: wp('10%'),
-    height: wp('10%'),
-    borderRadius: wp('5%'),
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: wp('2%'),
+    paddingBottom: 50,
   },
   cardContainer: {
     flexDirection: 'row',
@@ -177,33 +147,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     width: '100%',
-    marginBottom: 20,
+    marginBottom: 40,
+    top: 20,
   },
   dotsContainer: {
-    width: 30,
+    width: 40,
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   dotRow: {
-    height: 20,
+    height: 30,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  dotGreen: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#22C55E',
-    borderWidth: 2,
-    borderColor: '#fff',
-  },
-  dotRed: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#EF4444',
-    borderWidth: 2,
-    borderColor: '#fff',
   },
   verticalLine: {
     alignItems: 'center',
@@ -218,9 +173,14 @@ const styles = StyleSheet.create({
     borderColor: '#999',
     marginBottom: 4,
   },
+  lottieDot: {
+    width: 30,
+    height: 30,
+  },
   inputContainer: {
     flex: 1,
     justifyContent: 'space-between',
+    marginLeft: 10,
   },
   inputText: {
     fontSize: Fonts.size.PageSubheading,
@@ -250,11 +210,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
-    position:'absolute',
-    bottom:'20%',
-      width: '100%',
-    height: hp('7%'),
-    alignSelf:'center'
+    position: 'absolute',
+    bottom: '20%',
+    width: '100%',
+    height: hp('6%'),
+    alignSelf: 'center',
   },
   confirmButtonText: {
     color: '#fff',
