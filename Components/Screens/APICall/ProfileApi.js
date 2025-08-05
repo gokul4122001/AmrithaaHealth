@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { setUserName } from '../../redux/slice/authSlice';
 
-const BASE_URL = 'https://www.myhealth.amrithaa.net/backend/api'; // Define it here
+const BASE_URL = 'https://www.myhealth.amrithaa.net/backend/api'; 
 
 
 export const UserProfileAPI = async token => {
@@ -108,16 +108,12 @@ export const updateUserProfile = async (profileData, token,dispatch) => {
 
 export const Term_Condition = async (token) => {
   try {
-    const response = await axios.get(
-      `${BASE_URL}/get_terms_conditions`, 
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,  
-          'Content-Type': 'application/json',  
-        },
-        
-      }
-    );
+    const response = await axios.get(`${BASE_URL}/get_terms_conditions`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
     return response.data;
   } catch (error) {
     console.log('Get get_terms_conditions API ERROR:', {
@@ -125,6 +121,6 @@ export const Term_Condition = async (token) => {
       response: error.response?.data,
       status: error.response?.status,
     });
-    throw error;  
+    throw error;
   }
 };
