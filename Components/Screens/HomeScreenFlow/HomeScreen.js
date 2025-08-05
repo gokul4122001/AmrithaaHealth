@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   topBackground: {
-    paddingTop: hp('2%'),
+    paddingTop: hp('4%'),
     paddingBottom: hp('2%'),
     paddingHorizontal: wp('4%'),
     height: hp('100%'),

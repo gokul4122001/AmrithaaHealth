@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8F9FF' },
   topBackground: {
     flex: 1,
-    paddingTop: hp('2%'),
+    paddingTop: hp('4%'),
     paddingHorizontal: wp('5%'),
     position: 'relative',
   },
