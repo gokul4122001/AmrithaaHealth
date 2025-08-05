@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Fonts from './Components/Fonts/Fonts';
+import { useSelector } from 'react-redux';
 
 const CustomHeader = ({ username = 'Akash Ambulance', onNotificationPress, onWalletPress }) => {
+    const UserProfile = useSelector(state => state.auth.UserProfile);
 
   return (
     <View style={styles.headerContainer}>
@@ -16,7 +18,7 @@ const CustomHeader = ({ username = 'Akash Ambulance', onNotificationPress, onWal
         />
         <View style={{ marginLeft: 10 }}>
           <Text style={styles.welcomeText}>Hi, Welcome</Text>
-          <Text style={styles.usernameText}>GokulRaja</Text>
+          <Text style={styles.usernameText}>{UserProfile?.name || "UserName"}</Text>
         </View>
       </View>
 

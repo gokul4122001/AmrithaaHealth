@@ -23,6 +23,9 @@
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
+	<key>NSLocationWhenInUseUsageDescription</key>
+<string>We need your location to provide services near you.</string>
+
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>

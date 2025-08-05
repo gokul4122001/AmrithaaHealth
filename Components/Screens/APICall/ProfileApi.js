@@ -105,3 +105,26 @@ export const updateUserProfile = async (profileData, token,dispatch) => {
     throw error; // Re-throw the error after logging
   }
 };
+
+export const Term_Condition = async (token) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/get_terms_conditions`, 
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,  
+          'Content-Type': 'application/json',  
+        },
+        
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.log('Get get_terms_conditions API ERROR:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;  
+  }
+};

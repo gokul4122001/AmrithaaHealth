@@ -22,8 +22,6 @@ import CustomHeader from '../../../Header';
 import Colors from '../../Colors/Colors';
 import Fonts from '../../Fonts/Fonts';
 
-
-
 const services = [
   { title: 'Ambulance', image: require('../../Assets/HomeAmbulance.png'), screen: 'AmbulanceBookingScreen' },
   { title: 'Home care Nursing', image: require('../../Assets/Homecarenursing.png') },
