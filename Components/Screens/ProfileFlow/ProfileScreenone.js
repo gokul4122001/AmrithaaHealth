@@ -33,7 +33,8 @@ import { useDispatch, useSelector } from 'react-redux';
 const ProfileFormScreen = ({ navigation, route }) => {
   const authToken = useSelector(state => state?.auth?.token);
   const { profileData: initialData } = route.params || {};
-  const addperson = route?.params?.addperson || {};
+  const addperson = route?.params?.addperson || false;
+  
   const [profileData, setProfileData] = useState({
     name: '',
     dob: '',
@@ -60,10 +61,16 @@ const ProfileFormScreen = ({ navigation, route }) => {
         mobileNumber: initialData?.mobile,
         profile_photo: initialData?.profile_photo || null,
         gender: initialData?.gender || 'Select Gender',
+        // Keep existing family details if they exist
         familyDetails: initialData?.familyDetails || [],
       });
+      
+      // If there are existing family members or if addperson is true, show family section
+      if (initialData?.familyDetails?.length > 0 || addperson) {
+        setIncludeFamilyMembers(true);
+      }
     }
-  }, [initialData]);
+  }, [initialData, addperson]);
 
   // Helper functions
   const updateProfileData = (field, value) => {
@@ -93,12 +100,25 @@ const ProfileFormScreen = ({ navigation, route }) => {
     }));
   };
 
-  useEffect(()=>{
-    if(addperson){
-      setIncludeFamilyMembers(true)
-      addFamilyMember()
+  const removeFamilyMember = (index) => {
+    setProfileData(prev => ({
+      ...prev,
+      familyDetails: prev.familyDetails.filter((_, i) => i !== index),
+    }));
+  };
+
+  useEffect(() => {
+    if (addperson) {
+      setIncludeFamilyMembers(true);
+      // Only add a new family member if we don't already have empty ones
+      const hasEmptyMember = profileData.familyDetails.some(member => 
+        !member.name && !member.email && !member.mobile
+      );
+      if (!hasEmptyMember) {
+        addFamilyMember();
+      }
     }
-  },[addperson])
+  }, [addperson]);
 
   const selectImage = async () => {
     if (isSubmitting) return;
@@ -296,7 +316,9 @@ const ProfileFormScreen = ({ navigation, route }) => {
           <Image source={logo} style={styles.logo} resizeMode="contain" />
           <View style={styles.greetingContainer}>
             <Text style={styles.greeting}>Hi, Welcome</Text>
-            <Text style={styles.userName}>Janmani Kumar</Text>
+            <Text style={styles.userName}>
+              {profileData.name || 'Janmani Kumar'}
+            </Text>
           </View>
           <View style={styles.notificationIcons}>
             <TouchableOpacity
@@ -324,7 +346,9 @@ const ProfileFormScreen = ({ navigation, route }) => {
           >
             <Icon name="arrow-back" size={24} color="#000000" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>My Profile</Text>
+          <Text style={styles.headerTitle}>
+            {addperson ? 'Add Family Member' : 'My Profile'}
+          </Text>
         </View>
 
         <ScrollView
@@ -458,6 +482,21 @@ const ProfileFormScreen = ({ navigation, route }) => {
                   key={`member-${index}`}
                   style={styles.familyMemberContainer}
                 >
+                  <View style={styles.familyMemberHeader}>
+                    <Text style={styles.familyMemberTitle}>
+                      Family Member {index + 1}
+                    </Text>
+                    {profileData.familyDetails.length > 1 && (
+                      <TouchableOpacity
+                        style={styles.removeButton}
+                        onPress={() => removeFamilyMember(index)}
+                        disabled={isSubmitting}
+                      >
+                        <Icon name="close" size={20} color="#EF4444" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+
                   {renderFormField(
                     'Name',
                     member.name,
@@ -770,6 +809,23 @@ const styles = StyleSheet.create({
     paddingBottom: hp('2%'),
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
+  },
+  familyMemberHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: hp('2%'),
+  },
+  familyMemberTitle: {
+    fontSize: Fonts.size.PageHeading,
+    fontWeight: '600',
+    color: '#1F2937',
+    fontFamily: Fonts.family.regular,
+  },
+  removeButton: {
+    padding: wp('1%'),
+    backgroundColor: '#FEE2E2',
+    borderRadius: 4,
   },
   addButton: {
     flexDirection: 'row',

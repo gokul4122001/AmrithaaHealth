@@ -71,7 +71,7 @@ export default function App() {
     // Navigate after 5 seconds
     const timer = setTimeout(() => {
       checkLoginStatus();
-    }, 5000);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, []);

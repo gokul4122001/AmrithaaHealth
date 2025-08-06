@@ -35,9 +35,10 @@ const RideBookingScreen = ({ navigation }) => {
       return;
     }
 
-    navigation.navigate('AmbulanceSelectionScreen', {
-      pickup,
-      destination,
+    // Navigate to AmbulanceBookingScreen with location data
+    navigation.navigate('AmbulanceBookingScreen', {
+      pickup: pickup.trim(),
+      destination: destination.trim(),
     });
   };
 

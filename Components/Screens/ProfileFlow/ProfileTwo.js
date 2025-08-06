@@ -45,14 +45,16 @@ const ProfileDisplayScreen = ({ navigation }) => {
 
   const handleEdit = () => {
     console.log('Edit profile pressed');
-    navigation.navigate('Profileone', { profileData: profileData }); // <-- pass data here
+    navigation.navigate('Profileone', { profileData: profileData });
   };
 
-  const handleAddPerson = () => {
-    console.log('Add person pressed');
-    navigation.navigate('Profileone', { addperson: true,profileData:profileData });
-    // Add navigation to add family member screen
-  };
+const handleAddPerson = () => {
+  console.log('Add person pressed');
+  navigation.navigate('Profileone', { 
+    addperson: true, 
+    profileData: profileData 
+  });
+};
 
   const handleBack = () => {
     console.log('Back pressed');
