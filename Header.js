@@ -1,12 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Fonts from './Components/Fonts/Fonts';
 import { useSelector } from 'react-redux';
 
-const CustomHeader = ({ username = 'Akash Ambulance', onNotificationPress, onWalletPress }) => {
-    const UserProfile = useSelector(state => state.auth.UserProfile);
+const CustomHeader = ({ username = 'Akash Ambulance', onNotificationPress, onImagePress }) => {
+  const UserProfile = useSelector(state => state.auth.UserProfile);
 
   return (
     <View style={styles.headerContainer}>
@@ -22,13 +21,16 @@ const CustomHeader = ({ username = 'Akash Ambulance', onNotificationPress, onWal
         </View>
       </View>
 
-      {/* Notification and Wallet Icons */}
+      {/* Notification Icon and Image */}
       <View style={styles.rightSection}>
         <TouchableOpacity onPress={onNotificationPress}>
           <Ionicons name="notifications-outline" size={24} color="#000000" style={styles.icon} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={onWalletPress}>
-          <MaterialCommunityIcons name="wallet-outline" size={24} color="#B04FE8" style={styles.icon} />
+        <TouchableOpacity onPress={onImagePress}>
+          <Image
+            source={require('./Components/Assets/emergencyicon.png')} // Replace with your image path
+            style={styles.profileImage}
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -41,8 +43,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 8,
-   
-   
   },
   leftSection: {
     flexDirection: 'row',
@@ -54,25 +54,31 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   welcomeText: {
-
     fontSize: Fonts.size.TopHeading,
     color: '#444',
   },
   usernameText: {
-       fontSize: Fonts.size.TopSubheading,
+    fontSize: Fonts.size.TopSubheading,
     fontWeight: 'bold',
     color: '#000',
   },
   rightSection: {
     flexDirection: 'row',
+    alignItems: 'center',
   },
   icon: {
     marginLeft: 16,
-    borderWidth:1,
-    borderRadius:20,
-    padding:5,
-    borderColor:'#ffffff',
-    backgroundColor:'#ffffff'
+    borderWidth: 1,
+    borderRadius: 20,
+    padding: 7,
+    borderColor: '#ffffff',
+    backgroundColor: '#ffffff',
+  },
+  profileImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 15,
+    marginLeft: 16,
   },
 });
 

@@ -28,6 +28,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
+import CustomHeader from '../../../Header'; 
 import { useDispatch, useSelector } from 'react-redux';
 
 const ProfileFormScreen = ({ navigation, route }) => {
@@ -310,33 +311,12 @@ const ProfileFormScreen = ({ navigation, route }) => {
         start={{ x: 0, y: 0.3 }}
         end={{ x: 0, y: 0 }}
         style={styles.topBackground}
-      >
-        {/* Header Section - Fixed */}
-        <View style={styles.header}>
-          <Image source={logo} style={styles.logo} resizeMode="contain" />
-          <View style={styles.greetingContainer}>
-            <Text style={styles.greeting}>Hi, Welcome</Text>
-            <Text style={styles.userName}>
-              {profileData.name || 'Janmani Kumar'}
-            </Text>
-          </View>
-          <View style={styles.notificationIcons}>
-            <TouchableOpacity
-              style={[styles.notificationButton, { right: hp('2%') }]}
-            >
-              <Icon name="notifications" size={24} color="black" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.notificationButton, { backgroundColor: 'red' }]}
-            >
-              <MaterialCommunityIcons
-                name="alarm-light-outline"
-                size={24}
-                color="white"
+      >   
+        <CustomHeader
+                username={profileData.name}
+                onNotificationPress={() => console.log('Notification pressed')}
+                onWalletPress={() => console.log('Wallet pressed')}
               />
-            </TouchableOpacity>
-          </View>
-        </View>
 
         <View style={styles.headered}>
           <TouchableOpacity
@@ -623,43 +603,7 @@ const styles = StyleSheet.create({
     paddingTop: hp('4%'),
     paddingHorizontal: wp('4%'),
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: hp('2%'),
-  },
-  logo: {
-    width: wp('12%'),
-    height: hp('6%'),
-  },
-  greetingContainer: {
-    flex: 1,
-    marginLeft: wp('3%'),
-  },
-  greeting: {
-    fontSize: Fonts.size.TopHeading,
-    color: 'black',
-    opacity: 0.9,
-    fontFamily: Fonts.family.regular,
-  },
-  userName: {
-    fontSize: Fonts.size.TopSubheading,
-    fontWeight: 'bold',
-    color: 'black',
-    fontFamily: Fonts.family.regular,
-  },
-  notificationIcons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  notificationButton: {
-    width: wp('10%'),
-    height: wp('10%'),
-    borderRadius: wp('5%'),
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: wp('2%'),
-  },
+  
   headered: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -710,27 +654,30 @@ const styles = StyleSheet.create({
     marginBottom: hp('1%'),
     fontFamily: Fonts.family.regular,
   },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
-    paddingHorizontal: wp('3%'),
-    paddingVertical: hp('1.5%'),
-    fontSize: Fonts.size.PageHeading,
-    color: '#1F2937',
-    backgroundColor: '#FFFFFF',
-  },
-  dropdownContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
-    paddingHorizontal: wp('3%'),
-    paddingVertical: hp('1.5%'),
-    backgroundColor: '#FFFFFF',
-  },
+textInput: {
+  borderWidth: 1,
+  borderColor: '#D1D5DB',
+  borderRadius: 8,
+  paddingHorizontal: wp('3%'),
+  paddingVertical: hp('1.5%'),
+  fontSize: Fonts.size.PageHeading,
+  color: '#1F2937',
+  backgroundColor: '#FFFFFF',
+  minHeight: hp('6%'), // Optional: ensures consistent height
+},
+dropdownContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  borderWidth: 1,
+  borderColor: '#D1D5DB',
+  borderRadius: 8,
+  paddingHorizontal: wp('3%'),
+  paddingVertical: hp('1.5%'),
+  backgroundColor: '#FFFFFF',
+  minHeight: hp('6%'), // Match height with textInput
+},
+
   dropdownText: {
     fontSize: Fonts.size.PageHeading,
     color: '#1F2937',

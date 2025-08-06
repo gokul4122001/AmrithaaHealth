@@ -13,7 +13,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Tab = createBottomTabNavigator();
 
-
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   const insets = useSafeAreaInsets();
 
@@ -54,7 +53,12 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
           <TouchableOpacity
             key={index}
             onPress={onPress}
-            style={[styles.button, isFocused && styles.activeButton]}
+            style={[
+              styles.button,
+              isFocused && styles.activeButton,
+              index === 0 && { marginLeft: 12 }, // Left spacing
+              index === state.routes.length - 1 && { marginRight: 12 }, // Right spacing
+            ]}
           >
             <View style={styles.tabContent}>
               <Icon
@@ -71,7 +75,6 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
   );
 };
 
-// ✅ Main Bottom Tabs Navigator
 const BottomTabs = () => {
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
@@ -96,33 +99,17 @@ const BottomTabs = () => {
       }}
       tabBar={props => !keyboardVisible && <CustomTabBar {...props} />}
     >
-      <Tab.Screen
-        name="Home"
-        component={HomeStackScreen}
-      />
-      <Tab.Screen
-        name="Service"
-        component={ServiceStackScreen}
-      />
-      <Tab.Screen
-        name="Booking"
-        component={BoookingStackScreen}
-      />
-      <Tab.Screen
-        name="Emergency"
-        component={EmergencyStackScreen}
-      />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileStackScreen}
-      />
+      <Tab.Screen name="Home" component={HomeStackScreen} />
+      <Tab.Screen name="Service" component={ServiceStackScreen} />
+      <Tab.Screen name="Booking" component={BoookingStackScreen} />
+      <Tab.Screen name="Emergency" component={EmergencyStackScreen} />
+      <Tab.Screen name="Profile" component={ProfileStackScreen} />
     </Tab.Navigator>
   );
 };
 
 export default BottomTabs;
 
-// ✅ Styles
 const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',

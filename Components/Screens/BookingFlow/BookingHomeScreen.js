@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   headerBackground: {
     paddingBottom: hp('1.2%'),
     paddingHorizontal: wp('4%'),
-    paddingTop: '4%',
+   paddingTop: hp('4%'),
   },
   content: { flex: 1, backgroundColor: '#F5F5F5' },
   tabContainer: {

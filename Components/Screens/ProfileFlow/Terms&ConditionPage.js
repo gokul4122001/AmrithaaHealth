@@ -1,41 +1,43 @@
-import {
-  Image,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  SafeAreaView,
-} from 'react-native';
 import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  StatusBar,
+  SafeAreaView,
+  ScrollView,
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+
+import { useSelector } from 'react-redux';
+import { Term_Condition } from '../APICall/ProfileApi';
+
 import logo from '../../Assets/logos.png';
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
-import { Term_Condition } from '../APICall/ProfileApi';
-import { useSelector } from 'react-redux';
 
 const TermsAndConditionsScreen = ({ navigation }) => {
   const token = useSelector(state => state.auth.token);
-  const [terms, setTerms] = useState('');
+  const [terms, setTerms] = useState({});
 
   useEffect(() => {
     const fetchTerms = async () => {
       try {
         const data = await Term_Condition(token);
-        // ✅ Correct key is `message` not `description`
-        setTerms(data?.terms_conditions || '');
-        console.log('Terms & Conditions:', data);
+        setTerms(data?.terms_conditions || {});
+        console.log('Fetched Terms:', data);
       } catch (err) {
-        console.log('Error fetching Terms & Conditions:', err);
+        console.error('Error fetching Terms & Conditions:', err);
       }
     };
 
@@ -47,9 +49,9 @@ const TermsAndConditionsScreen = ({ navigation }) => {
       <StatusBar barStyle="light-content" backgroundColor={Colors.statusBar} />
       <LinearGradient
         colors={['#ffffff', '#C3DFFF']}
-        start={{ x: -0, y: 0.3 }}
+        start={{ x: 0, y: 0.3 }}
         end={{ x: 0, y: 0 }}
-        style={styles.topBackground}
+        style={styles.gradientBackground}
       >
         {/* Header */}
         <View style={styles.header}>
@@ -58,9 +60,7 @@ const TermsAndConditionsScreen = ({ navigation }) => {
             <Text style={styles.greeting}>Hi, Welcome</Text>
             <Text style={styles.userName}>Janmani Kumar</Text>
           </View>
-          <TouchableOpacity
-            style={[styles.notificationButton, { right: hp('2%') }]}
-          >
+          <TouchableOpacity style={styles.notificationButton}>
             <Icon name="notifications-on" size={24} color="black" />
           </TouchableOpacity>
           <TouchableOpacity
@@ -74,30 +74,28 @@ const TermsAndConditionsScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Page Title */}
-        <View style={styles.contentContainer}>
-          <View style={styles.titleContainer}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
-            >
-              <FontAwesome6 name="angle-left" size={18} color="black" />
-            </TouchableOpacity>
-            <Text style={styles.pageTitle}> {terms.name }</Text>
-          </View>
-
-          {/* Content */}
-          <ScrollView
-            contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 }]}
-            showsVerticalScrollIndicator={false}
+        {/* Title */}
+        <View style={styles.titleContainer}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
           >
-            <View style={styles.contentBody}>
-              <Text style={styles.contentText}>
-                {terms.message}
-              </Text>
-            </View>
-          </ScrollView>
+            <FontAwesome6 name="angle-left" size={18} color="black" />
+          </TouchableOpacity>
+          <Text style={styles.pageTitle}>
+            {terms?.name || 'Terms & Conditions'}
+          </Text>
         </View>
+
+        {/* Content */}
+        <ScrollView
+          contentContainerStyle={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.contentText}>
+            {terms?.message || 'No terms and conditions found.'}
+          </Text>
+        </ScrollView>
       </LinearGradient>
     </SafeAreaView>
   );
@@ -110,18 +108,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FAFC',
   },
-  topBackground: {
-    paddingTop: hp('4%'),
-    paddingBottom: hp('2%'),
+  gradientBackground: {
+    flex: 1,
     paddingHorizontal: wp('4%'),
-    height: hp('100%'),
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: wp('4%'),
-    paddingTop: hp('1%'),
-    paddingBottom: hp('1%'),
+    paddingVertical: hp('1.5%'),
   },
   logo: {
     width: wp('10%'),
@@ -135,7 +129,6 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: Fonts.size.TopHeading,
     color: 'black',
-    opacity: 0.9,
     fontFamily: Fonts.family.regular,
   },
   userName: {
@@ -153,30 +146,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 8,
   },
-  contentContainer: {
-    flex: 1,
-  },
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: hp('2%'),
   },
   backButton: {
-    marginRight: wp('3%'),
-    padding: 8,
+    padding: 6,
+    marginRight: wp('2%'),
   },
   pageTitle: {
     fontSize: Fonts.size.PageHeading,
     fontWeight: 'bold',
     color: '#1F2937',
-    flex: 1,
     fontFamily: Fonts.family.regular,
+    flex: 1,
   },
-  scrollContent: {
-    paddingTop: 20,
-  },
-  contentBody: {
-    top: 20,
+  scrollView: {
+    paddingVertical: hp('2%'),
+    paddingBottom: hp('10%'),
   },
   contentText: {
     fontSize: Fonts.size.PageSubheading,

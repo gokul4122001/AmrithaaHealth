@@ -43,6 +43,33 @@ const EmergencyContactScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
     const token = useSelector(state => state.auth.token);
 
+
+    const avatarColors = [
+  '#F44336', // Red
+  '#E91E63', // Pink
+  '#9C27B0', // Purple
+  '#673AB7', // Deep Purple
+  '#3F51B5', // Indigo
+  '#2196F3', // Blue
+  '#03A9F4', // Light Blue
+  '#00BCD4', // Cyan
+  '#009688', // Teal
+  '#4CAF50', // Green
+  '#8BC34A', // Light Green
+  '#CDDC39', // Lime
+  '#FFC107', // Amber
+  '#FF9800', // Orange
+  '#FF5722', // Deep Orange
+];
+const getAvatarColor = (name) => {
+  if (!name || name.length === 0) return '#B0BEC5'; // fallback color
+
+  const charCode = name.toUpperCase().charCodeAt(0); // Get ASCII of first letter
+  const index = charCode % avatarColors.length; // Map to one of the colors
+  return avatarColors[index];
+};
+
+
   const fetchContacts = async () => {
     try {
       setIsLoading(true);
@@ -160,34 +187,32 @@ const EmergencyContactScreen = ({ navigation }) => {
     setEditingContactId(null);
   };
 
-  const renderContactItem = (contact) => (
-    <View key={contact.id} style={styles.contactItem}>
-      <View style={styles.contactContent}>
-        <View style={[styles.avatarContainer, { backgroundColor: contact.color || '#4F7DB6' }]}>
-          <Text style={styles.avatarText}>
-            {contact.name && contact.name.length > 0 ? contact.name.charAt(0).toUpperCase() : '?'}
-          </Text>
-        </View>
-
-        <View style={styles.contactInfo}>
-          <Text style={styles.contactName}>{contact.name}</Text>
-          <Text style={styles.contactNumber}>Contact no: {contact.mobile}</Text>
-        </View>
+const renderContactItem = (contact) => (
+  <View key={contact.id} style={styles.contactItem}>
+    <View style={styles.contactContent}>
+      <View style={[styles.avatarContainer, { backgroundColor: getAvatarColor(contact.name) }]}>
+        <Text style={styles.avatarText}>
+          {contact.name && contact.name.length > 0 ? contact.name.charAt(0).toUpperCase() : '?'}
+        </Text>
       </View>
 
-      <View style={styles.contactActions}>
-        <TouchableOpacity 
-          style={styles.editButton} 
-          onPress={() => handleEditContact(contact)}
-        >
-          <Icon name="edit" size={16} color="#7518AA" />
-          <Text style={styles.editText}>Edit</Text>
-        </TouchableOpacity>
-        
-      
+      <View style={styles.contactInfo}>
+        <Text style={styles.contactName}>{contact.name}</Text>
+        <Text style={styles.contactNumber}>Contact no: {contact.mobile}</Text>
       </View>
     </View>
-  );
+
+    <View style={styles.contactActions}>
+      <TouchableOpacity 
+        style={styles.editButton} 
+        onPress={() => handleEditContact(contact)}
+      >
+        <Icon name="edit" size={16} color="#7518AA" />
+        <Text style={styles.editText}>Edit</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+);
 
   return (
     <SafeAreaView style={styles.container}>
