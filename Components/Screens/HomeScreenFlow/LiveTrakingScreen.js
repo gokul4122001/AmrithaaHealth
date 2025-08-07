@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,13 +8,14 @@ import {
   SafeAreaView,
   StatusBar,
   Alert,
-  Image,
   ScrollView,
 } from 'react-native';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import LottieView from 'lottie-react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapViewDirections from 'react-native-maps-directions';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -25,20 +26,89 @@ import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
 import CustomHeader from '../../../Header';
 
-const RideBookingScreen = ({ navigation }) => {
-  const [pickup, setPickup] = useState('West Mambalam, Chennai-33');
-  const [destination, setDestination] = useState('Apollo Hospital, Thousand Lights, Chennai');
+const RideBookingScreen = ({ navigation, route }) => {
+  const {
+    pickupCoords,
+    dropCoords,
+    pickupLocation,
+    destinationLocation,
+    booking_type,
+    booking_for,
+    ambulance_type_id,
+    patient_assist,
+    customer_name,
+    customer_mobile,
+    scheduled_at,
+    selectedDate,
+    selectedTime,
+    bookingId,
+    bookingResponse,
+    goToTracking,
+  } = route.params || {};
+
+  
+
+  const [pickup, setPickup] = useState(pickupLocation || '');
+  const [destination, setDestination] = useState(destinationLocation || '');
+  const [mapRegion, setMapRegion] = useState({
+    latitude: 13.0827,
+    longitude: 80.2707,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  });
+  const [showConfirmButton, setShowConfirmButton] = useState(false);
+
+  const GOOGLE_MAPS_APIKEY = 'AIzaSyBcdlNrQoO3pvPrrlS_uebDkU81sY0qj3E';
+
+  useEffect(() => {
+    if (pickupCoords) {
+      setMapRegion({
+        latitude: pickupCoords.latitude,
+        longitude: pickupCoords.longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      });
+    }
+
+    if (!pickupCoords || !dropCoords) {
+      setShowConfirmButton(true);
+    }
+  }, [pickupLocation, destinationLocation, pickupCoords]);
+
+  // 🔁 Navigate to next screen if flag is set
+  useEffect(() => {
+    if (goToTracking) {
+      const timeout = setTimeout(() => {
+        navigation.navigate('TrackingDetailsScreen', {
+          pickupCoords,
+          dropCoords,
+          pickupLocation,
+          destinationLocation,
+          booking_type,
+          booking_for,
+        
+        });
+      }, 1000);
+      return () => clearTimeout(timeout);
+    }
+  }, [goToTracking]);
 
   const handleConfirmLocation = () => {
     if (!pickup.trim() || !destination.trim()) {
-      Alert.alert('Error', 'Please enter both pickup and destination locations');
+      Alert.alert('Error', 'Please enter both pickup and destination');
       return;
     }
 
-    // Navigate to AmbulanceBookingScreen with location data
-    navigation.navigate('AmbulanceBookingScreen', {
-      pickup: pickup.trim(),
-      destination: destination.trim(),
+    if (!pickupCoords || !dropCoords) {
+      Alert.alert('Error', 'Location coordinates are missing');
+      return;
+    }
+
+    navigation.navigate('AmbulanceSelectionScreen', {
+      pickup,
+      destination,
+      pickupCoords,
+      dropCoords,
     });
   };
 
@@ -51,18 +121,17 @@ const RideBookingScreen = ({ navigation }) => {
         end={{ x: 0, y: 0 }}
         style={styles.topBackground}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          
-          {/* Custom Header Integration */}
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
           <CustomHeader
             username="Jeswanth Kumar"
             onNotificationPress={() => console.log('Notification Pressed')}
             onWalletPress={() => console.log('Alarm Pressed')}
           />
 
-          {/* Pickup & Destination Card */}
           <View style={styles.cardContainer}>
-            {/* Dots and Arrow */}
             <View style={styles.dotsContainer}>
               <View style={styles.dotRow}>
                 <LottieView
@@ -74,7 +143,11 @@ const RideBookingScreen = ({ navigation }) => {
               </View>
               <View style={styles.verticalLine}>
                 <View style={styles.dashedLine} />
-                <MaterialCommunityIcons name="arrow-down-bold" size={18} color="#888" />
+                <MaterialCommunityIcons
+                  name="arrow-down-bold"
+                  size={18}
+                  color="#888"
+                />
               </View>
               <View style={styles.dotRow}>
                 <LottieView
@@ -86,7 +159,6 @@ const RideBookingScreen = ({ navigation }) => {
               </View>
             </View>
 
-            {/* Text Inputs */}
             <View style={styles.inputContainer}>
               <TextInput
                 style={styles.inputText}
@@ -106,18 +178,72 @@ const RideBookingScreen = ({ navigation }) => {
             </View>
           </View>
 
-          {/* Map Image */}
-          <View style={styles.imageWrapper}>
-            <Image
-              source={require('../../Assets/map.png')}
-              style={styles.image}
-            />
+          <View style={styles.mapWrapper}>
+            <MapView
+              provider={PROVIDER_GOOGLE}
+              style={styles.map}
+              region={mapRegion}
+              showsUserLocation={true}
+              showsMyLocationButton={true}
+              zoomEnabled={true}
+              scrollEnabled={true}
+            >
+              {pickupCoords && (
+                <Marker
+                  coordinate={pickupCoords}
+                  title="Pickup Location"
+                  description={pickup}
+                  pinColor="green"
+                  identifier="pickup"
+                />
+              )}
+              {dropCoords && (
+                <Marker
+                  coordinate={dropCoords}
+                  title="Destination"
+                  description={destination}
+                  pinColor="red"
+                  identifier="destination"
+                />
+              )}
+              {pickupCoords && dropCoords && (
+                <MapViewDirections
+                  origin={pickupCoords}
+                  destination={dropCoords}
+                  apikey={GOOGLE_MAPS_APIKEY}
+                  strokeColor="#8B5CF6"
+                  strokeWidth={5}
+                  optimizeWaypoints={true}
+                  onReady={result => {
+                    setMapRegion({
+                      latitude:
+                        (pickupCoords.latitude + dropCoords.latitude) / 2,
+                      longitude:
+                        (pickupCoords.longitude + dropCoords.longitude) / 2,
+                      latitudeDelta:
+                        Math.abs(
+                          pickupCoords.latitude - dropCoords.latitude,
+                        ) * 1.5,
+                      longitudeDelta:
+                        Math.abs(
+                          pickupCoords.longitude - dropCoords.longitude,
+                        ) * 1.5,
+                    });
+                    setShowConfirmButton(true);
+                  }}
+                />
+              )}
+            </MapView>
           </View>
 
-          {/* Confirm Button */}
-          <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmLocation}>
-            <Text style={styles.confirmButtonText}>Confirm Location</Text>
-          </TouchableOpacity>
+          {showConfirmButton && (
+            <TouchableOpacity
+              style={styles.confirmButton}
+              onPress={handleConfirmLocation}
+            >
+              <Text style={styles.confirmButtonText}>Confirm Location</Text>
+            </TouchableOpacity>
+          )}
         </ScrollView>
       </LinearGradient>
     </SafeAreaView>
@@ -194,16 +320,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#ddd',
     marginVertical: 6,
   },
-  imageWrapper: {
+  mapWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
-  },
-  image: {
-    width: '100%',
-    height: hp('70%'),
-    resizeMode: 'cover',
     borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  map: {
+    width: '100%',
+    height: hp('50%'),
   },
   confirmButton: {
     backgroundColor: Colors.statusBar,
@@ -212,7 +343,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     position: 'absolute',
-    bottom: '20%',
+    bottom: '0.2%',
     width: '100%',
     height: hp('6%'),
     alignSelf: 'center',

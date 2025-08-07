@@ -453,7 +453,7 @@ const ProfileFormScreen = ({ navigation, route }) => {
           )}
 
           {/* Family Members Section */}
-          {includeFamilyMembers && (
+          {includeFamilyMembers && addperson && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Family Members Details</Text>
 
