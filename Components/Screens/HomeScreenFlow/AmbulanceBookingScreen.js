@@ -496,72 +496,76 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
     }
   };
 
-  // API call function - UPDATED WITH NAVIGATION DATA
-  const createBookingAPI = async (bookingPayload, pickupCoords, dropCoords) => {
-    try {
-   
-
-      const response = await fetch(
-        'https://www.myhealth.amrithaa.net/backend/api/user/booking/create',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(bookingPayload),
+const createBookingAPI = async (bookingPayload, pickupCoords, dropCoords) => {
+  try {
+    const response = await fetch(
+      'https://www.myhealth.amrithaa.net/backend/api/user/booking/create',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
-      );
-
-      const result = await response.json();
-
-      if (response.ok) {
-        Alert.alert(
-          'Booking Successful!',
-          'Your ambulance has been booked successfully.',
-          [
-            {
-              text: 'OK',
-              onPress: () =>
-                navigation.navigate('LiveTrakingScreen', {
-                  pickupCoords: pickupCoords,
-                  dropCoords: dropCoords,
-                  pickupLocation: pickupLocation,
-                  destinationLocation: destinationLocation,
-                  // ADDED NAVIGATION DATA
-                  booking_type: bookingPayload.booking_type,
-                  booking_for: bookingPayload.booking_for,
-                  ambulance_type_id: bookingPayload.ambulance_type_id,
-                  patient_assist: bookingPayload.patient_assist,
-                  customer_name: bookingPayload.customer_name,
-                  customer_mobile: bookingPayload.customer_mobile,
-                  // If it's a scheduled booking, include the scheduled time
-                  ...(bookingPayload.scheduled_at && {
-                    scheduled_at: bookingPayload.scheduled_at,
-                    selectedDate: selectedDate.toISOString(),
-                    selectedTime: selectedTime.toISOString(),
-                  }),
-                  // Additional useful data
-                  bookingId: result.booking_id || result.id, // Assuming API returns booking ID
-                  bookingResponse: result, // Full API response
-                }),
-            },
-          ],
-        );
-      } else {
-        Alert.alert(
-          'Booking Failed',
-          result.message || 'Something went wrong. Please try again.',
-        );
+        body: JSON.stringify(bookingPayload),
       }
-    } catch (error) {
-      console.error('API Error:', error);
+    );
+
+    console.log('Status:', response.status, 'OK:', response.ok);
+
+    let result;
+    try {
+      result = await response.json();
+      console.log('API Response JSON:', result);
+    } catch (e) {
+      console.log('JSON parse error:', e);
+      result = null;
+    }
+
+    if (response.ok) {
       Alert.alert(
-        'Network Error',
-        'Unable to connect to server. Please check your internet connection and try again.',
+        'Your Map!',
+        'Find Your Map Location.',
+        [
+          {
+            text: 'OK',
+            onPress: () =>
+              navigation.navigate('LiveTrakingScreen', {
+                pickupCoords,
+                dropCoords,
+                pickupLocation,
+                destinationLocation,
+                booking_type: bookingPayload.booking_type,
+                booking_for: bookingPayload.booking_for,
+                ambulance_type_id: bookingPayload.ambulance_type_id,
+                patient_assist: bookingPayload.patient_assist,
+                customer_name: bookingPayload.customer_name,
+                customer_mobile: bookingPayload.customer_mobile,
+                ...(bookingPayload.scheduled_at && {
+                  scheduled_at: bookingPayload.scheduled_at,
+                  selectedDate: selectedDate.toISOString(),
+                  selectedTime: selectedTime.toISOString(),
+                }),
+                bookingId: result?.booking_id || result?.id,
+                bookingResponse: result,
+              }),
+          },
+        ]
+      );
+    } else {
+      Alert.alert(
+        'Booking Failed',
+        result?.message || 'Something went wrong. Please try again.'
       );
     }
-  };
+  } catch (error) {
+    console.error('API Error:', error);
+    Alert.alert(
+      'Network Error',
+      'Unable to connect to server. Please check your internet connection and try again.'
+    );
+  }
+};
+
 
   const handleNext = async () => {
     if (!pickupLocation.trim() || pickupLocation === 'Getting location...') {
@@ -980,7 +984,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
           {/* Emergency Categories */}
           <View style={styles.categorySection}>
             <Text style={styles.categoryHeader}>
-              Don't know the issue? Select a category
+            Are you sure you don't know where the nearest hospital is?
             </Text>
             <View style={styles.grid}>
               {services.map((item, index) => (
@@ -1368,6 +1372,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: 'black',
     marginBottom: 16,
+    justifyContent:'center',
+    alignSelf:'center'
   },
   grid: {
     flexDirection: 'row',

@@ -356,7 +356,7 @@ const AmbulanceSelectionScreen = ({ navigation, route }) => {
                 activeOpacity={0.8}
               >
                 <Text style={styles.bookButtonText}>
-                  Book Ambulance - {selectedAmbulance.price}
+                  Book Ambulance {selectedAmbulance.price}
                 </Text>
               </TouchableOpacity>
             </View>
