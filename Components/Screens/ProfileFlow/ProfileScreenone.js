@@ -55,7 +55,7 @@ const ProfileFormScreen = ({ navigation, route }) => {
 
   useEffect(() => {
     if (initialData) {
-      console.log(initialData, 'initialData');
+
       setProfileData({
         ...initialData,
         age: initialData?.age?.toString(),

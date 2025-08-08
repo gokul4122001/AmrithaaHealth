@@ -79,12 +79,11 @@ const AmbulanceTrackingScreen = ({ navigation }) => {
   }, [currentRouteIndex]);
 
   const handleCallDriver = () => {
-    console.log('Calling driver...');
     // Implement call functionality
   };
 
   const handleChangeLocation = () => {
-    console.log('Change location pressed');
+   
     // Implement location change functionality
   };
 

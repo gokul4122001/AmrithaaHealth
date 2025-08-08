@@ -32,14 +32,14 @@ const HealthUmbrellaScreen = () => {
 
       <SafeAreaView style={styles.safeArea}>
         <ScrollView style={styles.container}>
-          {/* Skip Button */}
+ 
           <View style={styles.skipContainer}>
             <TouchableOpacity onPress={() => navigation.navigate('Login6')}>
               <Text style={styles.skipText}>Skip ⏭</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Header */}
+       
           <View style={styles.header}>
             <View style={styles.logoRow1}>
               <View style={styles.logoRow}>
@@ -54,7 +54,7 @@ const HealthUmbrellaScreen = () => {
               </View>
             </View>
 
-            {/* Title and Subtitle */}
+          
             <View style={styles.centeredContent}>
               <Text style={styles.title}>A - Z Health care service</Text>
               <Text style={styles.subtitle}>
@@ -64,7 +64,7 @@ const HealthUmbrellaScreen = () => {
           </View>
         </ScrollView>
 
-        {/* Bottom Image */}
+       
         <View style={styles.bottomImageContainer}>
           <Image
             source={require('../../Assets/log.png')}
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   },
   bottomImage: {
     width: width * 1,
-    height: width * 1.2,
+    height: width * 1.3,
     resizeMode: 'contain',
   },
 });

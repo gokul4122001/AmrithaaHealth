@@ -9,13 +9,12 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch } from 'react-redux';
 import { setAuthDetails } from '../../redux/slice/authSlice';
-
 
 const { width } = Dimensions.get('window');
 const radius = width * 0.35;
@@ -48,7 +47,7 @@ export default function App() {
             access_token: token,
           }),
         );
-        navigation.navigate('MainApp')
+        navigation.navigate('MainApp');
       } else {
         navigation.navigate('Login2');
       }
@@ -57,24 +56,28 @@ export default function App() {
     }
   };
 
+  // Infinite slow rotation
   useEffect(() => {
-    // Infinite slow rotation
     Animated.loop(
       Animated.timing(rotation, {
         toValue: 1,
-        duration: 10000, // slower spin (10 seconds per full circle)
+        duration: 10000,
         useNativeDriver: true,
         easing: Easing.linear,
       }),
     ).start();
-
-    // Navigate after 5 seconds
-    const timer = setTimeout(() => {
-      checkLoginStatus();
-    }, 1000);
-
-    return () => clearTimeout(timer);
   }, []);
+
+  // Re-check login status every time screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      const timer = setTimeout(() => {
+        checkLoginStatus();
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }, [])
+  );
 
   const spin = rotation.interpolate({
     inputRange: [0, 1],

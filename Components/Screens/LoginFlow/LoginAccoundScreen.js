@@ -13,9 +13,13 @@ import {
   Modal,
   FlatList,
   Animated,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  BackHandler,
 } from 'react-native';
 import { countries } from './CountryJson'; // must be in same folder
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icons from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import Fonts from '../../Fonts/Fonts';
@@ -53,6 +57,19 @@ const LoginScreen = () => {
   const [toastColor, setToastColor] = useState('#000');
   const [isLoading, setIsLoading] = useState(false);
 
+  // ✅ Disable back only for this screen
+  useFocusEffect(
+    React.useCallback(() => {
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', () => true);
+      return () => backHandler.remove();
+    }, [])
+  );
+
+  // Disable iOS swipe back only for this screen
+  useEffect(() => {
+    navigation.setOptions({ gestureEnabled: false });
+  }, [navigation]);
+
   const showToast = (message, color) => {
     setToastMessage(message);
     setToastColor(color);
@@ -60,64 +77,52 @@ const LoginScreen = () => {
     setTimeout(() => setToastVisible(false), 2500);
   };
 
-const handleSendOTP = async () => {
-  Keyboard.dismiss();
-  setIsLoading(true);
+  const handleSendOTP = async () => {
+    Keyboard.dismiss();
+    setIsLoading(true);
 
-  // Ensure the input starts with +91
-  if (!phoneInput.startsWith('+91')) {
-    showToast('Number must start with +91', '#FF4C4C');
-    setIsLoading(false);
-    return;
-  }
+    if (!phoneInput.startsWith('+91')) {
+      showToast('Number must start with +91', '#FF4C4C');
+      setIsLoading(false);
+      return;
+    }
 
-  // Check for exactly 13 characters (+91 plus 10 digits)
-  if (phoneInput.length !== 13 || !/^\+91\d{10}$/.test(phoneInput)) {
-    showToast('Enter exactly 10 digits after +91', '#FF4C4C');
-    setIsLoading(false);
-    return;
-  }
+    if (phoneInput.length !== 13 || !/^\+91\d{10}$/.test(phoneInput)) {
+      showToast('Enter exactly 10 digits after +91', '#FF4C4C');
+      setIsLoading(false);
+      return;
+    }
 
-  // Extract just the digits (remove +) for API
-  const mobileNumber = phoneInput.replace('+', ''); // becomes "919360843225"
+    const mobileNumber = phoneInput.replace('+', '');
 
-  try {
-    const result = await sendOtp(mobileNumber);
-    
-    if (result?.status === 'success' || result?.message?.toLowerCase().includes('success')) {
-      showToast('OTP Sent Successfully', '#28a745');
-      setTimeout(() => {
-        navigation.navigate('Login7', { mobileNumber: phoneInput }); // Pass +919360843225 format
-      }, 1000);
-    } else {
-      const errorMsg = result?.message || 'Failed to send OTP';
+    try {
+      const result = await sendOtp(mobileNumber);
+      if (result?.status === 'success' || result?.message?.toLowerCase().includes('success')) {
+        showToast('OTP Sent Successfully', '#28a745');
+        setTimeout(() => {
+          navigation.navigate('Login7', { mobileNumber: phoneInput });
+        }, 1000);
+      } else {
+        const errorMsg = result?.message || 'Failed to send OTP';
+        showToast(errorMsg, '#FF4C4C');
+      }
+    } catch (error) {
+      let errorMsg = 'OTP sending failed';
+      if (error.response) {
+        errorMsg = error.response.data?.message || `Server error (${error.response.status})`;
+      } else if (error.request) {
+        errorMsg = 'No response from server';
+      }
       showToast(errorMsg, '#FF4C4C');
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    let errorMsg = 'OTP sending failed';
-    if (error.response) {
-      errorMsg = error.response.data?.message || `Server error (${error.response.status})`;
-    } else if (error.request) {
-      errorMsg = 'No response from server';
-    }
-    showToast(errorMsg, '#FF4C4C');
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const handleCountrySelect = (item) => {
     setSelectedCountry(item);
     setPhoneInput(item.dial_code);
     setShowModal(false);
-  };
-
-  const handlePhoneInputChange = (text) => {
-    if (!text.startsWith(selectedCountry.dial_code)) {
-      setPhoneInput(selectedCountry.dial_code);
-    } else {
-      setPhoneInput(text);
-    }
   };
 
   const renderCountryItem = ({ item }) => (
@@ -128,90 +133,100 @@ const handleSendOTP = async () => {
   );
 
   return (
-    <LinearGradient colors={['#ffffff', '#C3DFFF']} start={{ x: 0, y: 0.3 }} end={{ x: 0, y: 0 }} style={styles.gradientContainer}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.statusBar} translucent />
-      <SafeAreaView style={styles.container}>
-        <Toast visible={toastVisible} message={toastMessage} backgroundColor={toastColor} />
-        <View style={styles.logoRow1}>
-          <Image source={require('../../Assets/logos.png')} style={styles.logoImage} />
-          <View>
-            <Text style={styles.logoBrand}>Health</Text>
-            <Text style={styles.logoBrand}>Umbrella</Text>
-          </View>
-        </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
+    >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <LinearGradient
+          colors={['#ffffff', '#C3DFFF']}
+          start={{ x: 0, y: 0.3 }}
+          end={{ x: 0, y: 0 }}
+          style={styles.gradientContainer}
+        >
+          <StatusBar barStyle="light-content" backgroundColor={Colors.statusBar} translucent />
+          <SafeAreaView style={styles.container}>
+            <Toast visible={toastVisible} message={toastMessage} backgroundColor={toastColor} />
 
-        <View style={styles.content}>
-          <Text style={styles.title}>Login your <Text style={{ color: '#7518AA', fontWeight: 'bold' }}>Account</Text></Text>
-          <Text style={styles.label}>Enter Mobile Number</Text>
-          <View style={styles.inputContainer}>
-            <TouchableOpacity style={styles.countryPickerContainer} onPress={() => setShowModal(true)}>
-              <Image source={{ uri: `https://flagcdn.com/w80/${selectedCountry.code}.png` }} style={styles.flagIcon} resizeMode="contain" />
-              <Icons name="keyboard-arrow-down" size={25} color="#333" />
-            </TouchableOpacity>
+            <View style={styles.logoRow1}>
+              <Image source={require('../../Assets/logos.png')} style={styles.logoImage} />
+              <View>
+                <Text style={styles.logoBrand}>Health</Text>
+                <Text style={styles.logoBrand}>Umbrella</Text>
+              </View>
+            </View>
 
-      <TextInput
-  style={styles.mobileInput}
-  value={phoneInput}
-  onChangeText={(text) => {
-    // Auto-insert +91 if empty
-    if (text.length === 0) {
-      setPhoneInput('+91');
-      return;
-    }
-    
-    // Prevent modifying +91 prefix
-    if (text.length <= 3 && !text.startsWith('+91')) {
-      setPhoneInput('+91');
-      return;
-    }
-    
-    // Only allow numbers after +91 and limit to 13 chars (+91 + 10 digits)
-    if (text.length > 3) {
-      const numbersOnly = text.replace(/[^0-9]/g, '');
-      const newValue = '+91' + numbersOnly.slice(2, 12); // Keep only first 10 digits after +91
-      setPhoneInput(newValue);
-    } else {
-      setPhoneInput(text);
-    }
-  }}
-  keyboardType="phone-pad"
-  placeholder="+91 9876543210"
-  placeholderTextColor="#999"
-  maxLength={13} // +91 + 10 digits
-  editable={!isLoading}
-/>
-          </View>
-        </View>
-
-        <View style={styles.bottomButtonContainer}>
-          <TouchableOpacity 
-            onPress={handleSendOTP} 
-            activeOpacity={0.8}
-            disabled={isLoading}
-          >
-            <LinearGradient colors={['#7518AA', '#370B63']} style={styles.otpButton}>
-              <Text style={styles.otpButtonText}>
-                {isLoading ? 'Sending...' : 'Send OTP'}
+            <View style={styles.content}>
+              <Text style={styles.title}>
+                Login your <Text style={{ color: '#7518AA', fontWeight: 'bold' }}>Account</Text>
               </Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
+              <Text style={styles.label}>Enter Mobile Number</Text>
+              <View style={styles.inputContainer}>
+                <TouchableOpacity style={styles.countryPickerContainer} onPress={() => setShowModal(true)}>
+                  <Image source={{ uri: `https://flagcdn.com/w80/${selectedCountry.code}.png` }} style={styles.flagIcon} resizeMode="contain" />
+                  <Icons name="keyboard-arrow-down" size={25} color="#333" />
+                </TouchableOpacity>
 
-        <Modal visible={showModal} animationType="slide">
-          <SafeAreaView style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Select Country</Text>
-            <FlatList 
-              data={countries} 
-              keyExtractor={(item, index) => index.toString()} 
-              renderItem={renderCountryItem} 
-            />
-            <TouchableOpacity onPress={() => setShowModal(false)} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
+                <TextInput
+                  style={styles.mobileInput}
+                  value={phoneInput}
+                  onChangeText={(text) => {
+                    if (text.length === 0) {
+                      setPhoneInput('+91');
+                      return;
+                    }
+                    if (text.length <= 3 && !text.startsWith('+91')) {
+                      setPhoneInput('+91');
+                      return;
+                    }
+                    if (text.length > 3) {
+                      const numbersOnly = text.replace(/[^0-9]/g, '');
+                      const newValue = '+91' + numbersOnly.slice(2, 12);
+                      setPhoneInput(newValue);
+                    } else {
+                      setPhoneInput(text);
+                    }
+                  }}
+                  keyboardType="phone-pad"
+                  placeholder="+91 9876543210"
+                  placeholderTextColor="#999"
+                  maxLength={13}
+                  editable={!isLoading}
+                />
+              </View>
+            </View>
+
+            <View style={styles.bottomButtonContainer}>
+              <TouchableOpacity onPress={handleSendOTP} activeOpacity={0.8} disabled={isLoading}>
+                <LinearGradient colors={['#7518AA', '#370B63']} style={styles.otpButton}>
+                  <Text style={styles.otpButtonText}>
+                    {isLoading ? 'Sending...' : 'Send OTP'}
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+
+            <Modal visible={showModal} animationType="slide">
+              <SafeAreaView style={styles.modalContainer}>
+                <Text style={styles.modalTitle}>Select Country</Text>
+                <FlatList
+                  data={countries}
+                  keyExtractor={(item, index) => index.toString()}
+                  renderItem={renderCountryItem}
+                />
+                <TouchableOpacity onPress={() => setShowModal(false)} style={styles.closeButton}>
+                  <Text style={styles.closeButtonText}>Close</Text>
+                </TouchableOpacity>
+              </SafeAreaView>
+            </Modal>
           </SafeAreaView>
-        </Modal>
-      </SafeAreaView>
-    </LinearGradient>
+        </LinearGradient>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

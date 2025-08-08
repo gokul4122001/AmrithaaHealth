@@ -60,8 +60,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
     useState(false);
   const [pickupQuery, setPickupQuery] = useState('');
   const [destinationQuery, setDestinationQuery] = useState('');
-  console.log(destinationQuery, 'destinationQuery');
-  console.log(pickupQuery, 'pickupQuery');
+
 
   const services = [
     {
@@ -89,20 +88,20 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
 
   // Initialize with data from previous screen if available
   useEffect(() => {
-    console.log('Route params:', route?.params);
+
     if (route?.params) {
       const { pickup, destination } = route.params;
       if (pickup) {
         setPickupLocation(pickup);
         setPickupQuery(pickup);
         setOriginalPickupFromRoute(pickup);
-        console.log('Set pickup from route:', pickup);
+      
       }
       if (destination) {
         setDestinationLocation(destination);
         setDestinationQuery(destination);
         setOriginalDestinationFromRoute(destination);
-        console.log('Set destination from route:', destination);
+
       }
     }
   }, [route?.params]);
@@ -226,11 +225,11 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
 
   // Improved getCurrentLocation with better error handling
   const getCurrentLocation = async () => {
-    console.log('Getting current location...');
+  
 
     // Prevent multiple simultaneous location requests
     if (isLoadingLocation) {
-      console.log('Location request already in progress');
+    
       return;
     }
 
@@ -242,7 +241,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
       // Check permission first
       const hasPermission = await requestLocationPermission();
       if (!hasPermission) {
-        console.log('Location permission denied');
+     
         setIsLoadingLocation(false);
         // Restore original pickup if available, otherwise clear
         setPickupLocation(originalPickupFromRoute || '');
@@ -262,7 +261,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
         return;
       }
 
-      console.log('Permission granted, getting position...');
+   
 
       // Create a timeout promise to prevent hanging
       const timeoutPromise = new Promise((_, reject) =>
@@ -273,7 +272,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
       const locationPromise = new Promise((resolve, reject) => {
         Geolocation.getCurrentPosition(
           position => {
-            console.log('Location received:', position.coords);
+         
             resolve(position);
           },
           error => {
@@ -301,13 +300,13 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
       }
 
       setCurrentCoords({ latitude, longitude });
-      console.log('Valid coordinates set:', { latitude, longitude });
+    
 
       // Try to get address
       try {
         await reverseGeocode(latitude, longitude);
       } catch (geocodeError) {
-        console.log('Geocoding failed, using coordinates:', geocodeError);
+   
         const coordString = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
         setPickupLocation(coordString);
         setPickupQuery(coordString);
@@ -372,7 +371,6 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
   // Improved reverse geocoding with fallback
   const reverseGeocode = async (latitude, longitude) => {
     try {
-      console.log('Starting reverse geocoding for:', latitude, longitude);
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -391,18 +389,18 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
       }
 
       const data = await response.json();
-      console.log('Geocoding response:', data.status);
+      
 
       if (data.status === 'OK' && data.results && data.results.length > 0) {
         const address = data.results[0].formatted_address;
-        console.log('Address found:', address);
+       
         setPickupLocation(address);
         setPickupQuery(address);
       } else {
         throw new Error('No geocoding results');
       }
     } catch (error) {
-      console.log('Reverse geocoding error:', error);
+   
       // Fallback to coordinate display
       const coordString = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
       setPickupLocation(coordString);
@@ -419,7 +417,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
         return null;
       }
 
-      console.log('Geocoding address:', address);
+     
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -449,7 +447,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
           formatted_address: data.results[0].formatted_address,
         };
       } else {
-        console.log('Geocoding failed:', data.status, data.error_message);
+      
         return null;
       }
     } catch (error) {
@@ -460,7 +458,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
 
   // Handle booking for selection change with safety checks
   const handleBookingForChange = option => {
-    console.log('Booking for changed to:', option);
+   
 
     // Cancel any ongoing location request
     if (isLoadingLocation) {
@@ -501,7 +499,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
   // API call function - UPDATED WITH NAVIGATION DATA
   const createBookingAPI = async (bookingPayload, pickupCoords, dropCoords) => {
     try {
-      console.log('Creating booking with payload:', bookingPayload);
+   
 
       const response = await fetch(
         'https://www.myhealth.amrithaa.net/backend/api/user/booking/create',
@@ -606,7 +604,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
           latitude: currentCoords.latitude,
           longitude: currentCoords.longitude,
         };
-        console.log('Using current coordinates for pickup:', pickupCoords);
+     
       } else {
         const pickupGeocode = await geocodeAddress(pickupLocation);
         if (pickupGeocode?.latitude && pickupGeocode?.longitude) {
@@ -1381,8 +1379,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cardImage: {
-    width: 100,
-    height: 100,
+    width: 70,
+    height: 70,
     resizeMode: 'contain',
   },
   cardTitle: {

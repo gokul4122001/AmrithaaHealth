@@ -22,7 +22,6 @@ const Stack = createNativeStackNavigator();
 export default function AppNavigator() {
   const token = useSelector(state => state.auth.token);
   const UserProfile = useSelector(state => state.auth.UserProfile);
-  console.log(UserProfile,"UserProfile")
   const dispatch = useDispatch();
 
   useEffect(() => {

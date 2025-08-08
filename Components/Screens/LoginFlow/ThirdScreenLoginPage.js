@@ -61,12 +61,8 @@ export default function Onboarding() {
             <Text style={styles.title2}>Book Your Ambulance</Text>
             <Text style={styles.title1}>Emergency / Schedule Booking</Text>
 
-            {/* Description */}
-            <Text style={styles.description}>
-              Ambulance, Home Care Nurse, Physiotherapist, Lab Tests, 24-hour pharmacy,
-              Hospital Services, Speciality Clinics and Funeral Services
-            </Text>
-
+           
+        
             {/* Center Circle Image */}
             <View style={styles.spinContainer}>
               <Image
@@ -127,6 +123,7 @@ const styles = StyleSheet.create({
     width: width * 1,
     height: width *1,
     resizeMode: 'contain',
+   top:'30%'
   },
   skipContainer: {
     position: 'absolute',

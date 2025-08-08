@@ -32,7 +32,7 @@ const CurrentBookingCardScreen = () => {
     try {
       const response = await Emergency_Booking(token, 'cancelled');
       setBookingData(response?.data || []);
-      console.log('API Response:', response?.data);
+
     } catch (error) {
       console.error('Error fetching bookings:', error);
     } finally {

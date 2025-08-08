@@ -40,7 +40,7 @@ const SelectHospitalScreen = ({ navigation }) => {
   };
 
   const handleSubmit = () => {
-    console.log('Selected Hospitals:', selectedHospitals);
+
     navigation.navigate('LiveTrakingScreen');
   };
 

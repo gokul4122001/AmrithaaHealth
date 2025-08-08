@@ -41,7 +41,7 @@ const Toast = ({ message, visible }) => {
     }
   }, [visible]);
 
-  let backgroundColor = Colors.statusBar;
+  let backgroundColor = 'green';
   if (message === 'Please enter a 4-digit OTP') backgroundColor = 'red';
   else if (message.includes('New OTP has been sent')) backgroundColor = 'green';
 
@@ -67,7 +67,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
     otp: ['', '', '', ''],
     mobileNumber: route?.params?.mobileNumber || '9345665442',
   });
-  const [timer, setTimer] = useState(120);
+  const [timer, setTimer] = useState(300); // 5 minutes
   const [isResendEnabled, setIsResendEnabled] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -75,9 +75,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
   const inputRefs = useRef([]);
   const dispatch = useDispatch();
 
-  // Format the mobile number with +91 prefix
   const formattedMobileNumber = `${formData.mobileNumber}`;
-  console.log(formattedMobileNumber, 'formattedMobileNumber');
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -137,11 +135,10 @@ const OTPVerificationScreen = ({ route, navigation }) => {
 
     setIsLoading(true);
     try {
-      // Send the mobile number without +91 prefix to the API
       const response = await verifyOtp(formData.mobileNumber, enteredOtp);
 
       if (response) {
-        await AsyncStorage.setItem('isLoggedIn', 'true'); 
+        await AsyncStorage.setItem('isLoggedIn', 'true');
         await AsyncStorage.setItem('token', response.access_token);
         dispatch(
           setAuthDetails({
@@ -164,7 +161,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
 
   const handleResend = () => {
     if (!isResendEnabled) return;
-    setTimer(120);
+    setTimer(300); // reset to 5 minutes
     setIsResendEnabled(false);
     setFormData({ ...formData, otp: ['', '', '', ''] });
     inputRefs.current[0]?.focus();

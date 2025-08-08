@@ -58,7 +58,7 @@ const AmbulanceBookingScreen = ({ navigation }) => {
   const secondRow = categories.slice(3);
 
   const handleCategorySelect = (category) => {
-    console.log('Selected category:', category.title);
+ 
   };
 
   // ...

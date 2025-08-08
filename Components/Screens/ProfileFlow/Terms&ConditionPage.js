@@ -35,7 +35,7 @@ const TermsAndConditionsScreen = ({ navigation }) => {
       try {
         const data = await Term_Condition(token);
         setTerms(data?.terms_conditions || {});
-        console.log('Fetched Terms:', data);
+      
       } catch (err) {
         console.error('Error fetching Terms & Conditions:', err);
       }

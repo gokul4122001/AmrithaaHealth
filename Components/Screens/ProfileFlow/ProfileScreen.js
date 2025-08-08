@@ -121,9 +121,7 @@ const ProfileScreen = ({ navigation }) => {
     await AsyncStorage.removeItem('token');
     dispatch(setClear());
     navigation.navigate('Login6');
-    // Add your logout logic here
-    console.log('User logged out');
-    // Example: navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+
   };
 
   const handleCancelLogout = () => {

@@ -153,7 +153,8 @@ const styles = StyleSheet.create({
   },
   bottomImage: {
     width: width * 1,
-    height: width * 1,
+    height: width * 1.2,
     resizeMode: 'contain',
+    top:'10%'
   },
 });
