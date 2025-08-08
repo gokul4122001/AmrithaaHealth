@@ -189,9 +189,10 @@ const BookingListScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F5F5' },
   headerBackground: {
-    paddingBottom: hp('1.2%'),
+    paddingTop: hp('4%'),
+    paddingBottom: hp('2%'),
     paddingHorizontal: wp('4%'),
-   paddingTop: hp('4%'),
+
   },
   content: { flex: 1, backgroundColor: '#F5F5F5' },
   tabContainer: {

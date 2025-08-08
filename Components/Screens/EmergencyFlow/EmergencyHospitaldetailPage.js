@@ -23,6 +23,7 @@ const { width } = Dimensions.get('window');
 import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Fonts from '../../Fonts/Fonts';
+import CustomHeader from '../../../Header';
 
 const HospitalDetails = ({ navigation }) => {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
@@ -246,27 +247,10 @@ const HospitalDetails = ({ navigation }) => {
             style={styles.topBackground}
           >
       {/* Header */}
-      <View style={styles.header}>
-                            <Image source={logo} style={styles.logo} />
-                            <View style={styles.greetingContainer}>
-                              <Text style={styles.greeting}>Hi, Welcome</Text>
-                              <Text style={styles.userName}>Janmani Kumar</Text>
-                            </View>
-                            <TouchableOpacity
-                              style={[styles.notificationButton, { right: hp('2%') }]}
-                            >
-                              <Icon name="notifications-on" size={24} color="black" />
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                              style={[styles.notificationButton, { backgroundColor: 'red' }]}
-                            >
-                              <MaterialCommunityIcons
-                                name="alarm-light-outline"
-                                size={24}
-                                color="white"
-                              />
-                            </TouchableOpacity>
-                          </View>
+         <CustomHeader
+        title="My Reports"
+        onBackPress={() => navigation.goBack()}
+      />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}  contentContainerStyle={{ paddingBottom: 100 }}>
 
@@ -1055,41 +1039,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: wp('4%'),
         height: hp('100%'),
       },
-        header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    logo: {
-      width: wp('10%'),
-      height: hp('5%'),
-      resizeMode: 'contain',
-    },
-    greetingContainer: {
-      flex: 1,
-      marginLeft: wp('3%'),
-    },
-    greeting: {
-           fontSize:  Fonts.size.TopHeading,
-
-      color: 'black',
-      opacity: 0.9,
-          fontFamily:Fonts.family.regular,
-    },
-    userName: {
-                fontSize:  Fonts.size.TopSubheading,
-
-      fontWeight: 'bold',
-      color: 'black',
-          fontFamily:Fonts.family.regular,
-    },
-    notificationButton: {
-      width: wp('10%'),
-      height: wp('10%'),
-      borderRadius: wp('5%'),
-      backgroundColor: 'white',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
+      
 });
 
 export default HospitalDetails;

@@ -24,6 +24,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import logo from '../../Assets/logos.png'; // update this path
 import Colors from '../../Colors/Colors'; // update this path
 import Fonts from '../../Fonts/Fonts';
+import CustomHeader from '../../../Header';
 
 const AccidentScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -110,20 +111,10 @@ const AccidentScreen = ({ navigation }) => {
         end={{ x: 0, y: 0 }}
         style={styles.topBackground}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Image source={logo} style={styles.logo} />
-          <View style={styles.greetingContainer}>
-            <Text style={styles.greeting}>Hi, Welcome</Text>
-            <Text style={styles.userName}>Janmani Kumar</Text>
-          </View>
-          <TouchableOpacity style={styles.notificationButton}>
-            <Icon name="notifications-on" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.notificationButton, { backgroundColor: 'red' }]}>
-            <MaterialCommunityIcons name="alarm-light-outline" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
+         <CustomHeader
+        title="My Reports"
+        onBackPress={() => navigation.goBack()}
+      />
 
         {/* Page Title */}
         <View style={styles.pageTitle}>
@@ -180,42 +171,12 @@ const styles = StyleSheet.create({
     paddingBottom: hp('2%'),
     paddingHorizontal: wp('4%'),
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logo: {
-    width: wp('10%'),
-    height: hp('5%'),
-    resizeMode: 'contain',
-  },
-  greetingContainer: {
-    flex: 1,
-    marginLeft: wp('3%'),
-  },
-  greeting: {
-    fontSize:  Fonts.size.TopHeading,
-    color: 'black',
-    opacity: 0.9,
-  },
-  userName: {
-    fontSize:  Fonts.size.TopSubheading,
-    fontWeight: 'bold',
-    color: 'black',
-  },
-  notificationButton: {
-    width: wp('10%'),
-    height: wp('10%'),
-    borderRadius: wp('5%'),
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 8,
-  },
+ 
   pageTitle: {
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: hp('3%'),
+    left:20
   },
   type: {
        fontSize:  Fonts.size.PageHeading,

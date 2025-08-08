@@ -4,7 +4,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Platform,
   Image,
   TouchableOpacity,
   SafeAreaView,
@@ -15,13 +14,12 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
-import logo from '../../Assets/logos.png';
 import LinearGradient from 'react-native-linear-gradient';
-import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
+import CustomHeader from '../../../Header';
+import Fonts from '../../Fonts/Fonts';
+
 const EmergencyHomeScreen = ({ navigation }) => {
   const services = [
     { id: 1, name: 'Accident/Trauma', Image: require('../../Assets/em1.png'), route: 'EmergencyHospitalScreen', params: { serviceType: 'Accident/Trauma' }},
@@ -33,7 +31,7 @@ const EmergencyHomeScreen = ({ navigation }) => {
     { id: 7, name: 'Maternity', Image: require('../../Assets/em7.png'), route: 'EmergencyHospitalScreen', params: { serviceType: 'Maternity' }},
   ];
 
-  const renderItem = ({ item, index }) => (
+  const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.card}
       onPress={() => navigation.navigate(item.route, item.params)}
@@ -58,24 +56,16 @@ const EmergencyHomeScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.statusBar} />
       <LinearGradient
-       colors={['#ffffff', '#C3DFFF']}
-      start={{ x: 0, y: 0.3 }}
-      end={{ x: 0, y: 0 }}
+        colors={['#ffffff', '#C3DFFF']}
+        start={{ x: 0, y: 0.3 }}
+        end={{ x: 0, y: 0 }}
         style={styles.topBackground}
       >
-        <View style={styles.header}>
-          <Image source={logo} style={styles.logo} />
-          <View style={styles.greetingContainer}>
-            <Text style={styles.greeting}>Hi, Welcome</Text>
-            <Text style={styles.userName}>Janmani Kumar</Text>
-          </View>
-          <TouchableOpacity style={[styles.notificationButton, { right: hp('2%') }]}>
-            <Icon name="notifications-on" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.notificationButton, { backgroundColor: 'red' }]}>
-            <MaterialCommunityIcons name="alarm-light-outline" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
+        {/* Custom Header Integration */}
+        <CustomHeader
+          onNotificationPress={() => navigation.navigate('NotificationsScreen')}
+          onImagePress={() => navigation.navigate('AlarmScreen')}
+        />
 
         <View style={styles.sectionHeader}>
           <FontAwesome6 name="angle-left" size={18} color="black" />
@@ -107,51 +97,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp('4%'),
     height: hp('100%'),
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logo: {
-    width: wp('10%'),
-    height: hp('5%'),
-    resizeMode: 'contain',
-  },
-  greetingContainer: {
-    flex: 1,
-    marginLeft: wp('3%'),
-  },
-  greeting: {
-      fontSize:  Fonts.size.TopHeading,
-    color: 'black',
-    opacity: 0.9,
-     fontFamily:Fonts.family.regular
-  },
-  userName: {
-    fontSize:  Fonts.size.TopSubheading,
-    fontWeight: 'bold',
-    color: 'black',
-     fontFamily:Fonts.family.regular
-  },
-  notificationButton: {
-    width: wp('10%'),
-    height: wp('10%'),
-    borderRadius: wp('5%'),
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 10,
-  },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: hp('2%'),
   },
   type: {
-  fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     fontWeight: 'bold',
     color: 'black',
     marginLeft: 10,
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   flatListContent: {
     marginTop: hp('3%'),
@@ -170,11 +126,11 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   serviceName: {
-   fontSize:  Fonts.size.PageSubheading,
+    fontSize: Fonts.size.PageSubheading,
     fontWeight: '700',
     color: '#4a4a4a',
     textAlign: 'center',
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   invisible: {
     backgroundColor: 'transparent',

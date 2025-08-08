@@ -167,7 +167,7 @@ const CurrentBookingCardScreen = () => {
             <>
               <TouchableOpacity
                 style={[styles.rejectButton, { marginRight: 8 }]}
-                onPress={() => navigation.navigate('Schedulebookingdetails')}
+                onPress={() => navigation.navigate('ScheduleBooking')}
               >
                 <Text style={styles.rejectText}>View Details</Text>
               </TouchableOpacity>

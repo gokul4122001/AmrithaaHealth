@@ -55,7 +55,7 @@ const ProfileFormScreen = ({ navigation, route }) => {
 
   useEffect(() => {
     if (initialData) {
-
+      console.log(initialData, 'initialData');
       setProfileData({
         ...initialData,
         age: initialData?.age?.toString(),
@@ -602,6 +602,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: hp('4%'),
     paddingHorizontal: wp('4%'),
+     height: hp('100%'),
   },
   
   headered: {

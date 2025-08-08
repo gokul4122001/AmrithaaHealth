@@ -20,21 +20,15 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import LinearGradient from 'react-native-linear-gradient';
 import LottieView from 'lottie-react-native';
 import Geolocation from 'react-native-geolocation-service';
-
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from 'react-native-responsive-screen';
-
-import Colors from '../../Colors/Colors';
-import Fonts from '../../Fonts/Fonts';
-import CustomHeader from '../../../Header';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { useSelector } from 'react-redux';
 
 const AmbulanceBookingScreen = ({ navigation, route }) => {
+  // State for booking options
   const [bookingFor, setBookingFor] = useState('Others');
   const [bookingType, setBookingType] = useState('Emergency');
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  
+  // State for schedule booking
   const [isScheduleModalVisible, setScheduleModalVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState(new Date());
@@ -43,70 +37,55 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
   const [after3HoursChecked, setAfter3HoursChecked] = useState(false);
   const [isScheduleValid, setIsScheduleValid] = useState(true);
 
-  // Location states
+  // State for location handling
   const [pickupLocation, setPickupLocation] = useState('');
   const [destinationLocation, setDestinationLocation] = useState('');
   const [currentCoords, setCurrentCoords] = useState(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [originalPickupFromRoute, setOriginalPickupFromRoute] = useState('');
-  const [originalDestinationFromRoute, setOriginalDestinationFromRoute] =
-    useState('');
+  const [originalDestinationFromRoute, setOriginalDestinationFromRoute] = useState('');
 
-  // Autocomplete states
+  // State for autocomplete suggestions
   const [pickupSuggestions, setPickupSuggestions] = useState([]);
   const [destinationSuggestions, setDestinationSuggestions] = useState([]);
   const [showPickupSuggestions, setShowPickupSuggestions] = useState(false);
-  const [showDestinationSuggestions, setShowDestinationSuggestions] =
-    useState(false);
+  const [showDestinationSuggestions, setShowDestinationSuggestions] = useState(false);
   const [pickupQuery, setPickupQuery] = useState('');
   const [destinationQuery, setDestinationQuery] = useState('');
 
-
+  // Emergency services data
   const services = [
-    {
-      title: 'Heart Attack',
-      image: require('../../Assets/heartattact.png'),
-      screen: 'SelectHospitalScreen',
-    },
+    { title: 'Heart Attack', image: require('../../Assets/heartattact.png') },
     { title: 'Poisoning', image: require('../../Assets/poisioning.png') },
     { title: 'Accidents care', image: require('../../Assets/caraccient.png') },
     { title: 'Skin Diseases', image: require('../../Assets/skindiease.png') },
     { title: 'CPR', image: require('../../Assets/CPR.png') },
     { title: 'Stroke', image: require('../../Assets/stoke.png') },
     { title: 'Unknown Bites', image: require('../../Assets/unknownbits.png') },
-    {
-      title: 'Pediatric emergency medicine',
-      image: require('../../Assets/pediatricemergency.png'),
-    },
-    {
-      title: 'Others Emergencies',
-      image: require('../../Assets/otherEmergency.png'),
-    },
+    { title: 'Pediatric emergency medicine', image: require('../../Assets/pediatricemergency.png') },
+    { title: 'Others Emergencies', image: require('../../Assets/otherEmergency.png') },
   ];
 
   const token = useSelector(state => state.auth.token);
 
   // Initialize with data from previous screen if available
   useEffect(() => {
-
     if (route?.params) {
       const { pickup, destination } = route.params;
       if (pickup) {
         setPickupLocation(pickup);
         setPickupQuery(pickup);
         setOriginalPickupFromRoute(pickup);
-      
       }
       if (destination) {
         setDestinationLocation(destination);
         setDestinationQuery(destination);
         setOriginalDestinationFromRoute(destination);
-
       }
     }
   }, [route?.params]);
 
-  // Google Places Autocomplete API
+  // Fetch location suggestions from Google Places API
   const fetchLocationSuggestions = async (query, isPickup = true) => {
     if (!query || query.length < 3) {
       if (isPickup) {
@@ -135,11 +114,8 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
         const suggestions = data.predictions.map(prediction => ({
           place_id: prediction.place_id,
           description: prediction.description,
-          main_text:
-            prediction.structured_formatting?.main_text ||
-            prediction.description,
-          secondary_text:
-            prediction.structured_formatting?.secondary_text || '',
+          main_text: prediction.structured_formatting?.main_text || prediction.description,
+          secondary_text: prediction.structured_formatting?.secondary_text || '',
         }));
 
         if (isPickup) {
@@ -159,10 +135,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
   const handlePickupInputChange = text => {
     setPickupQuery(text);
     setPickupLocation(text);
-
-    if (bookingFor === 'Others') {
-      fetchLocationSuggestions(text, true);
-    }
+    fetchLocationSuggestions(text, true);
   };
 
   // Handle destination location input change
@@ -187,24 +160,15 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
     }
   };
 
-  // Request location permission with better error handling
+  // Request location permission
   const requestLocationPermission = async () => {
     try {
       if (Platform.OS === 'android') {
-        const checkResult = await PermissionsAndroid.check(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        );
-
-        if (checkResult) {
-          return true;
-        }
-
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
           {
             title: 'Location Permission Required',
-            message:
-              'This app needs access to your location to set pickup point automatically.',
+            message: 'This app needs access to your location to set pickup point automatically.',
             buttonNeutral: 'Ask Me Later',
             buttonNegative: 'Cancel',
             buttonPositive: 'OK',
@@ -223,62 +187,33 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
     }
   };
 
-  // Improved getCurrentLocation with better error handling
+  // Get current location
   const getCurrentLocation = async () => {
-  
-
-    // Prevent multiple simultaneous location requests
-    if (isLoadingLocation) {
-    
-      return;
-    }
+    if (isLoadingLocation) return;
 
     try {
       setIsLoadingLocation(true);
       setPickupLocation('Getting location...');
       setPickupQuery('Getting location...');
 
-      // Check permission first
       const hasPermission = await requestLocationPermission();
       if (!hasPermission) {
-     
         setIsLoadingLocation(false);
-        // Restore original pickup if available, otherwise clear
         setPickupLocation(originalPickupFromRoute || '');
         setPickupQuery(originalPickupFromRoute || '');
         setBookingFor('Others');
-
         Alert.alert(
           'Location Permission Required',
           'Please enable location permission to use current location, or continue with manual entry.',
-          [
-            {
-              text: 'OK',
-              style: 'default',
-            },
-          ],
+          [{ text: 'OK', style: 'default' }],
         );
         return;
       }
 
-   
-
-      // Create a timeout promise to prevent hanging
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Location timeout')), 20000),
-      );
-
-      // Create the geolocation promise
-      const locationPromise = new Promise((resolve, reject) => {
+      const position = await new Promise((resolve, reject) => {
         Geolocation.getCurrentPosition(
-          position => {
-         
-            resolve(position);
-          },
-          error => {
-            console.error('Geolocation error:', error);
-            reject(error);
-          },
+          resolve,
+          reject,
           {
             enableHighAccuracy: false,
             timeout: 15000,
@@ -289,60 +224,26 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
         );
       });
 
-      // Race between location and timeout
-      const position = await Promise.race([locationPromise, timeoutPromise]);
-
       const { latitude, longitude } = position.coords;
-
-      // Validate coordinates
-      if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
-        throw new Error('Invalid coordinates received');
-      }
-
       setCurrentCoords({ latitude, longitude });
-    
-
-      // Try to get address
-      try {
-        await reverseGeocode(latitude, longitude);
-      } catch (geocodeError) {
-   
-        const coordString = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
-        setPickupLocation(coordString);
-        setPickupQuery(coordString);
-        setIsLoadingLocation(false);
-      }
+      await reverseGeocode(latitude, longitude);
     } catch (error) {
       console.error('getCurrentLocation error:', error);
       setIsLoadingLocation(false);
-      // Restore original pickup if available, otherwise clear
       setPickupLocation(originalPickupFromRoute || '');
       setPickupQuery(originalPickupFromRoute || '');
 
       let errorMessage = 'Unable to get current location. ';
-
       if (error.code) {
         switch (error.code) {
-          case 1: // PERMISSION_DENIED
-            errorMessage = 'Location permission was denied.';
-            break;
-          case 2: // POSITION_UNAVAILABLE
-            errorMessage =
-              'Location services are unavailable. Please check your GPS settings.';
-            break;
-          case 3: // TIMEOUT
-            errorMessage =
-              'Location request timed out. Please ensure GPS is enabled.';
-            break;
-          default:
-            errorMessage = 'An error occurred while getting your location.';
+          case 1: errorMessage = 'Location permission was denied.'; break;
+          case 2: errorMessage = 'Location services are unavailable. Please check your GPS settings.'; break;
+          case 3: errorMessage = 'Location request timed out. Please ensure GPS is enabled.'; break;
+          default: errorMessage = 'An error occurred while getting your location.';
         }
-      } else if (error.message === 'Location timeout') {
-        errorMessage = 'Location request timed out. Please try again.';
       }
 
       setBookingFor('Others');
-
       Alert.alert(
         'Location Error',
         errorMessage + ' You can continue with manual entry.',
@@ -350,7 +251,6 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
           {
             text: 'Retry',
             onPress: () => {
-              // Small delay before retry
               setTimeout(() => {
                 setBookingFor('Yourself');
                 getCurrentLocation();
@@ -359,49 +259,29 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
           },
           {
             text: 'Manual Entry',
-            onPress: () => {
-              setBookingFor('Others');
-            },
+            onPress: () => setBookingFor('Others'),
           },
         ],
       );
     }
   };
 
-  // Improved reverse geocoding with fallback
+  // Reverse geocode coordinates to address
   const reverseGeocode = async (latitude, longitude) => {
     try {
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-
       const response = await fetch(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyBcdlNrQoO3pvPrrlS_uebDkU81sY0qj3E`,
-        {
-          signal: controller.signal,
-        },
       );
 
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
-      
-
       if (data.status === 'OK' && data.results && data.results.length > 0) {
         const address = data.results[0].formatted_address;
-       
         setPickupLocation(address);
         setPickupQuery(address);
       } else {
         throw new Error('No geocoding results');
       }
     } catch (error) {
-   
-      // Fallback to coordinate display
       const coordString = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
       setPickupLocation(coordString);
       setPickupQuery(coordString);
@@ -410,35 +290,18 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
     }
   };
 
-  // Geocode address to get coordinates with better error handling
+  // Geocode address to coordinates
   const geocodeAddress = async address => {
     try {
-      if (!address || address.trim() === '') {
-        return null;
-      }
-
-     
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      if (!address || address.trim() === '') return null;
 
       const response = await fetch(
         `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
           address.trim(),
         )}&key=AIzaSyBcdlNrQoO3pvPrrlS_uebDkU81sY0qj3E`,
-        {
-          signal: controller.signal,
-        },
       );
 
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
-
       if (data.status === 'OK' && data.results && data.results.length > 0) {
         const location = data.results[0].geometry.location;
         return {
@@ -446,21 +309,16 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
           longitude: location.lng,
           formatted_address: data.results[0].formatted_address,
         };
-      } else {
-      
-        return null;
       }
+      return null;
     } catch (error) {
       console.error('Geocoding error:', error);
       return null;
     }
   };
 
-  // Handle booking for selection change with safety checks
+  // Handle booking for selection change
   const handleBookingForChange = option => {
-   
-
-    // Cancel any ongoing location request
     if (isLoadingLocation) {
       setIsLoadingLocation(false);
     }
@@ -468,19 +326,13 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
     setBookingFor(option);
 
     if (option === 'Yourself') {
-      // Clear current coords and start fresh
       setCurrentCoords(null);
-
-      // Start location fetching after a small delay to ensure state is updated
       setTimeout(() => {
         getCurrentLocation();
       }, 100);
     } else {
-      // Reset to "Others" mode
       setCurrentCoords(null);
       setIsLoadingLocation(false);
-
-      // Restore original locations from route params if available
       if (originalPickupFromRoute) {
         setPickupLocation(originalPickupFromRoute);
         setPickupQuery(originalPickupFromRoute);
@@ -488,7 +340,6 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
         setPickupLocation('');
         setPickupQuery('');
       }
-
       if (originalDestinationFromRoute) {
         setDestinationLocation(originalDestinationFromRoute);
         setDestinationQuery(originalDestinationFromRoute);
@@ -496,73 +347,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
     }
   };
 
-  // API call function - UPDATED WITH NAVIGATION DATA
-  const createBookingAPI = async (bookingPayload, pickupCoords, dropCoords) => {
-    try {
-   
-
-      const response = await fetch(
-        'https://www.myhealth.amrithaa.net/backend/api/user/booking/create',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(bookingPayload),
-        },
-      );
-
-      const result = await response.json();
-
-      if (response.ok) {
-        Alert.alert(
-          'Booking Successful!',
-          'Your ambulance has been booked successfully.',
-          [
-            {
-              text: 'OK',
-              onPress: () =>
-                navigation.navigate('LiveTrakingScreen', {
-                  pickupCoords: pickupCoords,
-                  dropCoords: dropCoords,
-                  pickupLocation: pickupLocation,
-                  destinationLocation: destinationLocation,
-                  // ADDED NAVIGATION DATA
-                  booking_type: bookingPayload.booking_type,
-                  booking_for: bookingPayload.booking_for,
-                  ambulance_type_id: bookingPayload.ambulance_type_id,
-                  patient_assist: bookingPayload.patient_assist,
-                  customer_name: bookingPayload.customer_name,
-                  customer_mobile: bookingPayload.customer_mobile,
-                  // If it's a scheduled booking, include the scheduled time
-                  ...(bookingPayload.scheduled_at && {
-                    scheduled_at: bookingPayload.scheduled_at,
-                    selectedDate: selectedDate.toISOString(),
-                    selectedTime: selectedTime.toISOString(),
-                  }),
-                  // Additional useful data
-                  bookingId: result.booking_id || result.id, // Assuming API returns booking ID
-                  bookingResponse: result, // Full API response
-                }),
-            },
-          ],
-        );
-      } else {
-        Alert.alert(
-          'Booking Failed',
-          result.message || 'Something went wrong. Please try again.',
-        );
-      }
-    } catch (error) {
-      console.error('API Error:', error);
-      Alert.alert(
-        'Network Error',
-        'Unable to connect to server. Please check your internet connection and try again.',
-      );
-    }
-  };
-
+  // Handle next button press
   const handleNext = async () => {
     if (!pickupLocation.trim() || pickupLocation === 'Getting location...') {
       Alert.alert(
@@ -595,16 +380,11 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
       }
 
       // Get pickup coordinates
-      if (
-        bookingFor === 'Yourself' &&
-        currentCoords?.latitude &&
-        currentCoords?.longitude
-      ) {
+      if (bookingFor === 'Yourself' && currentCoords?.latitude && currentCoords?.longitude) {
         pickupCoords = {
           latitude: currentCoords.latitude,
           longitude: currentCoords.longitude,
         };
-     
       } else {
         const pickupGeocode = await geocodeAddress(pickupLocation);
         if (pickupGeocode?.latitude && pickupGeocode?.longitude) {
@@ -617,7 +397,6 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
         }
       }
 
-      // Validate both coordinates
       if (!pickupCoords || !dropCoords) {
         Alert.alert(
           'Location Error',
@@ -627,7 +406,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
         return;
       }
 
-      // Prepare payload
+      // Prepare payload for API call
       const apiPayload = {
         pickup_lat: pickupCoords.latitude,
         pickup_lng: pickupCoords.longitude,
@@ -658,7 +437,24 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
 
       setIsLoadingLocation(false);
 
-      await createBookingAPI(apiPayload, pickupCoords, dropCoords);
+      // Navigate to next screen with all necessary data
+      navigation.navigate('LiveTrakingScreen', {
+        pickupCoords: pickupCoords,
+        dropCoords: dropCoords,
+        pickupLocation: pickupLocation,
+        destinationLocation: destinationLocation,
+        booking_type: apiPayload.booking_type,
+        booking_for: apiPayload.booking_for,
+        ambulance_type_id: apiPayload.ambulance_type_id,
+        patient_assist: apiPayload.patient_assist,
+        customer_name: apiPayload.customer_name,
+        customer_mobile: apiPayload.customer_mobile,
+        ...(apiPayload.scheduled_at && {
+          scheduled_at: apiPayload.scheduled_at,
+          selectedDate: selectedDate.toISOString(),
+          selectedTime: selectedTime.toISOString(),
+        }),
+      });
     } catch (error) {
       setIsLoadingLocation(false);
       Alert.alert('Error', 'Something went wrong. Please try again.');
@@ -666,6 +462,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
     }
   };
 
+  // Schedule booking modal functions
   const toggleScheduleModal = () => {
     setScheduleModalVisible(!isScheduleModalVisible);
     if (!isScheduleModalVisible) resetScheduleModal();
@@ -731,24 +528,17 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
   // Suggestion Item Component
   const SuggestionItem = ({ item, onPress }) => (
     <TouchableOpacity style={styles.suggestionItem} onPress={onPress}>
-      <Icon
-        name="location-on"
-        size={20}
-        color="#666"
-        style={styles.suggestionIcon}
-      />
+      <Icon name="location-on" size={20} color="#666" style={styles.suggestionIcon} />
       <View style={styles.suggestionTextContainer}>
         <Text style={styles.suggestionMainText}>{item.main_text}</Text>
-        <Text style={styles.suggestionSecondaryText}>
-          {item.secondary_text}
-        </Text>
+        <Text style={styles.suggestionSecondaryText}>{item.secondary_text}</Text>
       </View>
     </TouchableOpacity>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.statusBar} />
+      <StatusBar barStyle="light-content" backgroundColor="#7518AA" />
       <LinearGradient
         colors={['#ffffff', '#C3DFFF']}
         start={{ x: 0, y: 0.3 }}
@@ -760,32 +550,16 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 120 }}
         >
-          <CustomHeader
-            username="Janmani Kumar"
-            onNotificationPress={() => console.log('Notification Pressed')}
-            onWalletPress={() => console.log('Alarm Pressed')}
-          />
-
           <View style={styles.questionContainer}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <Icon name="chevron-left" size={30} color="#000" />
             </TouchableOpacity>
-            <Text style={styles.question}>
-              Which ambulance variant do you choose?
-            </Text>
+            <Text style={styles.question}>Which ambulance type do you want?</Text>
           </View>
 
-          {/* Booking For */}
+          {/* Booking For Section */}
           <View style={styles.section}>
-            <Text
-              style={{
-                fontSize: Fonts.size.PageHeading,
-                marginBottom: 15,
-                fontWeight: '700',
-              }}
-            >
-              Ambulance Booking For
-            </Text>
+            <Text style={styles.sectionTitle}>Ambulance Booking For</Text>
             <View style={styles.radioGroup}>
               {['Yourself', 'Others'].map(option => {
                 const isSelected = bookingFor === option;
@@ -799,17 +573,10 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
                     onPress={() => handleBookingForChange(option)}
                     disabled={isLoadingLocation}
                   >
-                    <View
-                      style={[styles.radio, isSelected && styles.radioSelected]}
-                    >
+                    <View style={[styles.radio, isSelected && styles.radioSelected]}>
                       {isSelected && <View style={styles.radioInner} />}
                     </View>
-                    <Text
-                      style={[
-                        styles.radioText,
-                        isLoadingLocation && styles.disabledText,
-                      ]}
-                    >
+                    <Text style={[styles.radioText, isLoadingLocation && styles.disabledText]}>
                       {option}
                     </Text>
                   </TouchableOpacity>
@@ -818,17 +585,9 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
             </View>
           </View>
 
-          {/* Booking Type */}
+          {/* Booking Type Section */}
           <View style={{ top: 5 }}>
-            <Text
-              style={{
-                fontSize: Fonts.size.PageHeading,
-                marginBottom: 15,
-                fontWeight: '700',
-              }}
-            >
-              Select the Option
-            </Text>
+            <Text style={styles.sectionTitle}>Select the Option</Text>
             <View style={styles.bookingTypeGroup}>
               {['Emergency', 'Schedule Booking'].map(type => (
                 <TouchableOpacity
@@ -846,12 +605,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
                     }
                   }}
                 >
-                  <View
-                    style={[
-                      styles.radioCircle,
-                      bookingType === type && styles.radioSelected,
-                    ]}
-                  >
+                  <View style={[styles.radioCircle, bookingType === type && styles.radioSelected]}>
                     {bookingType === type && <View style={styles.radioDot} />}
                   </View>
                   <Text style={styles.bookingTypeText}>{type}</Text>
@@ -860,7 +614,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
             </View>
           </View>
 
-          {/* Pickup & Destination Inputs with Lottie */}
+          {/* Location Input Section */}
           <View style={styles.locationCard}>
             <View style={styles.locationRow}>
               <View style={styles.iconColumn}>
@@ -881,11 +635,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
               <View style={styles.textColumn}>
                 <View style={styles.locationInputContainer}>
                   <TextInput
-                    placeholder={
-                      bookingFor === 'Yourself'
-                        ? 'Getting your location...'
-                        : 'Enter pickup location'
-                    }
+                    placeholder={bookingFor === 'Yourself' ? 'Getting your location...' : 'Enter pickup location'}
                     style={[
                       styles.locationInput,
                       bookingFor === 'Yourself' && styles.disabledInput,
@@ -938,10 +688,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
                 <View style={styles.separator} />
                 <TextInput
                   placeholder="Enter destination location"
-                  style={[
-                    styles.locationInput,
-                    isLoadingLocation && styles.loadingInput,
-                  ]}
+                  style={[styles.locationInput, isLoadingLocation && styles.loadingInput]}
                   placeholderTextColor="#555"
                   value={destinationQuery}
                   onChangeText={handleDestinationInputChange}
@@ -954,43 +701,35 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
                 />
 
                 {/* Destination Suggestions */}
-                {showDestinationSuggestions &&
-                  destinationSuggestions.length > 0 && (
-                    <View style={styles.suggestionsContainer}>
-                      <FlatList
-                        data={destinationSuggestions.slice(0, 5)}
-                        keyExtractor={item => item.place_id}
-                        renderItem={({ item }) => (
-                          <SuggestionItem
-                            item={item}
-                            onPress={() => handleSuggestionSelect(item, false)}
-                          />
-                        )}
-                        style={styles.suggestionsList}
-                        nestedScrollEnabled
-                      />
-                    </View>
-                  )}
+                {showDestinationSuggestions && destinationSuggestions.length > 0 && (
+                  <View style={styles.suggestionsContainer}>
+                    <FlatList
+                      data={destinationSuggestions.slice(0, 5)}
+                      keyExtractor={item => item.place_id}
+                      renderItem={({ item }) => (
+                        <SuggestionItem
+                          item={item}
+                          onPress={() => handleSuggestionSelect(item, false)}
+                        />
+                      )}
+                      style={styles.suggestionsList}
+                      nestedScrollEnabled
+                    />
+                  </View>
+                )}
               </View>
             </View>
           </View>
 
-          {/* Emergency Categories */}
+          {/* Emergency Categories Section */}
           <View style={styles.categorySection}>
-            <Text style={styles.categoryHeader}>
-              Don't know the issue? Select a category
-            </Text>
+            <Text style={styles.categoryHeader}>Don't know the issue? Select a category</Text>
             <View style={styles.grid}>
               {services.map((item, index) => (
                 <TouchableOpacity
                   key={index}
                   style={styles.card}
-                  onPress={() => {
-                    setSelectedCategory(item.title);
-                    if (item.screen) {
-                      navigation.navigate(item.screen);
-                    }
-                  }}
+                  onPress={() => setSelectedCategory(item.title)}
                   disabled={isLoadingLocation}
                 >
                   <Image source={item.image} style={styles.cardImage} />
@@ -1003,20 +742,11 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
 
           {/* Next Button */}
           <TouchableOpacity
-            style={[
-              styles.nextButton,
-              isLoadingLocation && styles.nextButtonDisabled,
-            ]}
+            style={[styles.nextButton, isLoadingLocation && styles.nextButtonDisabled]}
             onPress={handleNext}
             disabled={isLoadingLocation}
           >
-            <Text
-              style={{
-                color: '#fff',
-                fontSize: Fonts.size.PageHeading,
-                fontFamily: Fonts.family.regular,
-              }}
-            >
+            <Text style={styles.nextButtonText}>
               {isLoadingLocation ? 'Loading...' : 'Next'}
             </Text>
           </TouchableOpacity>
@@ -1073,15 +803,10 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
 
             <View style={styles.checkboxContainer}>
               <TouchableOpacity
-                style={[
-                  styles.checkbox,
-                  after3HoursChecked && styles.checkboxChecked,
-                ]}
+                style={[styles.checkbox, after3HoursChecked && styles.checkboxChecked]}
                 onPress={() => setAfter3HoursChecked(!after3HoursChecked)}
               >
-                {after3HoursChecked && (
-                  <Icon name="check" size={16} color="#fff" />
-                )}
+                {after3HoursChecked && <Icon name="check" size={16} color="#fff" />}
               </TouchableOpacity>
               <Text style={styles.checkboxText}>
                 Selected time is at least 3 hours from now
@@ -1139,10 +864,11 @@ const styles = StyleSheet.create({
   },
   content: {},
   question: {
-    fontSize: Fonts.size.PageSubheading,
+    fontSize: 18,
     fontWeight: '600',
     color: '#000',
     marginVertical: 16,
+    left: '2%'
   },
   questionContainer: {
     flexDirection: 'row',
@@ -1151,6 +877,12 @@ const styles = StyleSheet.create({
   },
   section: {
     marginVertical: 10,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    marginBottom: 15,
+    fontWeight: '700',
+    left: '2%'
   },
   radioGroup: {
     flexDirection: 'row',
@@ -1168,6 +900,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     flex: 1,
     height: 60,
+    justifyContent: 'center'
   },
   radioOptionSelected: {
     backgroundColor: '#ffff',
@@ -1192,7 +925,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#7518AA',
   },
   radioText: {
-    fontSize: Fonts.size.PageSubheading,
+    fontSize: 16,
   },
   disabledText: {
     color: '#999',
@@ -1213,6 +946,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 5,
     height: 60,
+    justifyContent: 'center'
   },
   bookingTypeSelected: {
     backgroundColor: '#ffff',
@@ -1235,8 +969,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#7518AA',
   },
   bookingTypeText: {
-    fontSize: Fonts.size.PageSubheading,
-    fontFamily: Fonts.family.regular,
+    fontSize: 16,
+    fontFamily: 'regular',
   },
   locationCard: {
     backgroundColor: '#fff',
@@ -1277,7 +1011,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   locationInput: {
-    fontSize: Fonts.size.PageSubheading,
+    fontSize: 16,
     color: '#000',
     paddingVertical: 4,
     height: 40,
@@ -1315,7 +1049,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
     marginVertical: 6,
   },
-  // New styles for autocomplete suggestions
   suggestionsContainer: {
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -1358,7 +1091,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   categoryHeader: {
-    fontSize: Fonts.size.PageHeading,
+    fontSize: 18,
     fontWeight: '700',
     color: 'black',
     marginBottom: 16,
@@ -1385,13 +1118,13 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     marginTop: 5,
-    fontSize: Fonts.size.PageSubheading,
+    fontSize: 14,
     textAlign: 'center',
     fontWeight: '600',
     color: '#000000',
   },
   nextButton: {
-    backgroundColor: Colors.statusBar,
+    backgroundColor: '#7518AA',
     borderRadius: 12,
     paddingVertical: 20,
     alignItems: 'center',
@@ -1401,6 +1134,11 @@ const styles = StyleSheet.create({
   },
   nextButtonDisabled: {
     backgroundColor: '#cccccc',
+  },
+  nextButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontFamily: 'regular',
   },
   bottomModal: {
     justifyContent: 'flex-end',
@@ -1420,12 +1158,12 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   modalTitle: {
-    fontSize: Fonts.size.PageHeading,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
   },
   modalSubtitle: {
-    fontSize: Fonts.size.PageSubheading,
+    fontSize: 16,
     color: '#666',
     marginBottom: 20,
   },
@@ -1454,9 +1192,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f8f8',
   },
   datePickerText: {
-    fontSize: Fonts.size.PageSubheading,
+    fontSize: 16,
     color: '#333',
-    fontFamily: Fonts.family.regular,
+    fontFamily: 'regular',
   },
   checkboxContainer: {
     flexDirection: 'row',
@@ -1481,7 +1219,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
     flexShrink: 1,
-    fontFamily: Fonts.family.regular,
+    fontFamily: 'regular',
   },
   modalSubmitButton: {
     backgroundColor: '#8B5CF6',
@@ -1496,14 +1234,14 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: Fonts.family.regular,
+    fontFamily: 'regular',
   },
   validationMessage: {
     color: 'red',
     fontSize: 12,
     marginBottom: 10,
     textAlign: 'center',
-    fontFamily: Fonts.family.regular,
+    fontFamily: 'regular',
   },
   lottieDot: {
     width: 30,

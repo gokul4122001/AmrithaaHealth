@@ -265,12 +265,12 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   topBackground: { paddingTop: hp('4%'), paddingBottom: hp('2%'), paddingHorizontal: wp('4%'), height: hp('100%') },
   searchContainer: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 15, paddingHorizontal: 10,
-    marginBottom: 20, height: 60, marginTop: 20
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 5, paddingHorizontal: 10,
+    marginBottom: 20, height: 50, marginTop: 20
   },
-  searchIcon: { marginRight: 8 },
+  searchIcon: { marginRight: 3,paddingHorizontal:10 },
   searchBox: { flex: 1, fontSize: Fonts.size.PageSubheading, color: '#000' },
-  sectionTitle: { fontSize: Fonts.size.PageHeading, fontWeight: '600', marginBottom: 15, color: 'black' },
+  sectionTitle: { fontSize: Fonts.size.PageHeading, fontWeight: '600', marginBottom: 15, color: 'black' ,left:'2%'},
   gridRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
   gridCard: { width: '30%', alignItems: 'center', justifyContent: 'center' },
   cardImage: { width: 80, height: 80, resizeMode: 'contain' },

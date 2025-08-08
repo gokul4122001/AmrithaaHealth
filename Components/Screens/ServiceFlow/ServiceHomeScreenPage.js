@@ -21,6 +21,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Colors from '../../Colors/Colors';
 import Fonts from '../../Fonts/Fonts';
+import CustomHeader from '../../../Header';
 
 const MyReportsScreen = ({ navigation }) => {
   const services = [
@@ -60,19 +61,10 @@ const MyReportsScreen = ({ navigation }) => {
       end={{ x: 0, y: 0 }}
       style={styles.topBackground}>
 
-        <View style={styles.header}>
-          <Image source={logo} style={styles.logo} />
-          <View style={styles.greetingContainer}>
-            <Text style={styles.greeting}>Hi, Welcome</Text>
-            <Text style={styles.userName}>Janmani Kumar</Text>
-          </View>
-          <TouchableOpacity style={[styles.notificationButton, { right: hp('2%') }]}>
-            <Icon name="notifications-on" size={24} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.notificationButton, { backgroundColor: 'red' }]}>
-            <MaterialCommunityIcons name="alarm-light-outline" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
+           <CustomHeader
+        title="My Reports"
+        onBackPress={() => navigation.goBack()}
+      />
 
         <View style={styles.sectionHeader}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -107,37 +99,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp('4%'),
     height: hp('100%'),
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logo: {
-    width: wp('10%'),
-    height: hp('5%'),
-    resizeMode: 'contain',
-  },
-  greetingContainer: {
-    flex: 1,
-    marginLeft: wp('3%'),
-  },
-  greeting: {
-    fontSize: Fonts.size.TopHeading,
-    color: 'black',
-    opacity: 0.9,
-  },
-  userName: {
-    fontSize:  Fonts.size.TopSubheading,
-    fontWeight: 'bold',
-    color: 'black',
-  },
-  notificationButton: {
-    width: wp('10%'),
-    height: wp('10%'),
-    borderRadius: wp('5%'),
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+ 
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',

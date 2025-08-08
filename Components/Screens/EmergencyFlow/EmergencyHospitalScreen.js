@@ -1,31 +1,32 @@
+// AccidentScreen.js
+
 import React, { useState } from 'react';
 import {
   Image,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Platform,
-  Alert,
   Modal,
   TextInput,
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import Entypo from 'react-native-vector-icons/Entypo';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import CustomHeader from '../../../Header'; 
 import logo from '../../Assets/logos.png';
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
+
 const AccidentScreen = ({ navigation }) => {
   const [location, setLocation] = useState('');
   const [currentLocation, setCurrentLocation] = useState(
@@ -53,11 +54,6 @@ const AccidentScreen = ({ navigation }) => {
       rating: '4.3',
     },
   ];
-
-  const handleLocationPress = () => {
-    setLocation(currentLocation); // Prefill the modal input
-    setShowLocationModal(true);
-  };
 
   const handleLocationSubmit = () => {
     if (!location.trim()) {
@@ -88,10 +84,24 @@ const AccidentScreen = ({ navigation }) => {
             <Entypo name="location-pin" size={20} color="red" />
             {hospital.address}
           </Text>
-          <View style={{ flexDirection: 'row', top: 10, justifyContent: 'space-between' }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              top: 10,
+              justifyContent: 'space-between',
+            }}
+          >
             <View style={{ flexDirection: 'row' }}>
               <AntDesign name="star" size={16} color="gold" />
-              <Text style={{ fontSize:  Fonts.size.PageHeading, fontWeight: 'bold', color: '#333', left: 6 , fontFamily:Fonts.family.regular}}>
+              <Text
+                style={{
+                  fontSize: Fonts.size.PageHeading,
+                  fontWeight: 'bold',
+                  color: '#333',
+                  left: 6,
+                  fontFamily: Fonts.family.regular,
+                }}
+              >
                 {hospital.rating}
               </Text>
             </View>
@@ -103,171 +113,124 @@ const AccidentScreen = ({ navigation }) => {
   );
 
   return (
-   <SafeAreaView style={styles.container}>
-          <StatusBar barStyle="light-content" backgroundColor={Colors.statusBar} />
-  
-     
-        <LinearGradient
-          colors={['#ffffff', '#C3DFFF']}
-      start={{ x: 0, y: 0.3 }}
-      end={{ x: 0, y: 0 }}
-          style={styles.topBackground}
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor={Colors.statusBar} />
+
+      <LinearGradient
+        colors={['#ffffff', '#C3DFFF']}
+        start={{ x: 0, y: 0.3 }}
+        end={{ x: 0, y: 0 }}
+        style={styles.topBackground}
+      >
+        {/* Custom Header */}
+        <CustomHeader
+          onNotificationPress={() => Alert.alert('Notification pressed')}
+          onImagePress={() => Alert.alert('Emergency icon pressed')}
+        />
+
+        {/* Title */}
+        <TouchableOpacity
+          style={{ flexDirection: 'row', padding: 5, top: 10, alignItems: 'center' }}
+          onPress={() => navigation.goBack()}
         >
-          {/* Header */}
-          <View style={styles.header}>
-            <Image source={logo} style={styles.logo} />
-            <View style={styles.greetingContainer}>
-              <Text style={styles.greeting}>Hi, Welcome</Text>
-              <Text style={styles.userName}>Janmani Kumar</Text>
-            </View>
-            <TouchableOpacity style={[styles.notificationButton, { right: hp('2%') }]}>
-              <Icon name="notifications-on" size={24} color="black" />
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.notificationButton, { backgroundColor: 'red' }]}>
-              <MaterialCommunityIcons name="alarm-light-outline" size={24} color="white" />
-            </TouchableOpacity>
-          </View>
+          <FontAwesome6 name="angle-left" size={16} color="black" />
+          <Text style={styles.type}>Accident / Trauma</Text>
+        </TouchableOpacity>
 
-          {/* Title */}
-          <TouchableOpacity style={{ flexDirection: 'row', padding: 5, top: 10, alignItems: 'center' }} onPress={() => navigation.goBack()}>
-            <FontAwesome6 name="angle-left" size={16} color="black" />
-            <Text style={styles.type}>Accident / Trauma</Text>
+        {/* Location */}
+        <View style={styles.locationContainer}>
+          <Text style={styles.locationPin}>📍</Text>
+          <Text style={styles.locationLabel}>Your Location: </Text>
+          <TouchableOpacity onPress={() => setShowLocationModal(true)}>
+            <Text style={styles.locationText}>
+              {currentLocation.length > 20
+                ? currentLocation.substring(0, 20) + '...'
+                : currentLocation}
+            </Text>
           </TouchableOpacity>
+        </View>
 
-          {/* Location */}
-          <View style={styles.locationContainer}>
-            <Text style={styles.locationPin}>📍</Text>
-            <Text style={styles.locationLabel}>Your Location: </Text>
-      <TouchableOpacity onPress={() => setShowLocationModal(true)}>
-  <Text style={styles.locationText}>
-    {currentLocation.length > 20
-      ? currentLocation.substring(0, 20) + '...'
-      : currentLocation}
-  </Text>
-</TouchableOpacity>
+        {/* Modal for Changing Location */}
+        <Modal
+          visible={showLocationModal}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowLocationModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              {/* Modal Header */}
+              <View style={styles.modalHeader}>
+                <TouchableOpacity
+                  style={styles.backButton}
+                  onPress={() => setShowLocationModal(false)}
+                >
+                  <Icon name="chevron-left" size={30} color="#000" />
+                </TouchableOpacity>
+                <Text style={styles.modalTitle}>Change your Location</Text>
+                <View style={styles.placeholder} />
+              </View>
 
+              {/* Modal Content */}
+              <View style={styles.modalContent}>
+                <Text style={styles.modalSubtitle}>
+                  Do you want to change your current location?
+                </Text>
 
-          </View>
-
-          {/* Modal for Changing Location */}
-          <Modal
-            visible={showLocationModal}
-            transparent
-            animationType="slide"
-            onRequestClose={() => setShowLocationModal(false)}
-          >
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalContainer}>
-                {/* Modal Header */}
-                <View style={styles.modalHeader}>
-                  <TouchableOpacity
-                    style={styles.backButton}
-                    onPress={() => setShowLocationModal(false)}
-                  >
-               <Icon name="chevron-left" size={30} color="#000" style={styles.backButtonText} />
-
-                  </TouchableOpacity>
-                  <Text style={styles.modalTitle}>Change your Location</Text>
-                  <View style={styles.placeholder} />
+                <View style={styles.inputContainer}>
+                  <Text style={styles.inputIcon}>📍</Text>
+                  <TextInput
+                    placeholder="Enter your new location"
+                    style={styles.locationInput}
+                    value={location}
+                    onChangeText={setLocation}
+                  />
                 </View>
 
-                {/* Modal Content */}
-                <View style={styles.modalContent}>
-                  <Text style={styles.modalSubtitle}>
-                    Do you want to change your current location?
-                  </Text>
-
-                  <View style={styles.inputContainer}>
-                    <Text style={styles.inputIcon}>📍</Text>
-                    <TextInput
-                      placeholder="Enter your new location"
-                      style={styles.locationInput}
-                      value={location}
-                      onChangeText={setLocation}
-                    />
-                  </View>
-
-                  <TouchableOpacity style={styles.submitButton} onPress={handleLocationSubmit}>
-                    <Text style={styles.submitButtonText}>Submit</Text>
-                  </TouchableOpacity>
-                </View>
+                <TouchableOpacity
+                  style={styles.submitButton}
+                  onPress={handleLocationSubmit}
+                >
+                  <Text style={styles.submitButtonText}>Submit</Text>
+                </TouchableOpacity>
               </View>
             </View>
-          </Modal>
-
-          {/* Hospital Cards */}
-          <View style={styles.servicesGrid}>
-            {data.map(hospital => (
-              <HospitalCard key={hospital.id} hospital={hospital} />
-            ))}
           </View>
-        </LinearGradient>
-   </SafeAreaView>
-   
+        </Modal>
+
+        {/* Hospital Cards */}
+        <View style={styles.servicesGrid}>
+          {data.map(hospital => (
+            <HospitalCard key={hospital.id} hospital={hospital} />
+          ))}
+        </View>
+      </LinearGradient>
+    </SafeAreaView>
   );
 };
 
 export default AccidentScreen;
 
-// ✅ Keep using your existing StyleSheet from your code
-
-
 const styles = StyleSheet.create({
-  statusBarBackground: {
-    height: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    backgroundColor: 'rgba(117, 24, 170, 1)',
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
+
   topBackground: {
     paddingTop: hp('4%'),
     paddingBottom: hp('2%'),
     paddingHorizontal: wp('4%'),
     minHeight: hp('100%'),
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logo: {
-    width: wp('10%'),
-    height: hp('5%'),
-    resizeMode: 'contain',
-  },
-  greetingContainer: {
-    flex: 1,
-    marginLeft: wp('3%'),
-  },
-  greeting: {
-   fontSize:  Fonts.size.TopHeading,
-    color: 'black',
-    opacity: 0.9,
-     fontFamily:Fonts.family.regular
-  },
-  userName: {
-  fontSize:  Fonts.size.TopSubheading,
-    fontWeight: 'bold',
-    color: 'black',
-     fontFamily:Fonts.family.regular
-  },
-  notificationButton: {
-    width: wp('10%'),
-    height: wp('10%'),
-    borderRadius: wp('5%'),
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 8,
-  },
   type: {
-   fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     fontWeight: 'bold',
     color: 'black',
     left: 10,
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   servicesGrid: {
     justifyContent: 'space-between',
     marginBottom: 30,
-    top:10
+    top: 10,
   },
   serviceCard: {
     width: wp('92%'),
@@ -285,32 +248,32 @@ const styles = StyleSheet.create({
   },
   serviceIcon: {
     width: 120,
-    height:150,
+    height: 150,
     borderRadius: 8,
   },
   serviceNameContainer: {
     flexDirection: 'column',
   },
   serviceName: {
- fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     fontWeight: 'bold',
     color: '#333',
     flexWrap: 'wrap',
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   timing: {
-   fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     color: '#177C1B',
     marginTop: 2,
     fontWeight: 'bold',
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   address: {
     flexDirection: 'row',
-    fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     color: '#555',
     marginTop: 4,
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   viewdetails: {
     width: wp('25%'),
@@ -320,9 +283,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgb(96, 15, 143)',
     color: 'white',
-     fontFamily:Fonts.family.regular,
-       fontSize:  Fonts.size.PageSubheading,
-       padding:5
+    fontFamily: Fonts.family.regular,
+    fontSize: Fonts.size.PageSubheading,
+    padding: 5,
   },
 
   locationContainer: {
@@ -330,30 +293,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
     paddingHorizontal: 4,
-    top:20
+    top: 20,
   },
   locationPin: {
     fontSize: 16,
     color: 'red',
     marginRight: 8,
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   locationLabel: {
- fontSize:  Fonts.size.PageSubheading,
+    fontSize: Fonts.size.PageSubheading,
     fontWeight: '500',
     color: 'rgba(83, 90, 91, 1)',
     marginLeft: 8,
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   locationText: {
-  fontSize:  Fonts.size.PageSubheading,
+    fontSize: Fonts.size.PageSubheading,
     fontWeight: '500',
     color: '#000000',
     textDecorationLine: 'underline',
-     fontFamily:Fonts.family.regular
-    
+    fontFamily: Fonts.family.regular,
   },
- 
+
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -381,13 +343,8 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
   },
-  backButtonText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#374151',
-  },
   modalTitle: {
-     fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     fontWeight: 'bold',
     color: '#374151',
     flex: 1,
@@ -400,7 +357,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   modalSubtitle: {
-     fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     color: '#6B7280',
     marginBottom: 20,
     lineHeight: 20,
@@ -422,18 +379,17 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    
   },
   inputIcon: {
     fontSize: 16,
     color: '#6B7280',
     marginRight: 12,
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
   locationInput: {
     flex: 1,
     paddingVertical: 12,
-   fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     color: '#374151',
   },
   submitButton: {
@@ -452,9 +408,8 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: '#FFFFFF',
-     fontSize:  Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageHeading,
     fontWeight: 'bold',
-     fontFamily:Fonts.family.regular
+    fontFamily: Fonts.family.regular,
   },
 });
-
