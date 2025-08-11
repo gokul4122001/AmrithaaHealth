@@ -1145,7 +1145,7 @@ const styles = StyleSheet.create({
   },
   content: {},
   question: {
-    fontSize: Fonts.size.PageSubheading,
+    fontSize: Fonts.size.Heading,
     fontWeight: '600',
     color: '#000',
     marginVertical: 16,
@@ -1164,7 +1164,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 5,
-    marginVertical: 10,
+    marginVertical: 5,
   },
   radioOption: {
     flexDirection: 'row',
@@ -1175,7 +1175,7 @@ const styles = StyleSheet.create({
     borderColor: '#E8E8E8',
     marginHorizontal: 5,
     flex: 1,
-    height: 60,
+    height: 50,
      justifyContent:'center'
   },
   radioOptionSelected: {
@@ -1210,7 +1210,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 5,
-    marginVertical: 10,
+    marginVertical: 5,
   },
   bookingTypeOption: {
     flexDirection: 'row',
@@ -1221,7 +1221,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     flex: 1,
     marginHorizontal: 5,
-    height: 60,
+      height: 50,
     justifyContent:'center'
   },
   bookingTypeSelected: {

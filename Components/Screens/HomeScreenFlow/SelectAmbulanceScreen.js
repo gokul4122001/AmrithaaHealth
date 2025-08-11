@@ -22,6 +22,8 @@ import {
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
 import CustomHeader from '../../../Header';
+import LinearGradient from 'react-native-linear-gradient';
+import LottieView from 'lottie-react-native';
 
 const AmbulanceSelectionScreen = ({ navigation, route }) => {
   const { pickup, destination, pickupCoords, dropCoords, } = route?.params || {};
@@ -266,10 +268,18 @@ const AmbulanceSelectionScreen = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.statusBar} />
+       <LinearGradient
+      colors={['#ffffff', '#C3DFFF']}
+         start={{ x: 0, y: 0.3 }}
+        end={{ x: 0, y: 0 }}
+      style={styles.topBackground}
+    >
       <ScrollView
         contentContainerStyle={styles.scrollWrapper}
         showsVerticalScrollIndicator={false}
       >
+
+         
         <CustomHeader
           username="Jeswanth Kumar"
           onNotificationPress={() => console.log('Notification Pressed')}
@@ -277,20 +287,30 @@ const AmbulanceSelectionScreen = ({ navigation, route }) => {
         />
 
         {pickup && destination && (
-          <View style={styles.locationCard}>
-            <View style={styles.locationRow}>
-              <View style={styles.greenDot} />
-              <Text style={styles.locationText} numberOfLines={2}>
-                {pickup}
-              </Text>
-            </View>
-            <View style={styles.locationRow}>
-              <View style={styles.redDot} />
-              <Text style={styles.locationText} numberOfLines={2}>
-                {destination}
-              </Text>
-            </View>
-          </View>
+        <View style={styles.locationCard}>
+  <View style={styles.locationRow}>
+    <LottieView
+      source={require('../../Assets/lottie/greendot.json')}
+      autoPlay
+      loop
+      style={styles.dotAnimation}
+    />
+    <Text style={styles.locationText} numberOfLines={2}>
+      {pickup}
+    </Text>
+  </View>
+  <View style={styles.locationRow}>
+    <LottieView
+      source={require('../../Assets/lottie/reddot.json')}
+      autoPlay
+      loop
+      style={styles.dotAnimation}
+    />
+    <Text style={styles.locationText} numberOfLines={2}>
+      {destination}
+    </Text>
+  </View>
+</View>
         )}
 
         {pickupCoords && dropCoords && (
@@ -362,7 +382,9 @@ const AmbulanceSelectionScreen = ({ navigation, route }) => {
             </View>
           )}
         </View>
+
       </ScrollView>
+              </LinearGradient>
     </SafeAreaView>
   );
 };
@@ -373,7 +395,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   scrollWrapper: {
+    paddingBottom: hp('20%'),
+  },
+    topBackground: {
+    paddingTop: hp('4%'),
     paddingBottom: hp('2%'),
+    paddingHorizontal: wp('2%'),
+    height: hp('100%'),
   },
   locationCard: {
     backgroundColor: '#fff',
@@ -592,7 +620,13 @@ const styles = StyleSheet.create({
   width: 44,
   height: 44,
   resizeMode: 'contain',
+},
+dotAnimation: {
+  width: 24,
+  height: 24,
+  marginRight: 12,
 }
+
 
 });
 
