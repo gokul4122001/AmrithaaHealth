@@ -100,7 +100,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
       });
 
       const data = await response.json();
-
+   
       console.log(data,"fedhbgiuherwhngv")
 
       if (!response.ok) {

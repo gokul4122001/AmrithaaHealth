@@ -124,7 +124,7 @@ const handleOptionSelect = (option) => {
             <Text style={styles.sectionTitle}>Patient transfer</Text>
             <Icon name="chevron-down" size={20} color="#333" />
           </View>
-
+  
           {/* Ambulance Options */}
           <ScrollView contentContainerStyle={styles.optionsContainer}>
       {ambulanceOptions.map(renderAmbulanceOption)}

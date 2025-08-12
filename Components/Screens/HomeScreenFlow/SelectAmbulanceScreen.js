@@ -421,7 +421,7 @@ const AmbulanceSelectionScreen = ({ navigation, route }) => {
           </View>
         </ScrollView>
       </LinearGradient>
-    </SafeAreaView>
+    </SafeAreaView>   
   );
 };
 

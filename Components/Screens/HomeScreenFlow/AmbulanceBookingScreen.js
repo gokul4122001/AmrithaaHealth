@@ -762,7 +762,7 @@ const createBookingAPI = async (bookingPayload, pickupCoords, dropCoords) => {
         <ScrollView
           style={styles.content}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 120 }}
+          contentContainerStyle={{ paddingBottom: 120 }}   
         >
           <CustomHeader
             username="Janmani Kumar"

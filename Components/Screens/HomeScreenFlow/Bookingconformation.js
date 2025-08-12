@@ -5,7 +5,7 @@ import {
   StyleSheet,
   StatusBar,
   Dimensions,
-  Modal,
+  Modal,   
   TouchableOpacity,
   Alert,
   BackHandler,
@@ -139,7 +139,7 @@ console.log(response,'response')
   };
 
   // Lifecycle hooks
-  useEffect(() => {
+  useEffect(() => {   
     if (!id) {
       Alert.alert('Error', 'Booking ID missing', [
         { text: 'OK', onPress: () => navigation.goBack() },

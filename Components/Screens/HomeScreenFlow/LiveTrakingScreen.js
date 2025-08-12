@@ -112,7 +112,7 @@ const RideBookingScreen = ({ navigation, route }) => {
       booking_for,
     });
   };
-
+    
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.statusBar} />
