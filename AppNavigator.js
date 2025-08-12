@@ -17,8 +17,6 @@ import Login8 from './Components/Screens/LoginFlow/Conguratulation';
 import { UserProfileAPI } from './Components/Screens/APICall/ProfileApi';
 import { setUserProfile } from './Components/redux/slice/authSlice';
 
-import TrackAmulanceDriverPage from './Components/Screens/HomeScreenFlow/TrackAmbulanceDriverPage'
-
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
@@ -26,7 +24,7 @@ export default function AppNavigator() {
   const UserProfile = useSelector(state => state.auth.UserProfile);
   const dispatch = useDispatch();
 
-  useEffect(() => {
+  useEffect(() => {``
     if (!token) return;
 
     const fetchUserProfile = async () => {
@@ -44,11 +42,9 @@ export default function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="TrackAmulanceDriverPage"
+        initialRouteName="Login1"
         screenOptions={{ headerShown: false }}
       >
-        <Stack.Screen name="TrackAmulanceDriverPage" component={TrackAmulanceDriverPage} />
-
         <Stack.Screen name="MainApp" component={BottomTabs} />
         <Stack.Screen name="Login1" component={Login1} />
         <Stack.Screen name="Login2" component={Login2} />
