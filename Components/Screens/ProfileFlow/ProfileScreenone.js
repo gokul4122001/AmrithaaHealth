@@ -54,7 +54,7 @@ const ProfileFormScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (initialData) {
+    if (initialData && !addperson) {
       console.log(initialData, 'initialData');
       setProfileData({
         ...initialData,
@@ -64,6 +64,23 @@ const ProfileFormScreen = ({ navigation, route }) => {
         gender: initialData?.gender || 'Select Gender',
         // Keep existing family details if they exist
         familyDetails: initialData?.familyDetails || [],
+      });
+      
+      // If there are existing family members or if addperson is true, show family section
+      if (initialData?.familyDetails?.length > 0 || addperson) {
+        setIncludeFamilyMembers(true);
+      }
+    }
+    if (initialData && addperson) {
+      setProfileData({
+        ...profileData,
+        name:initialData?.name,
+        dob:initialData?.dob,
+        email:initialData?.email,
+        age: initialData?.age?.toString(),
+        mobileNumber: initialData?.mobile,
+        profile_photo: initialData?.profile_photo || null,
+        gender: initialData?.gender || 'Select Gender',
       });
       
       // If there are existing family members or if addperson is true, show family section
@@ -195,20 +212,20 @@ const ProfileFormScreen = ({ navigation, route }) => {
   };
 
   const validateForm = () => {
-    if (!profileData.name.trim()) {
+    if (!profileData.name.trim() && !addperson) {
       Alert.alert('Error', 'Please enter your name');
       return false;
     }
 
-    if (!profileData.email.trim()) {
+    if (!profileData.email.trim() && !addperson) {
       Alert.alert('Error', 'Please enter your email');
       return false;
-    } else if (!/^\S+@\S+\.\S+$/.test(profileData.email)) {
+    } else if (!/^\S+@\S+\.\S+$/.test(profileData.email) && !addperson) {
       Alert.alert('Error', 'Please enter a valid email address');
       return false;
     }
 
-    if (!profileData.dob) {
+    if (!profileData.dob && !addperson) {
       Alert.alert('Error', 'Please select your date of birth');
       return false;
     }
@@ -221,10 +238,12 @@ const ProfileFormScreen = ({ navigation, route }) => {
 
     setIsSubmitting(true);
 
+    const edit= addperson ? {...profileData,...initialData}:profileData
+
     try {
       await updateUserProfile(
         {
-          ...profileData,
+          ...edit,
           familyDetails: includeFamilyMembers ? profileData.familyDetails : [],
         },
         authToken,

@@ -7,7 +7,8 @@ import Fonts from '../../Fonts/Fonts';
 
 const { width, height } = Dimensions.get('window');
 
-const CongratulationsScreen = ({ navigation }) => {
+const CongratulationsScreen = ({ navigation,route }) => {
+  const {id}=route.params
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   useEffect(() => {

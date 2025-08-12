@@ -7,7 +7,8 @@ import {
   SafeAreaView,
   StatusBar,
   ScrollView,
-  Alert,Image
+  Alert,
+  Image,
 } from 'react-native';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -24,12 +25,26 @@ import Colors from '../../Colors/Colors';
 import CustomHeader from '../../../Header';
 import LinearGradient from 'react-native-linear-gradient';
 import LottieView from 'lottie-react-native';
+import { Select_Ambulance } from '../APICall/HomeScreenApi';
+import { useSelector } from 'react-redux';
 
 const AmbulanceSelectionScreen = ({ navigation, route }) => {
-  const { pickup, destination, pickupCoords, dropCoords, } = route?.params || {};
+  const {
+    pickup,
+    destination,
+    pickupCoords,
+    dropCoords,
+    pickupLocation,
+    destinationLocation,
+    booking_type,
+    booking_for,
+  } = route?.params || {};
 
   const [expandedDropdown, setExpandedDropdown] = useState(null);
+  const [data, setData] = useState([]);
+  const { token } = useSelector(state => state.auth);
   const [selectedAmbulance, setSelectedAmbulance] = useState(null);
+  const [processedData, setProcessedData] = useState([]);
   const [mapRegion, setMapRegion] = useState({
     latitude: 13.0827,
     longitude: 80.2707,
@@ -39,92 +54,56 @@ const AmbulanceSelectionScreen = ({ navigation, route }) => {
 
   const GOOGLE_MAPS_APIKEY = 'AIzaSyBcdlNrQoO3pvPrrlS_uebDkU81sY0qj3E';
 
-  const ambulanceData = {
-    patientTransfer: {
-      title: 'Patient transfer',
-      icon: 'ambulance',
-      options: [
-        {
-          id: 'pt_small',
-          ambulance_type: 'Small',
-          details: '( ECG only etc. )',
-          average_arrival_minutes: '15 mins',
-          icon: require('../../Assets/ambualnce.png'),
-          total_fare: '₹ 1,500',
-          color: '#E8F5E8',
-          iconColor: '#4CAF50',
-          available_driver_count: 4,
-        },
-        {
-          id: 'pt_large',
-          ambulance_type: 'Large',
-          details: '( Emerg Transfer, Ambu etc. )',
-          average_arrival_minutes: '12 mins',
-         icon: require('../../Assets/ambualnce.png'),
+  // Function to process API data into the required format
+  const processApiData = apiData => {
+    const processed = [];
 
-          total_fare: '₹ 2,500',
-          color: '#E3F2FD',
-          iconColor: '#2196F3',
-          available_driver_count: 6,
-        },
-        {   
-          id: 'pt_basic',
-          ambulance_type: 'Basic life support',
-          Includes:
-            'Emergency Kit, Oxygen Tanks, IV equipment, Cardiac Monitors, Ambulance Bed, Patient Stretchers',
-          average_arrival_minutes: '10 mins',
-          total_fare: '₹ 2,000',
-        icon: require('../../Assets/ambualnce.png'),
+    apiData.forEach(item => {
+      // Handle single ambulance object (like Basic Life Support)
+      if (item.id && item.ambulance_type) {
+        processed.push({
+          type: 'single',
+          title: item.ambulance_type,
+          icon: 'ambulance',
+          data: item,
+        });
+      }
+      // Handle grouped ambulances (like Patient Transfer, Dead body Transfer)
+      else {
+        Object.keys(item).forEach(key => {
+          if (Array.isArray(item[key]) && item[key].length > 0) {
+            processed.push({
+              type: 'group',
+              title: key,
+              icon: key.toLowerCase().includes('patient')
+                ? 'ambulance'
+                : 'car-side',
+              data: item[key],
+            });
+          }
+        });
+      }
+    });
 
-          color: '#F3E5F5',
-          iconColor: '#9C27B0',
-          available_driver_count: 20,
-        },
-        {
-          id: 'pt_advance',
-          ambulance_type: 'Advance life support',
-          Includes:
-            'Emergency Kit, Oxygen Tanks, IV equipment, Cardiac Monitors, Ambulance Bed, Ventilator support with nursing Support',
-          average_arrival_minutes: '8 mins',
-          total_fare: '₹ 2,000',
-        icon: require('../../Assets/ambualnce.png'),
+    return processed;
+  };
 
-          color: '#E8F5E8',
-          iconColor: '#4CAF50',
-          available_driver_count: 20,
-        },
-      ],
-    },
-    deadBodyTransfer: {
-      title: 'Dead Body Transfer',
-      icon: 'car-side',
-      options: [
-        {
-          id: 'db_small',
-          ambulance_type: 'Small',
-          details: '(Dead- Est.)',
-          average_arrival_minutes: '20 mins',
-        icon: require('../../Assets/ambualnce.png'),
-
-          total_fare: '₹ 1,500',
-          color: '#FAFAFA',
-          iconColor: '#757575',
-          available_driver_count: 2,
-        },
-        {
-          id: 'db_large',
-          ambulance_type: 'Large',
-          details: '(Hearse Traveller, SUV)',
-          average_arrival_minutes: '25 mins',
-          total_fare: '₹ 2,500',
-          color: '#FAFAFA',
-        icon: require('../../Assets/ambualnce.png'),
-
-          iconColor: '#757575',
-          available_driver_count: 4,
-        },
-      ],
-    },
+  const fetchData = async () => {
+    try {
+      const res = await Select_Ambulance(
+        token,
+        pickupCoords,
+        dropCoords,
+        booking_type,
+      );
+      console.log(res, 'res');
+      setData(res.data);
+      const processed = processApiData(res.data);
+      setProcessedData(processed);
+    } catch (error) {
+      console.error('Error fetching ambulance data:', error);
+      Alert.alert('Error', 'Failed to load ambulance data');
+    }
   };
 
   useEffect(() => {
@@ -142,6 +121,7 @@ const AmbulanceSelectionScreen = ({ navigation, route }) => {
         latitudeDelta: Math.max(deltaLat, 0.05),
         longitudeDelta: Math.max(deltaLng, 0.05),
       });
+      fetchData();
     }
   }, [pickupCoords, dropCoords]);
 
@@ -161,60 +141,100 @@ const AmbulanceSelectionScreen = ({ navigation, route }) => {
       return;
     }
 
-    navigation.navigate('BookingConfirmation', {
+    navigation.navigate('BookingoverviewScreen', {
       pickup,
       destination,
       pickupCoords,
       dropCoords,
       selectedAmbulance,
+      booking_type,
+      booking_for,
     });
   };
 
   const renderAmbulanceOption = (option, category) => {
     const isSelected = selectedAmbulance?.id === option.id;
 
+    // Generate a background color based on the ambulance type
+    const getBackgroundColor = type => {
+      const colors = {
+        small: '#E8F5E8',
+        large: '#E3F2FD',
+        basic: '#F3E5F5',
+        advance: '#FFF3E0',
+        default: '#F5F5F5',
+      };
+
+      const typeKey = type.toLowerCase();
+      for (let key in colors) {
+        if (typeKey.includes(key)) {
+          return colors[key];
+        }
+      }
+      return colors.default;
+    };
+
     return (
       <TouchableOpacity
         key={option.id}
         style={[
           styles.ambulanceOption,
-          { backgroundColor: option.color || '#fff' },
+          { backgroundColor: getBackgroundColor(option.ambulance_type) },
           isSelected && styles.selectedOption,
         ]}
         onPress={() => selectAmbulance(option, category)}
         activeOpacity={0.8}
       >
-      <View style={styles.ambulanceHeader}>
-  <View style={styles.ambulanceIconContainer}>
-    <Image
-      source={option.icon}
-      style={styles.ambulanceImage}
-    />
-    <View style={styles.countBadge}>
-      <Text style={styles.countText}>{option.available_driver_count}</Text>
-    </View>
-  </View>
-
+        <View style={styles.ambulanceHeader}>
+          <View style={styles.ambulanceIconContainer}>
+            <Image
+              source={{ uri: option.icon }}
+              style={styles.ambulanceImage}
+              defaultSource={require('../../Assets/ambualnce.png')}
+            />
+            <View style={styles.countBadge}>
+              <Text style={styles.countText}>
+                {option.available_driver_count}
+              </Text>
+            </View>
+          </View>
 
           <View style={styles.ambulanceInfo}>
             <Text style={styles.ambulanceType}>{option.ambulance_type}</Text>
-            {option.details ? (
-              <Text style={styles.ambulanceDescription} numberOfLines={3}>
+
+            {option.details && (
+              <Text style={styles.ambulanceDescription} numberOfLines={2}>
                 {option.details}
               </Text>
-            ) : option.Includes ? (
-              <Text style={styles.ambulanceDescription} numberOfLines={3}>
-                {option.Includes}
-              </Text>
-            ) : null}
+            )}
 
-            {option.duration ? (
-              <Text style={styles.ambulanceDuration}>{option.average_arrival_minutes}</Text>
-            ) : null}
+            {/* Display ambulance includes if available */}
+            {option.ambulance_include &&
+              option.ambulance_include.length > 0 && (
+                <View style={styles.includesContainer}>
+                  <Text style={styles.includesTitle}>Includes:</Text>
+                  <Text style={styles.ambulanceDescription} numberOfLines={3}>
+                    {option.ambulance_include
+                      .map(item => item.ambulance_include)
+                      .join(', ')}
+                  </Text>
+                </View>
+              )}
+
+            {option.average_arrival_minutes > 0 && (
+              <Text style={styles.ambulanceDuration}>
+                Arrival: ~{option.average_arrival_minutes} mins
+              </Text>
+            )}
           </View>
 
           <View style={styles.priceContainer}>
-            <Text style={styles.ambulancePrice}>{option.total_fare}</Text>
+            <Text style={styles.ambulancePrice}>₹{option.total_fare}</Text>
+            {option.total_fare_with_patient_assistent > option.total_fare && (
+              <Text style={styles.assistantPrice}>
+                With Assistant: ₹{option.total_fare_with_patient_assistent}
+              </Text>
+            )}
             {isSelected && (
               <MaterialIcons
                 name="check-circle"
@@ -229,36 +249,55 @@ const AmbulanceSelectionScreen = ({ navigation, route }) => {
     );
   };
 
-  const renderDropdown = (dropdownType, data) => {
-    const isExpanded = expandedDropdown === dropdownType;
+  const renderDropdown = (item, index) => {
+    const isExpanded = expandedDropdown === index;
 
     return (
-      <View style={styles.dropdownContainer}>
-        <TouchableOpacity
-          style={styles.dropdownHeader}
-          onPress={() => toggleDropdown(dropdownType)}
-          activeOpacity={0.7}
-        >
-          <View style={styles.dropdownHeaderContent}>
-            <MaterialCommunityIcons
-              name={data.icon}
-              size={24}
-              color={Colors.statusBar}
-            />
-            <Text style={styles.dropdownTitle}>{data.title}</Text>
-          </View>
-          <MaterialCommunityIcons
-            name={isExpanded ? 'chevron-up' : 'chevron-down'}
-            size={24}
-            color="#666"
-          />
-        </TouchableOpacity>
+      <View key={index} style={styles.dropdownContainer}>
+        {item.type === 'group' ? (
+          <>
+            <TouchableOpacity
+              style={styles.dropdownHeader}
+              onPress={() => toggleDropdown(index)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.dropdownHeaderContent}>
+                <MaterialCommunityIcons
+                  name={item.icon}
+                  size={24}
+                  color={Colors.statusBar}
+                />
+                <Text style={styles.dropdownTitle}>{item.title}</Text>
+              </View>
+              <MaterialCommunityIcons
+                name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                size={24}
+                color="#666"
+              />
+            </TouchableOpacity>
 
-        {isExpanded && (
-          <View style={styles.dropdownContent}>
-            {data.options.map(option =>
-              renderAmbulanceOption(option, dropdownType),
+            {isExpanded && (
+              <View style={styles.dropdownContent}>
+                {item.data.map(option =>
+                  renderAmbulanceOption(option, item.title),
+                )}
+              </View>
             )}
+          </>
+        ) : (
+          // For single ambulance items, show them directly without dropdown
+          <View style={styles.singleAmbulanceContainer}>
+            <View style={styles.dropdownHeaderContent}>
+              <MaterialCommunityIcons
+                name={item.icon}
+                size={24}
+                color={Colors.statusBar}
+              />
+              <Text style={styles.dropdownTitle}>{item.title}</Text>
+            </View>
+            <View style={styles.dropdownContent}>
+              {renderAmbulanceOption(item.data, item.title)}
+            </View>
           </View>
         )}
       </View>
@@ -268,123 +307,120 @@ const AmbulanceSelectionScreen = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.statusBar} />
-       <LinearGradient
-      colors={['#ffffff', '#C3DFFF']}
-         start={{ x: 0, y: 0.3 }}
+      <LinearGradient
+        colors={['#ffffff', '#C3DFFF']}
+        start={{ x: 0, y: 0.3 }}
         end={{ x: 0, y: 0 }}
-      style={styles.topBackground}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollWrapper}
-        showsVerticalScrollIndicator={false}
+        style={styles.topBackground}
       >
+        <ScrollView
+          contentContainerStyle={styles.scrollWrapper}
+          showsVerticalScrollIndicator={false}
+        >
+          <CustomHeader
+            username="Jeswanth Kumar"
+            onNotificationPress={() => console.log('Notification Pressed')}
+            onWalletPress={() => console.log('Wallet Pressed')}
+          />
 
-         
-        <CustomHeader
-          username="Jeswanth Kumar"
-          onNotificationPress={() => console.log('Notification Pressed')}
-          onWalletPress={() => console.log('Wallet Pressed')}
-        />
-
-        {pickup && destination && (
-        <View style={styles.locationCard}>
-  <View style={styles.locationRow}>
-    <LottieView
-      source={require('../../Assets/lottie/greendot.json')}
-      autoPlay
-      loop
-      style={styles.dotAnimation}
-    />
-    <Text style={styles.locationText} numberOfLines={2}>
-      {pickup}
-    </Text>
-  </View>
-  <View style={styles.locationRow}>
-    <LottieView
-      source={require('../../Assets/lottie/reddot.json')}
-      autoPlay
-      loop
-      style={styles.dotAnimation}
-    />
-    <Text style={styles.locationText} numberOfLines={2}>
-      {destination}
-    </Text>
-  </View>
-</View>
-        )}
-
-        {pickupCoords && dropCoords && (
-          <View style={styles.mapWrapper}>
-            <MapView
-              provider={PROVIDER_GOOGLE}
-              style={styles.map}
-              region={mapRegion}
-              showsUserLocation
-              showsMyLocationButton
-            >
-              {pickupCoords && (
-                <Marker
-                  coordinate={pickupCoords}
-                  pinColor="green"
-                  title="Pickup Location"
+          {pickup && destination && (
+            <View style={styles.locationCard}>
+              <View style={styles.locationRow}>
+                <LottieView
+                  source={require('../../Assets/lottie/greendot.json')}
+                  autoPlay
+                  loop
+                  style={styles.dotAnimation}
                 />
-              )}
-              {dropCoords && (
-                <Marker
-                  coordinate={dropCoords}
-                  pinColor="red"
-                  title="Destination"
-                />
-              )}
-              {pickupCoords && dropCoords && (
-                <MapViewDirections
-                  origin={pickupCoords}
-                  destination={dropCoords}
-                  apikey={GOOGLE_MAPS_APIKEY}
-                  strokeColor="#8B5CF6"
-                  strokeWidth={4}
-                  optimizeWaypoints={true}
-                />
-              )}
-            </MapView>
-          </View>
-        )}
-
-        <View style={styles.bottomSection}>
-          <View style={styles.selectHeader}>
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={styles.backButton}
-            >
-              <MaterialCommunityIcons
-                name="chevron-left"
-                size={24}
-                color="#333"
-              />
-            </TouchableOpacity>
-            <Text style={styles.selectTitle}>Select the Ambulance</Text>
-          </View>
-
-          {renderDropdown('patientTransfer', ambulanceData.patientTransfer)}
-          {renderDropdown('deadBodyTransfer', ambulanceData.deadBodyTransfer)}
-
-          {selectedAmbulance && (
-            <View style={styles.bookButtonWrapper}>
-              <TouchableOpacity
-                style={styles.bookButton}
-                onPress={handleBookAmbulance}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.bookButtonText}>
-                  Book Ambulance {selectedAmbulance.price}
+                <Text style={styles.locationText} numberOfLines={2}>
+                  {pickup}
                 </Text>
-              </TouchableOpacity>
+              </View>
+              <View style={styles.locationRow}>
+                <LottieView
+                  source={require('../../Assets/lottie/reddot.json')}
+                  autoPlay
+                  loop
+                  style={styles.dotAnimation}
+                />
+                <Text style={styles.locationText} numberOfLines={2}>
+                  {destination}
+                </Text>
+              </View>
             </View>
           )}
-        </View>
 
-      </ScrollView>
-              </LinearGradient>
+          {pickupCoords && dropCoords && (
+            <View style={styles.mapWrapper}>
+              <MapView
+                provider={PROVIDER_GOOGLE}
+                style={styles.map}
+                region={mapRegion}
+                showsUserLocation
+                showsMyLocationButton
+              >
+                {pickupCoords && (
+                  <Marker
+                    coordinate={pickupCoords}
+                    pinColor="green"
+                    title="Pickup Location"
+                  />
+                )}
+                {dropCoords && (
+                  <Marker
+                    coordinate={dropCoords}
+                    pinColor="red"
+                    title="Destination"
+                  />
+                )}
+                {pickupCoords && dropCoords && (
+                  <MapViewDirections
+                    origin={pickupCoords}
+                    destination={dropCoords}
+                    apikey={GOOGLE_MAPS_APIKEY}
+                    strokeColor="#8B5CF6"
+                    strokeWidth={4}
+                    optimizeWaypoints={true}
+                  />
+                )}
+              </MapView>
+            </View>
+          )}
+
+          <View style={styles.bottomSection}>
+            <View style={styles.selectHeader}>
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={styles.backButton}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={24}
+                  color="#333"
+                />
+              </TouchableOpacity>
+              <Text style={styles.selectTitle}>Select the Ambulance</Text>
+            </View>
+
+            {/* Render processed data */}
+            {processedData.map((item, index) => renderDropdown(item, index))}
+
+            {selectedAmbulance && (
+              <View style={styles.bookButtonWrapper}>
+                <TouchableOpacity
+                  style={styles.bookButton}
+                  onPress={handleBookAmbulance}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.bookButtonText}>
+                    Book Ambulance ₹{selectedAmbulance.total_fare}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </ScrollView>
+      </LinearGradient>
     </SafeAreaView>
   );
 };
@@ -397,7 +433,7 @@ const styles = StyleSheet.create({
   scrollWrapper: {
     paddingBottom: hp('20%'),
   },
-    topBackground: {
+  topBackground: {
     paddingTop: hp('4%'),
     paddingBottom: hp('2%'),
     paddingHorizontal: wp('2%'),
@@ -419,20 +455,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 8,
-  },
-  greenDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#4CAF50',
-    marginRight: 12,
-  },
-  redDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#F44336',
-    marginRight: 12,
   },
   locationText: {
     fontSize: 14,
@@ -513,6 +535,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 16,
   },
+  singleAmbulanceContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginVertical: 8,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    padding: 16,
+  },
   ambulanceOption: {
     borderRadius: 12,
     padding: 16,
@@ -583,6 +616,15 @@ const styles = StyleSheet.create({
     marginTop: 4,
     lineHeight: 18,
   },
+  includesContainer: {
+    marginTop: 6,
+  },
+  includesTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 2,
+  },
   ambulanceDuration: {
     fontSize: 12,
     color: '#999',
@@ -597,6 +639,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: Colors.statusBar,
+  },
+  assistantPrice: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
   },
   checkIcon: {
     marginTop: 6,
@@ -617,17 +664,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   ambulanceImage: {
-  width: 44,
-  height: 44,
-  resizeMode: 'contain',
-},
-dotAnimation: {
-  width: 24,
-  height: 24,
-  marginRight: 12,
-}
-
-
+    width: 44,
+    height: 44,
+    resizeMode: 'contain',
+  },
+  dotAnimation: {
+    width: 24,
+    height: 24,
+    marginRight: 12,
+  },
 });
 
 export default AmbulanceSelectionScreen;

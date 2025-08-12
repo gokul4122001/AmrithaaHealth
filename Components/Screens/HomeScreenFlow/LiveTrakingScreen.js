@@ -46,8 +46,6 @@ const RideBookingScreen = ({ navigation, route }) => {
     goToTracking,
   } = route.params || {};
 
-  
-
   const [pickup, setPickup] = useState(pickupLocation || '');
   const [destination, setDestination] = useState(destinationLocation || '');
   const [mapRegion, setMapRegion] = useState({
@@ -86,7 +84,6 @@ const RideBookingScreen = ({ navigation, route }) => {
           destinationLocation,
           booking_type,
           booking_for,
-        
         });
       }, 1000);
       return () => clearTimeout(timeout);
@@ -109,6 +106,10 @@ const RideBookingScreen = ({ navigation, route }) => {
       destination,
       pickupCoords,
       dropCoords,
+      pickupLocation,
+      destinationLocation,
+      booking_type,
+      booking_for,
     });
   };
 
@@ -221,9 +222,8 @@ const RideBookingScreen = ({ navigation, route }) => {
                       longitude:
                         (pickupCoords.longitude + dropCoords.longitude) / 2,
                       latitudeDelta:
-                        Math.abs(
-                          pickupCoords.latitude - dropCoords.latitude,
-                        ) * 1.5,
+                        Math.abs(pickupCoords.latitude - dropCoords.latitude) *
+                        1.5,
                       longitudeDelta:
                         Math.abs(
                           pickupCoords.longitude - dropCoords.longitude,

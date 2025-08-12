@@ -9,7 +9,7 @@ const CustomHeader = ({ username = 'Akash Ambulance', onNotificationPress, onIma
 
   return (
     <View style={styles.headerContainer}>
-      {/* Logo & Welcome Message */}
+      
       <View style={styles.leftSection}>
         <Image
           source={require('./Components/Assets/logos.png')}
@@ -21,14 +21,13 @@ const CustomHeader = ({ username = 'Akash Ambulance', onNotificationPress, onIma
         </View>
       </View>
 
-      {/* Notification Icon and Image */}
       <View style={styles.rightSection}>
         <TouchableOpacity onPress={onNotificationPress}>
           <Ionicons name="notifications-outline" size={24} color="#000000" style={styles.icon} />
         </TouchableOpacity>
         <TouchableOpacity onPress={onImagePress}>
           <Image
-            source={require('./Components/Assets/emergencyicon.png')} // Replace with your image path
+            source={require('./Components/Assets/emergencyicon.png')} 
             style={styles.profileImage}
           />
         </TouchableOpacity>
