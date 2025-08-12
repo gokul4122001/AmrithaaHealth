@@ -12,6 +12,8 @@ import {
   Image,
   Platform,
   ActivityIndicator,
+  Keyboard,
+  KeyboardAvoidingView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -40,48 +42,175 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
     selectedAmbulance,
     booking_type,
     booking_for,
+    scheduledTime,
   } = route.params;
 
+  // State Management
   const [selectedAssistance, setSelectedAssistance] = useState('not-required');
   const [customerName, setCustomerName] = useState('');
   const [customerMobile, setCustomerMobile] = useState('');
   const [additionalInfo, setAdditionalInfo] = useState('');
   const [selectedSubOption, setSelectedSubOption] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { token } = useSelector(state => state.auth);
+  const [isBookingLoading, setIsBookingLoading] = useState(false);
   const [showNameDropdown, setShowNameDropdown] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
-
   const [data, setData] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
+
+  const { token } = useSelector(state => state.auth);
+
   console.log(booking_for, 'booking_for');
 
+  // Validation Functions
+  const validateForm = () => {
+    const errors = {};
+
+    if (!customerName.trim()) {
+      errors.customerName = 'Customer name is required';
+    } else if (customerName.trim().length < 2) {
+      errors.customerName = 'Name must be at least 2 characters';
+    }
+
+    if (!customerMobile.trim()) {
+      errors.customerMobile = 'Mobile number is required';
+    } else if (customerMobile.length !== 10 || !/^\d+$/.test(customerMobile)) {
+      errors.customerMobile = 'Enter a valid 10-digit mobile number';
+    }
+
+    if (!data) {
+      errors.general = 'Ambulance details not loaded. Please try again.';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Enhanced API call function
+  const createBooking = async (bookingData) => {
+    try {
+      const response = await fetch('https://www.myhealth.amrithaa.net/backend/api/user/booking/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(bookingData)
+      });
+
+      const data = await response.json();
+
+      console.log(data,"fedhbgiuherwhngv")
+
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('API call error:', error);
+      throw error;
+    }
+  };
+
+  // Enhanced Payment Handler
   const handlePayment = async () => {
-    if (!customerName.trim() || !customerMobile.trim()) {
-      Alert.alert('Error', 'Please fill in all required customer details');
+    // Dismiss keyboard
+    Keyboard.dismiss();
+
+    if (!validateForm()) {
+      const firstError = Object.values(formErrors)[0];
+      Alert.alert('Validation Error', firstError);
       return;
     }
 
-    const totalAmount =
-      selectedAssistance === 'required' && selectedSubOption === 'common'
+    try {
+      setIsBookingLoading(true);
+
+      const totalAmount = selectedAssistance === 'required' && selectedSubOption === 'common'
         ? data?.total_fare_with_patient_assistent || 0
         : data?.total_fare || 0;
 
-    const res = await booking_Create(token, pickupCoords, dropCoords,pickup,destination,booking_type,totalAmount,selectedAmbulance?.id,customerName,customerMobile);
-    console.log(res,"res booking ");
-    
-    navigation.navigate('Bookingconformation', {
-      id :res?.data?.id,
-      name: customerName,
-      mobile: customerMobile,
-      additionalInfo: additionalInfo,
-      totalAmount: totalAmount,
-      ambulanceDetails: data,
-      selectedAssistance,
-      pickup,
-      destination,
-    });
+      // Prepare booking payload
+      const bookingPayload = {
+        pickup_lat: pickupCoords.latitude,
+        pickup_lng: pickupCoords.longitude,
+        drop_lat: dropCoords.latitude,
+        drop_lng: dropCoords.longitude,
+        pick_address: pickup,
+        drop_address: destination,
+        booking_type: booking_type,
+        booking_for: booking_for,
+        ambulance_type_id: selectedAmbulance?.id,
+        patient_assist: selectedAssistance === 'required' && selectedSubOption === 'common' ? 1 : 0,
+        customer_name: customerName.trim(),
+        customer_mobile: customerMobile.trim(),
+        ...(additionalInfo.trim() && { additional_info: additionalInfo.trim() }),
+        ...(booking_type === 'scheduled' && scheduledTime && { scheduled_at: scheduledTime })
+      };
+
+      console.log('Booking payload:', bookingPayload);
+
+      const response = await createBooking(bookingPayload);
+      
+      console.log('Booking response:', response);
+
+      if (response?.status && response?.data?.booking) {
+        // Success - navigate to confirmation
+        navigation.navigate('Bookingconformation', {
+          id: response.data.booking.id,
+          bookingId: response.data.booking.booking_id,
+          name: customerName,
+          mobile: customerMobile,
+          additionalInfo: additionalInfo,
+          totalAmount: response.data.booking.total_amount,
+          ambulanceDetails: data,
+          selectedAssistance,
+          pickup,
+          destination,
+          otp: response.data.booking.otp,
+          eta: response.data.booking.eta_minutes,
+          bookingData: response.data.booking
+        });
+
+        // Show success message
+        Alert.alert(
+          'Booking Confirmed!', 
+          `Your booking ID is ${response.data.booking.booking_id}\nOTP: ${response.data.booking.otp}\nETA: ${Math.round(response.data.booking.eta_minutes)} minutes`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        throw new Error(response?.message || 'Booking failed');
+      }
+
+    } catch (error) {
+      console.error('Booking error:', error);
+      
+      let errorMessage = 'Failed to create booking. Please try again.';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      Alert.alert('Booking Failed', errorMessage, [
+        {
+          text: 'Retry',
+          onPress: () => handlePayment()
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        }
+      ]);
+    } finally {
+      setIsBookingLoading(false);
+    }
   };
 
+  // Fetch Ambulance Details
   const fetchData = async () => {
     try {
       setIsLoading(true);
@@ -97,7 +226,17 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
       setData(res.data);
     } catch (error) {
       console.error('Error fetching ambulance details:', error);
-      Alert.alert('Error', 'Failed to load ambulance details');
+      Alert.alert('Error', 'Failed to load ambulance details', [
+        {
+          text: 'Retry',
+          onPress: () => fetchData()
+        },
+        {
+          text: 'Go Back',
+          onPress: () => navigation.goBack(),
+          style: 'cancel'
+        }
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -107,7 +246,8 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
     fetchData();
   }, []);
 
-  // Calculate total amount based on assistance selection
+ 
+  
   const getTotalAmount = () => {
     if (!data) return 0;
     return selectedAssistance === 'required' && selectedSubOption === 'common'
@@ -115,6 +255,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
       : data.total_fare;
   };
 
+  // Dummy customers data for "others" booking
   const dummyCustomers = [
     { id: 1, name: 'John Doe', mobile: '9876543210' },
     { id: 2, name: 'Jane Smith', mobile: '9876543211' },
@@ -128,14 +269,19 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
     setCustomerName(customer.name);
     setCustomerMobile(customer.mobile);
     setShowNameDropdown(false);
+    setFormErrors(prev => ({ ...prev, customerName: '', customerMobile: '' }));
   };
 
+  // Customer Name Input Component
   const renderCustomerNameInput = () => {
     if (booking_for === 'others') {
       return (
         <View style={styles.inputGroup}>
           <TouchableOpacity
-            style={styles.dropdownInput}
+            style={[
+              styles.dropdownInput,
+              formErrors.customerName && styles.errorInput
+            ]}
             onPress={() => setShowNameDropdown(!showNameDropdown)}
           >
             <Text
@@ -173,23 +319,38 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
               ))}
             </View>
           )}
+          {formErrors.customerName && (
+            <Text style={styles.errorText}>{formErrors.customerName}</Text>
+          )}
         </View>
       );
     } else {
       return (
         <View style={styles.inputGroup}>
           <TextInput
-            style={styles.textInput}
+            style={[
+              styles.textInput,
+              formErrors.customerName && styles.errorInput
+            ]}
             value={customerName}
-            onChangeText={setCustomerName}
+            onChangeText={(text) => {
+              setCustomerName(text);
+              if (formErrors.customerName) {
+                setFormErrors(prev => ({ ...prev, customerName: '' }));
+              }
+            }}
             placeholder="Customer Name"
             placeholderTextColor="#999"
           />
+          {formErrors.customerName && (
+            <Text style={styles.errorText}>{formErrors.customerName}</Text>
+          )}
         </View>
       );
     }
   };
 
+  // Includes Section Component
   const renderIncludesSection = () => {
     if (!data?.ambulance_include || data.ambulance_include.length === 0) {
       return null;
@@ -232,6 +393,40 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
     );
   };
 
+  // Enhanced Book Now Button Component
+  const renderBookNowButton = () => {
+    const isDisabled = isBookingLoading || isLoading || !customerName.trim() || !customerMobile.trim();
+    
+    return (
+      <View style={styles.floatingButtonWrapper}>
+        <TouchableOpacity
+          style={[
+            styles.payNowButton,
+            isDisabled && styles.disabledButton
+          ]}
+          onPress={handlePayment}
+          disabled={isDisabled}
+          activeOpacity={0.8}
+        >
+          {isBookingLoading ? (
+            <View style={styles.buttonLoadingContent}>
+              <ActivityIndicator size="small" color="#fff" />
+              <Text style={styles.payNowButtonText}>Processing...</Text>
+            </View>
+          ) : (
+            <View style={styles.buttonContent}>
+              <Text style={styles.payNowButtonText}>
+                Book Now • ₹{getTotalAmount()}
+              </Text>
+              <Icon name="arrow-forward" size={20} color="#fff" />
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  // Loading Screen
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -250,254 +445,263 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.statusBar} />
-      <LinearGradient
-        colors={['#ffffff', '#C3DFFF']}
-        start={{ x: 0, y: 0.3 }}
-        end={{ x: 0, y: 0 }}
-        style={styles.topBackground}
+      <KeyboardAvoidingView 
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.headerContainer}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Icons name="arrow-back" size={24} color="black" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Booking Overview</Text>
-        </View>
-
-        <ScrollView
-          style={styles.content}
-          contentContainerStyle={{ paddingBottom: 200 }}
-          showsVerticalScrollIndicator={false}
+        <LinearGradient
+          colors={['#ffffff', '#C3DFFF']}
+          start={{ x: 0, y: 0.3 }}
+          end={{ x: 0, y: 0 }}
+          style={styles.topBackground}
         >
-          {/* Location Details */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Pickup</Text>
-            <View style={styles.locationRow}>
-              <View style={styles.iconCircle}>
-                <Ionicons name="location-sharp" size={18} color="#D30000" />
-              </View>
-              <Text style={styles.locationText} numberOfLines={2}>
-                {pickup || 'Pickup location not available'}
-              </Text>
-            </View>
-
-            <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Drop</Text>
-            <View style={styles.locationRow}>
-              <View style={styles.iconCircle}>
-                <Ionicons name="location-sharp" size={18} color="#D30000" />
-              </View>
-              <Text style={styles.locationText} numberOfLines={2}>
-                {destination || 'Destination not available'}
-              </Text>
-            </View>
+          {/* Header */}
+          <View style={styles.headerContainer}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Icons name="arrow-back" size={24} color="black" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Booking Overview</Text>
           </View>
 
-          {/* Ambulance Details */}
-          {data && (
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={{ paddingBottom: 200 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Location Details */}
             <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Ambulance Details</Text>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                  <Text style={styles.changeLink}>Change</Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.ambulanceCard}>
-                <View style={styles.ambulanceHeader}>
-                  <Image
-                    source={{ uri: data.icon }}
-                    style={styles.ambulanceImage}
-                    defaultSource={require('../../Assets/ambualnce.png')}
-                  />
-                  <View style={styles.ambulanceInfo}>
-                    <Text style={styles.ambulanceTitle}>
-                      {data.ambulance_type}
-                    </Text>
-                    <Text style={styles.ambulanceSubTitle}>{data.details}</Text>
-                    <Text style={styles.arrivalTime}>
-                      Arrival Timing: {data.average_arrival_minutes} mins
-                    </Text>
-                    <Text style={styles.distanceInfo}>
-                      Distance: {data.distance_km} km
-                    </Text>
-                  </View>
-                  <Text style={styles.price}>₹ {data.total_fare}</Text>
+              <Text style={styles.sectionTitle}>Pickup</Text>
+              <View style={styles.locationRow}>
+                <View style={styles.iconCircle}>
+                  <Ionicons name="location-sharp" size={18} color="#D30000" />
                 </View>
-              </View>
-            </View>
-          )}
-
-          {/* Includes Section */}
-          {renderIncludesSection()}
-
-          {/* Patient Assistance Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Patient Assistance</Text>
-
-            {/* Not Required */}
-            <TouchableOpacity
-              style={styles.radioOption}
-              onPress={() => {
-                setSelectedAssistance('not-required');
-                setSelectedSubOption(null);
-              }}
-            >
-              <View
-                style={[
-                  styles.radioButton,
-                  selectedAssistance === 'not-required' && styles.radioSelected,
-                ]}
-              >
-                {selectedAssistance === 'not-required' && (
-                  <View style={styles.radioInner} />
-                )}
-              </View>
-              <Text style={styles.radioText}>
-                Not Required Patient Assistance
-              </Text>
-            </TouchableOpacity>
-
-            {/* Required */}
-            <TouchableOpacity
-              style={styles.radioOption}
-              onPress={() => setSelectedAssistance('required')}
-            >
-              <View
-                style={[
-                  styles.radioButton,
-                  selectedAssistance === 'required' && styles.radioSelected,
-                ]}
-              >
-                {selectedAssistance === 'required' && (
-                  <View style={styles.radioInner} />
-                )}
-              </View>
-              <View style={styles.radioContent}>
-                <Text style={styles.radioText}>
-                  Required Patient Assistance
+                <Text style={styles.locationText} numberOfLines={2}>
+                  {pickup || 'Pickup location not available'}
                 </Text>
               </View>
-            </TouchableOpacity>
 
-            {/* Sub Option - only visible if required selected */}
-            {selectedAssistance === 'required' && data && (
+              <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Drop</Text>
+              <View style={styles.locationRow}>
+                <View style={styles.iconCircle}>
+                  <Ionicons name="location-sharp" size={18} color="#D30000" />
+                </View>
+                <Text style={styles.locationText} numberOfLines={2}>
+                  {destination || 'Destination not available'}
+                </Text>
+              </View>
+            </View>
+
+            {/* Ambulance Details */}
+            {data && (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Ambulance Details</Text>
+                  <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <Text style={styles.changeLink}>Change</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.ambulanceCard}>
+                  <View style={styles.ambulanceHeader}>
+                    <Image
+                      source={{ uri: data.icon }}
+                      style={styles.ambulanceImage}
+                      defaultSource={require('../../Assets/ambualnce.png')}
+                    />
+                    <View style={styles.ambulanceInfo}>
+                      <Text style={styles.ambulanceTitle}>
+                        {data.ambulance_type}
+                      </Text>
+                      <Text style={styles.ambulanceSubTitle}>{data.details}</Text>
+                      <Text style={styles.arrivalTime}>
+                        Arrival Timing: {data.average_arrival_minutes} mins
+                      </Text>
+                      <Text style={styles.distanceInfo}>
+                        Distance: {data.distance_km} km
+                      </Text>
+                    </View>
+                    <Text style={styles.price}>₹ {data.total_fare}</Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {/* Includes Section */}
+            {renderIncludesSection()}
+
+            {/* Patient Assistance Section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Patient Assistance</Text>
+
+              {/* Not Required */}
               <TouchableOpacity
-                style={styles.subOptionCard}
-                onPress={() => setSelectedSubOption('common')}
+                style={styles.radioOption}
+                onPress={() => {
+                  setSelectedAssistance('not-required');
+                  setSelectedSubOption(null);
+                }}
               >
                 <View
                   style={[
                     styles.radioButton,
-                    selectedSubOption === 'common' && styles.radioSelected,
+                    selectedAssistance === 'not-required' && styles.radioSelected,
                   ]}
                 >
-                  {selectedSubOption === 'common' && (
+                  {selectedAssistance === 'not-required' && (
                     <View style={styles.radioInner} />
                   )}
                 </View>
-                <View style={styles.subOptionContent}>
-                  <Text style={styles.subOptionText}>
-                    Patient assistance service
-                  </Text>
-                  <Text style={styles.subOptionPrice}>
-                    ₹ {data.patient_assistance}
+                <Text style={styles.radioText}>
+                  Not Required Patient Assistance
+                </Text>
+              </TouchableOpacity>
+
+              {/* Required */}
+              <TouchableOpacity
+                style={styles.radioOption}
+                onPress={() => setSelectedAssistance('required')}
+              >
+                <View
+                  style={[
+                    styles.radioButton,
+                    selectedAssistance === 'required' && styles.radioSelected,
+                  ]}
+                >
+                  {selectedAssistance === 'required' && (
+                    <View style={styles.radioInner} />
+                  )}
+                </View>
+                <View style={styles.radioContent}>
+                  <Text style={styles.radioText}>
+                    Required Patient Assistance
                   </Text>
                 </View>
               </TouchableOpacity>
-            )}
-          </View>
 
-          {/* Customer Details */}
-          <View style={styles.section}>
-            <TouchableOpacity style={styles.expandableHeader}>
-              <Text style={styles.sectionTitle}>Add Customer Details</Text>
-              <Icon name="keyboard-arrow-down" size={24} color="#666" />
-            </TouchableOpacity>
-
-            <View style={styles.formContainer}>
-              {renderCustomerNameInput()}
-
-              <View style={styles.inputGroup}>
-                <TextInput
-                  style={styles.textInput}
-                  value={customerMobile}
-                  onChangeText={setCustomerMobile}
-                  placeholder="Customer Mobile Number"
-                  placeholderTextColor="#999"
-                  keyboardType="phone-pad"
-                  maxLength={10}
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <TextInput
-                  style={[styles.textInput, styles.textArea]}
-                  value={additionalInfo}
-                  onChangeText={setAdditionalInfo}
-                  placeholder="Write Additional information here"
-                  placeholderTextColor="#999"
-                  multiline
-                  numberOfLines={3}
-                  textAlignVertical="top"
-                />
-              </View>
+              {/* Sub Option - only visible if required selected */}
+              {selectedAssistance === 'required' && data && (
+                <TouchableOpacity
+                  style={styles.subOptionCard}
+                  onPress={() => setSelectedSubOption('common')}
+                >
+                  <View
+                    style={[
+                      styles.radioButton,
+                      selectedSubOption === 'common' && styles.radioSelected,
+                    ]}
+                  >
+                    {selectedSubOption === 'common' && (
+                      <View style={styles.radioInner} />
+                    )}
+                  </View>
+                  <View style={styles.subOptionContent}>
+                    <Text style={styles.subOptionText}>
+                      Patient assistance service
+                    </Text>
+                    <Text style={styles.subOptionPrice}>
+                      ₹ {data.patient_assistance}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )}
             </View>
-          </View>
 
-          {/* Price Details */}
-          {data && (
+            {/* Customer Details */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Price Details</Text>
+              <TouchableOpacity style={styles.expandableHeader}>
+                <Text style={styles.sectionTitle}>Add Customer Details</Text>
+                <Icon name="keyboard-arrow-down" size={24} color="#666" />
+              </TouchableOpacity>
 
-              <View style={styles.priceContainer}>
-                <View style={styles.priceRow}>
-                  <Text style={styles.priceLabel}>
-                    Base Fare ({data.base_km} km)
-                  </Text>
-                  <Text style={styles.priceValue}>₹ {data.base_fare}</Text>
+              <View style={styles.formContainer}>
+                {renderCustomerNameInput()}
+
+                <View style={styles.inputGroup}>
+                  <TextInput
+                    style={[
+                      styles.textInput,
+                      formErrors.customerMobile && styles.errorInput
+                    ]}
+                    value={customerMobile}
+                    onChangeText={(text) => {
+                      setCustomerMobile(text);
+                      if (formErrors.customerMobile) {
+                        setFormErrors(prev => ({ ...prev, customerMobile: '' }));
+                      }
+                    }}
+                    placeholder="Customer Mobile Number"
+                    placeholderTextColor="#999"
+                    keyboardType="phone-pad"
+                    maxLength={10}
+                  />
+                  {formErrors.customerMobile && (
+                    <Text style={styles.errorText}>{formErrors.customerMobile}</Text>
+                  )}
                 </View>
 
-                {data.extra_km > 0 && (
+                <View style={styles.inputGroup}>
+                  <TextInput
+                    style={[styles.textInput, styles.textArea]}
+                    value={additionalInfo}
+                    onChangeText={setAdditionalInfo}
+                    placeholder="Write Additional information here"
+                    placeholderTextColor="#999"
+                    multiline
+                    numberOfLines={3}
+                    textAlignVertical="top"
+                  />
+                </View>
+              </View>
+            </View>
+
+            {/* Price Details */}
+            {data && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Price Details</Text>
+
+                <View style={styles.priceContainer}>
                   <View style={styles.priceRow}>
                     <Text style={styles.priceLabel}>
-                      Extra Distance ({data.extra_km.toFixed(2)} km)
+                      Base Fare ({data.base_km} km)
                     </Text>
-                    <Text style={styles.priceValue}>₹ {data.extra_charge}</Text>
+                    <Text style={styles.priceValue}>₹ {data.base_fare}</Text>
                   </View>
-                )}
 
-                {selectedAssistance === 'required' &&
-                  selectedSubOption === 'common' && (
+                  {data.extra_km > 0 && (
                     <View style={styles.priceRow}>
-                      <Text style={styles.priceLabel}>Patient Assistance</Text>
-                      <Text style={styles.priceValue}>
-                        ₹ {data.patient_assistance}
+                      <Text style={styles.priceLabel}>
+                        Extra Distance ({data.extra_km.toFixed(2)} km)
                       </Text>
+                      <Text style={styles.priceValue}>₹ {data.extra_charge}</Text>
                     </View>
                   )}
 
-                <View style={styles.divider} />
+                  {selectedAssistance === 'required' &&
+                    selectedSubOption === 'common' && (
+                      <View style={styles.priceRow}>
+                        <Text style={styles.priceLabel}>Patient Assistance</Text>
+                        <Text style={styles.priceValue}>
+                          ₹ {data.patient_assistance}
+                        </Text>
+                      </View>
+                    )}
 
-                <View style={styles.priceRow}>
-                  <Text style={styles.totalLabel}>Total Price</Text>
-                  <Text style={styles.totalValue}>₹ {getTotalAmount()}</Text>
+                  <View style={styles.divider} />
+
+                  <View style={styles.priceRow}>
+                    <Text style={styles.totalLabel}>Total Price</Text>
+                    <Text style={styles.totalValue}>₹ {getTotalAmount()}</Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          )}
-        </ScrollView>
+            )}
+          </ScrollView>
 
-        <View style={styles.floatingButtonWrapper}>
-          <TouchableOpacity
-            style={styles.payNowButton}
-            onPress={handlePayment}
-            disabled={isLoading}
-          >
-            <Text style={styles.payNowButtonText}>
-              Pay Now - ₹ {getTotalAmount()}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
+          {/* Enhanced Book Now Button */}
+          {renderBookNowButton()}
+        </LinearGradient>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -583,6 +787,12 @@ const styles = StyleSheet.create({
     borderColor: '#e9ecef',
     borderRadius: 8,
     padding: 12,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
   },
   ambulanceHeader: {
     flexDirection: 'row',
@@ -674,6 +884,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 2,
   },
   radioSelected: {
     borderColor: '#7518AA',
@@ -687,6 +898,7 @@ const styles = StyleSheet.create({
   radioText: {
     fontSize: Fonts.size.PageSubheading,
     color: '#000',
+    flex: 1,
   },
   radioContent: {
     flex: 1,
@@ -743,12 +955,30 @@ const styles = StyleSheet.create({
     color: '#333',
     backgroundColor: '#fff',
   },
+  errorInput: {
+    borderColor: '#dc3545',
+    borderWidth: 1.5,
+  },
+  errorText: {
+    color: '#dc3545',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
+  },
   textArea: {
     height: 80,
     textAlignVertical: 'top',
   },
   priceContainer: {
     marginTop: 8,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
   },
   priceRow: {
     flexDirection: 'row',
@@ -757,35 +987,35 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   priceLabel: {
-    fontSize: Fonts.size.PageHeading,
-    fontWeight: '700',
-    color: '#000',
+    fontSize: Fonts.size.PageSubheading,
+    fontWeight: '500',
+    color: '#666',
     flex: 1,
   },
   priceValue: {
-    fontSize: Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageSubheading,
     color: '#333',
-    fontWeight: '700',
+    fontWeight: '600',
   },
   divider: {
     height: 1,
     backgroundColor: '#e9ecef',
-    marginVertical: 8,
+    marginVertical: 12,
   },
   totalLabel: {
     fontSize: Fonts.size.PageHeading,
     color: '#333',
-    fontWeight: '600',
+    fontWeight: '700',
   },
   totalValue: {
     fontSize: 18,
-    color: '#333',
+    color: Colors.statusBar,
     fontWeight: '700',
     fontFamily: Fonts.family.regular,
   },
   floatingButtonWrapper: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 30 : '15%',
+    bottom: Platform.OS === 'ios' ? 30 : 20,
     left: 20,
     right: 20,
     zIndex: 10,
@@ -793,15 +1023,34 @@ const styles = StyleSheet.create({
   },
   payNowButton: {
     backgroundColor: Colors.statusBar,
-    paddingVertical: 10,
-    borderRadius: 10,
+    paddingVertical: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    elevation: 5,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+  },
+  disabledButton: {
+    backgroundColor: '#cccccc',
+    opacity: 0.7,
   },
   payNowButtonText: {
     color: '#fff',
     fontSize: Fonts.size.PageSubheading,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    marginLeft: 8,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonLoadingContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   dropdownInput: {
     borderWidth: 1,
@@ -830,11 +1079,12 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 8,
     backgroundColor: '#fff',
     maxHeight: 200,
-    elevation: 3,
+    elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    zIndex: 1000,
   },
   dropdownItem: {
     padding: 16,
@@ -851,10 +1101,5 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 2,
   },
-  disabledInput: {
-    backgroundColor: '#f5f5f5',
-    color: '#666',
-  },
-});
-
+}); 
 export default AmbulanceBookingScreen;
