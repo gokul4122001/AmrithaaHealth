@@ -187,7 +187,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 3, 
+    borderLeftWidth:3,
+    borderColor:'#096B09'
   },
   headerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   image: { width: 50, height: 50, resizeMode: 'contain', marginRight: 12 },

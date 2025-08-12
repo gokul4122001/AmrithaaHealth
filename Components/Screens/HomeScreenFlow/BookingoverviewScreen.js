@@ -611,7 +611,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
             <View style={styles.section}>
               <TouchableOpacity style={styles.expandableHeader}>
                 <Text style={styles.sectionTitle}>Add Customer Details</Text>
-                <Icon name="keyboard-arrow-down" size={24} color="#666" />
+               
               </TouchableOpacity>
 
               <View style={styles.formContainer}>
