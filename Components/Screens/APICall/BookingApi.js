@@ -22,4 +22,21 @@ export const Emergency_Booking = async (token, filter = 'current') => {
   }
 };
 
-
+export const getBookingDetails = async (id, token) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/booking/detail/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(
+      '❌ Error fetching booking details:',
+      error.response?.status,
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};

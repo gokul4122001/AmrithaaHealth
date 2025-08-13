@@ -10,10 +10,12 @@ const CustomHeader = ({ username = 'Akash Ambulance', onNotificationPress, onIma
   return (
     <View style={styles.headerContainer}>
       
+
+
       <View style={styles.leftSection}>
         <Image
           source={require('./Components/Assets/logos.png')}
-          style={styles.logo}
+          style={styles.logo}  
         />
         <View style={{ marginLeft: 10 }}>
           <Text style={styles.welcomeText}>Hi, Welcome</Text>
@@ -30,7 +32,7 @@ const CustomHeader = ({ username = 'Akash Ambulance', onNotificationPress, onIma
             source={require('./Components/Assets/emergencyicon.png')} 
             style={styles.profileImage}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> 
       </View>
     </View>
   );
