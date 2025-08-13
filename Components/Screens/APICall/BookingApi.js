@@ -24,7 +24,8 @@ export const Emergency_Booking = async (token, filter = 'current') => {
 
 export const getBookingDetails = async (id, token) => {
   try {
-    const response = await axios.get(`${BASE_URL}/booking/detail/${id}`, {
+    const response = await axios.get(`${BASE_URL}/booking/detail`, {
+      params: { id },
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
