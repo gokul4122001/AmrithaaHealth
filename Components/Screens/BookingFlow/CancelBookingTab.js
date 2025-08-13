@@ -24,6 +24,8 @@ const CurrentBookingCardScreen = () => {
   
   const token = useSelector(state => state.auth.token);
 
+  console.log(token,"token")
+
   useEffect(() => {
     fetchBookings();
   }, []);
@@ -127,7 +129,7 @@ const CurrentBookingCardScreen = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.acceptButton}
-          onPress={() => navigation.navigate('CompleteBookingDetails', { id: item.id })}
+          onPress={() => navigation.navigate('CancelViewDetails', { id: item.id })}
         >
           <Text style={styles.acceptText}>View Details</Text>
         </TouchableOpacity>

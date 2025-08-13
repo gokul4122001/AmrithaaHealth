@@ -9,13 +9,10 @@ import BookingoverviewScreen from '../Screens/HomeScreenFlow/BookingoverviewScre
 import LoadingScreen from '../Screens/HomeScreenFlow/LoadingPage';
 import EmergencyHomeScreen from '../Screens/EmergencyFlow/EmergencyHomeScreen'
 import EmergencyHospitalScreen from '../Screens/EmergencyFlow/EmergencyHospitalScreen'
-import NoteAvaliableAmbulancePage from '../Screens/HomeScreenFlow/NoteAvaliableAmbulancePage'
 import AmbulanceTrackingScreen from '../Screens/HomeScreenFlow/AmbulanceTrackingScreen';
 import Bookingconformation from '../Screens/HomeScreenFlow/Bookingconformation';
-import UnavailabledrivingScreen from  '../Screens/HomeScreenFlow/UnavailabledriverLoadingScreen'
-import UnavailabledrivingConnectScreen from  '../Screens/HomeScreenFlow/UnavailableConnectdriverPage'
-import TrackAmulanceDriverPage from  '../Screens/HomeScreenFlow/TrackAmbulanceDriverPage'
 
+import TrackAmulanceDriverPage from  '../Screens/HomeScreenFlow/TrackAmbulanceDriverPage'
 
 const HomeStack = createNativeStackNavigator();
 
@@ -67,11 +64,7 @@ const HomeStackScreen = () => {
         component={EmergencyHospitalScreen}
         options={{ headerShown: false }}
       />
-       <HomeStack.Screen
-        name="NoteAvaliableAmbulancePage"
-        component={NoteAvaliableAmbulancePage}
-        options={{ headerShown: false }}
-      />
+      
        <HomeStack.Screen
         name="AmbulanceTrackingScreen"
         component={AmbulanceTrackingScreen}
@@ -82,16 +75,7 @@ const HomeStackScreen = () => {
         component={Bookingconformation}
         options={{ headerShown: false }}
       />
-         <HomeStack.Screen
-        name="UnavailabledrivingScreen"
-        component={UnavailabledrivingScreen}
-        options={{ headerShown: false }}
-      />
-        <HomeStack.Screen
-        name="UnavailabledrivingConnectScreen"
-        component={UnavailabledrivingConnectScreen}
-        options={{ headerShown: false }}
-      />
+        
        <HomeStack.Screen
         name="TrackAmulanceDriverPage"
         component={TrackAmulanceDriverPage}
