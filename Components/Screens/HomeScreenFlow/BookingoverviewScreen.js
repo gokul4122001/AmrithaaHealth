@@ -416,9 +416,9 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
           ) : (
             <View style={styles.buttonContent}>
               <Text style={styles.payNowButtonText}>
-                Book Now • ₹{getTotalAmount()}
+                Book Now
               </Text>
-              <Icon name="arrow-forward" size={20} color="#fff" />
+            
             </View>
           )}
         </TouchableOpacity>
@@ -504,22 +504,23 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
 
                 <View style={styles.ambulanceCard}>
                   <View style={styles.ambulanceHeader}>
+                    <View>
                     <Image
                       source={{ uri: data.icon }}
                       style={styles.ambulanceImage}
                       defaultSource={require('../../Assets/ambualnce.png')}
                     />
+                     <Text style={styles.arrivalTime}>
+                        Arrival Timing: {data.average_arrival_minutes} mins
+                      </Text>
+                      </View> 
                     <View style={styles.ambulanceInfo}>
                       <Text style={styles.ambulanceTitle}>
                         {data.ambulance_type}
                       </Text>
                       <Text style={styles.ambulanceSubTitle}>{data.details}</Text>
-                      <Text style={styles.arrivalTime}>
-                        Arrival Timing: {data.average_arrival_minutes} mins
-                      </Text>
-                      <Text style={styles.distanceInfo}>
-                        Distance: {data.distance_km} km
-                      </Text>
+                     
+                    
                     </View>
                     <Text style={styles.price}>₹ {data.total_fare}</Text>
                   </View>
@@ -783,16 +784,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   ambulanceCard: {
-    borderWidth: 1,
-    borderColor: '#e9ecef',
-    borderRadius: 8,
-    padding: 12,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 2,
+  
   },
   ambulanceHeader: {
     flexDirection: 'row',
@@ -823,7 +815,7 @@ const styles = StyleSheet.create({
   },
   arrivalTime: {
     fontSize: Fonts.size.PageSubSubHeading,
-    color: '#28a745',
+    color: '#AC57E8',
     fontFamily: Fonts.family.regular,
   },
   distanceInfo: {
@@ -859,8 +851,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   categoryImage: {
-    width: 70,
-    height: 70,
+    width: 50,
+    height: 50,
     resizeMode: 'contain',
     marginBottom: 8,
   },
@@ -899,6 +891,7 @@ const styles = StyleSheet.create({
     fontSize: Fonts.size.PageSubheading,
     color: '#000',
     flex: 1,
+    top:5
   },
   radioContent: {
     flex: 1,
@@ -970,15 +963,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   priceContainer: {
-    marginTop: 8,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 2,
+   
   },
   priceRow: {
     flexDirection: 'row',
