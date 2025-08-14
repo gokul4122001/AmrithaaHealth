@@ -82,7 +82,7 @@ const CurrentBookingCardScreen = () => {
             style={styles.icon}
           />
           <Text style={styles.locationText}>
-            <Text style={styles.boldLabel}>Drop :</Text> {item.drop_address}
+            <Text style={styles.boldLabel}>Drop :</Text>  {item.drop_address}
           </Text>
         </View>
       </View>

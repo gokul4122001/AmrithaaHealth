@@ -24,8 +24,10 @@ import { getBookingDetails } from '../../Screens/APICall/BookingApi';
 import { useSelector } from 'react-redux';
 
 const BookingDetailsScreen = ({ navigation, route }) => {
-  const { id } = route.params; // passed from previous screen
+  const { id } = route.params; 
   const token = useSelector(state => state.auth.token); // assuming token is stored in Redux
+
+  console.log(id,"dsvhgvahbca")
 
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);

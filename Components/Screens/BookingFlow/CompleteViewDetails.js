@@ -26,6 +26,7 @@ import { useSelector } from 'react-redux';
 const BookingDetailsScreen = ({ navigation, route }) => {
   const { id } = route.params; 
   const token = useSelector(state => state.auth.token); 
+  console.log(id,"dwsdsvds")
 
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -43,6 +44,8 @@ const BookingDetailsScreen = ({ navigation, route }) => {
       } else {
         console.warn('Failed to load booking details');
       }
+
+      console.log(res,"vfdwsvdsvdsv")
     } catch (err) {
       console.error('Error:', err);
     } finally {
@@ -132,7 +135,7 @@ const BookingDetailsScreen = ({ navigation, route }) => {
             <View style={styles.locationRow}>
               <Text style={styles.locationHeading}>Drop</Text>
               <Text style={styles.locationValue}>
-                {booking.drop_address?.length > 0 ? booking.drop_address.join(', ') : 'N/A'}
+              {booking.drop_address?.length > 0 ? booking.drop_address.join(', ') : 'N/A'}
               </Text>
             </View>
           </View>
