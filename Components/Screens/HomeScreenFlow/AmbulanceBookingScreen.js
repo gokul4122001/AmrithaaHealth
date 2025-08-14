@@ -496,74 +496,26 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
     }
   };
 
-const createBookingAPI = async (bookingPayload, pickupCoords, dropCoords) => {
-  try {
-    const response = await fetch(
-      'https://www.myhealth.amrithaa.net/backend/api/user/booking/create',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(bookingPayload),
-      }
-    );
-
-    console.log('Status:', response.status, 'OK:', response.ok);
-
-    let result;
-    try {
-      result = await response.json();
-      console.log('API Response JSON:', result);
-    } catch (e) {
-      console.log('JSON parse error:', e);
-      result = null;
-    }
-
-    if (response.ok) {
-      Alert.alert(
-        'Your Map!',
-        'Find Your Map Location.',
-        [
-          {
-            text: 'OK',
-            onPress: () =>
-              navigation.navigate('LiveTrakingScreen', {
-                pickupCoords,
-                dropCoords,
-                pickupLocation,
-                destinationLocation,
-                booking_type: bookingPayload.booking_type,
-                booking_for: bookingPayload.booking_for,
-                ambulance_type_id: bookingPayload.ambulance_type_id,
-                patient_assist: bookingPayload.patient_assist,
-                customer_name: bookingPayload.customer_name,
-                customer_mobile: bookingPayload.customer_mobile,
-                ...(bookingPayload.scheduled_at && {
-                  scheduled_at: bookingPayload.scheduled_at,
-                  selectedDate: selectedDate.toISOString(),
-                  selectedTime: selectedTime.toISOString(),
-                }),
-                bookingId: result?.booking_id || result?.id,
-                bookingResponse: result,
-              }),
-          },
-        ]
-      );
-    } else {
-      Alert.alert(
-        'Booking Failed',
-        result?.message || 'Something went wrong. Please try again.'
-      );
-    }
-  } catch (error) {
-    console.error('API Error:', error);
-    Alert.alert(
-      'Network Error',
-      'Unable to connect to server. Please check your internet connection and try again.'
-    );
-  }
+const createBookingAPI = (bookingPayload, pickupCoords, dropCoords) => {
+  navigation.navigate('LiveTrakingScreen', {
+    pickupCoords,
+    dropCoords,
+    pickupLocation,
+    destinationLocation,
+    booking_type: bookingPayload.booking_type,
+    booking_for: bookingPayload.booking_for,
+    ambulance_type_id: bookingPayload.ambulance_type_id,
+    patient_assist: bookingPayload.patient_assist,
+    customer_name: bookingPayload.customer_name,
+    customer_mobile: bookingPayload.customer_mobile,
+    ...(bookingPayload.scheduled_at && {
+      scheduled_at: bookingPayload.scheduled_at,
+      selectedDate: selectedDate.toISOString(),
+      selectedTime: selectedTime.toISOString(),
+    }),
+    bookingId: 'TEST_ID_12345',
+    bookingResponse: {},
+  });
 };
 
 

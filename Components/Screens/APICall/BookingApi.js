@@ -20,7 +20,7 @@ export const Emergency_Booking = async (token, filter = 'current') => {
     });
     throw error;
   }
-};
+};  
 
 export const getBookingDetails = async (id, token) => {
   try {
