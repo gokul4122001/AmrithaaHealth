@@ -13,7 +13,7 @@ const CustomHeader = ({ username = 'Akash Ambulance', onNotificationPress, onIma
 
 
       <View style={styles.leftSection}>
-        <Image
+        <Image 
           source={require('./Components/Assets/logos.png')}
           style={styles.logo}  
         />
