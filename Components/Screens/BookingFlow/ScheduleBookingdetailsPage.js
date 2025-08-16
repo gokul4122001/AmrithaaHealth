@@ -328,20 +328,7 @@ const BookingDetailsScreen = ({ navigation, route }) => {
           {/* Show booking info when no driver/ambulance assigned */}
           {!hasDriverData && !hasAmbulanceData && (
             <View style={styles.bookingStatusCard}>
-              <View style={styles.statusContainer}>
-                <View style={styles.statusHeader}>
-                  <Icon name="schedule" size={24} color="#FFB800" />
-                  <Text style={styles.statusTitle}>Booking Status</Text>
-                </View>
-                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(bookingData.status_text) }]}>
-                  <Text style={styles.statusText}>{bookingData.status_text}</Text>
-                </View>
-              </View>
-              <Text style={styles.bookingIdText}>Booking ID: {bookingData.booking_id}</Text>
-              <Text style={styles.statusMessage}>
-                Your ambulance booking is confirmed. Driver and ambulance details will be shared at least one hour before.
-              </Text>
-              
+            
               {/* Red notice for unassigned bookings */}
               <View style={styles.noticeCard}>
                 <Icon name="info" size={20} color="#D32F2F" />
@@ -745,50 +732,20 @@ const styles = StyleSheet.create({
   },
 
   otpTitle: {
-    fontSize: 16,
+     fontSize: Fonts.size.PageHeading,
     fontWeight: 'bold',
     color: '#ffffff',
     marginRight: 5,
   },
 
   otpValue: {
-    fontSize: 18,
+     fontSize: Fonts.size.PageHeading,
     fontWeight: 'bold',
     color: '#ffffff',
     letterSpacing: 2,
   },
 
-  // Booking status card for unassigned bookings
-  bookingStatusCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    marginTop: 20,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#FFB800',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.22,
-    shadowRadius: 2.22,
-  },
 
-  statusContainer: {
-    marginBottom: 12,
-  },
-
-  statusHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-
-  statusTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginLeft: 8,
-  },
 
   statusBadge: {
     backgroundColor: '#FFE9F0',
@@ -823,7 +780,7 @@ const styles = StyleSheet.create({
   },
 
   noticeText: {
-    fontSize: 14,
+     fontSize: Fonts.size.PageHeading,
     color: '#D32F2F',
     marginLeft: 8,
     flex: 1,
@@ -889,7 +846,7 @@ const styles = StyleSheet.create({
   callDriverText: {
     color: '#7B2CBF',
     fontWeight: 'bold',
-    fontSize: 12,
+     fontSize: Fonts.size.PageHeading,
     marginTop: 4,
   },
 
@@ -927,7 +884,7 @@ const styles = StyleSheet.create({
   },
 
   bookingIdText: {
-    fontSize: 16,
+      fontSize: Fonts.size.PageHeading,
     fontWeight: 'bold',
     color: '#000',
   },
@@ -939,56 +896,49 @@ const styles = StyleSheet.create({
   },
 
   ambulanceType: {
-    fontSize: 14,
+     fontSize: Fonts.size.PageHeading,
     color: '#333',
     fontWeight: '600',
   },
 
   ambulanceNumber: {
-    fontSize: 14,
+      fontSize: Fonts.size.PageHeading,
     color: '#555',
     fontWeight: '500',
   },
 
   // Section styles
   section: {
-    backgroundColor: '#fff',
-    padding: 16,
-    marginTop: 10,
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.22,
-    shadowRadius: 2.22,
+ marginTop:'2%'
   },
 
   sectionTitle: {
     fontWeight: 'bold',
-    fontSize: 18,
+       fontSize: Fonts.size.PageHeading,
     marginBottom: 12,
     color: '#333',
   },
 
   locationRow: {
-    marginBottom: 12,
+top:'2%'
   },
 
   locationIconLabel: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 6,
+    top:'1%'
   },
 
   locationHeading: {
-    fontSize: 16,
+      fontSize: Fonts.size.PageHeading,
     fontWeight: 'bold',
     marginLeft: 6,
     color: '#333',
   },
 
   locationValue: {
-    fontSize: 14,
+     fontSize: Fonts.size.PageHeading,
     color: '#555',
     paddingLeft: 24,
     lineHeight: 20,
@@ -1003,26 +953,26 @@ const styles = StyleSheet.create({
 
   label: {
     color: '#666',
-    fontSize: 14,
+     fontSize: Fonts.size.PageHeading,
     flex: 1,
   },
 
   value: {
     fontWeight: '600',
     color: '#333',
-    fontSize: 14,
+     fontSize: Fonts.size.PageHeading,
     textAlign: 'right',
     flex: 1,
   },
 
   totalLabel: {
-    fontSize: 18,
+     fontSize: Fonts.size.BookingConformation,
     fontWeight: 'bold',
     color: '#333',
   },
 
   totalValue: {
-    fontSize: 18,
+   fontSize: Fonts.size.BookingConformation,
     fontWeight: 'bold',
     color: '#7B2CBF',
   },

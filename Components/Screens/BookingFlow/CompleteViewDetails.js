@@ -237,14 +237,14 @@ const styles = StyleSheet.create({
   },
   changeLocationBtn: {
     borderWidth: 1,
-    borderColor: '#1824AA',
+    borderColor: '#E1FFE8',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
-    backgroundColor: '#E3E6FF',
+    backgroundColor: '#E1FFE8',
   },
   changeLocationText: {
-    color: '#1824AA',
+    color: '#1C7C09',
     fontSize: Fonts.size.PageHeading,
     fontWeight: '600',
   },

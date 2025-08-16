@@ -247,17 +247,21 @@ const styles = StyleSheet.create({
   },
   rejectButton: {
     flex: 1,
+    flexDirection: 'row',
     borderWidth: 1,
     borderColor: '#E1FFE8',
-    padding: 12,
+    paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 8,
+    height: 48,
     backgroundColor: '#E1FFE8',
+
   },
-  rejectText: { color: '#1C7C09', fontWeight: 'bold',  fontSize: Fonts.size.PageSubSubHeading, },
+  rejectText: { color: '#1C7C09', fontWeight: 'bold',  fontSize: Fonts.size.PageHeading, },
   acceptButton: {
-  flex: 1,
+   flex: 1,
     flexDirection: 'row',
     backgroundColor: '#7518AA',
     paddingVertical: 12,
@@ -266,7 +270,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: 48,
   },
-  acceptText: {  color: '#fff', fontWeight: 'bold',   fontSize: Fonts.size.PageSubSubHeading, },
+  acceptText: {  color: '#fff', fontWeight: 'bold',   fontSize: Fonts.size.PageHeading, },
   iconStyle: {
     borderWidth: 1,
     padding: 3,

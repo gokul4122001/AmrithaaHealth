@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
     height: 48,
   },
-  viewText: { color: '#7518AA', fontWeight: 'bold',  fontSize: Fonts.size.PageSubSubHeading, },
+  viewText: { color: '#7518AA', fontWeight: 'bold',  fontSize: Fonts.size.PageHeading, },
   trackButton: {
     flex: 1,
     flexDirection: 'row',
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: 48,
   },
-  trackText: { color: '#fff', fontWeight: 'bold',   fontSize: Fonts.size.PageSubSubHeading, },
+  trackText: { color: '#fff', fontWeight: 'bold',   fontSize: Fonts.size.PageHeading, },
 });
 
 export default CurrentBookingCardScreen;

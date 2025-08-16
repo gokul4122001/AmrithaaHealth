@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
   },
   typeAndDetails: { fontSize: Fonts.size.PageHeading, fontWeight: 'bold', color: '#000' },
     bookingId: { fontSize: Fonts.size.addition, fontWeight: 'bold', color: '#000',paddingBottom:6 },
-  rejectText: { color: '#7518AA', fontWeight: 'bold',  fontSize: Fonts.size.PageSubSubHeading, },
+  rejectText: { color: '#7518AA', fontWeight: 'bold',  fontSize: Fonts.size.PageHeading, },
   acceptButton: {
    flex: 1,
     flexDirection: 'row',
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: 48,
   },
-  acceptText: { color: '#fff', fontWeight: 'bold',   fontSize: Fonts.size.PageSubSubHeading, },
+  acceptText: { color: '#fff', fontWeight: 'bold',   fontSize: Fonts.size.PageHeading, },
 });
 
 export default CurrentBookingCardScreen;

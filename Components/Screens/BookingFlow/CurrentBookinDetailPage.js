@@ -278,12 +278,12 @@ const BookingDetailsScreen = ({ navigation, route }) => {
                     </View>
                   </View>
                   <View style={styles.nameRow}>
-                    <MaterialIcons name="ambulance" size={18} color="#7B2CBF" style={{ marginRight: 4 }} />
+               
                     <Text style={styles.ambulanceType}>
                       {bookingData.ambulance_type !== 'NA' ? bookingData.ambulance_type : 'Small (Omni, etc)'}
                     </Text>
                   </View>
-                  <Text style={styles.ambulanceNumber}>{bookingData.ambulance_number_plate}</Text>
+
                 </View>
               </View>
               <View style={styles.divider} />
@@ -297,7 +297,7 @@ const BookingDetailsScreen = ({ navigation, route }) => {
                 <Text style={styles.locationHeading}>Pickup</Text>
               </View>
               <Text style={styles.locationValue}>
-                <MaterialIcons name="map-marker" size={18} color="#FF6B6B" />
+                <MaterialIcons name="map-marker" size={18} color="#FF6B6B"  />
                 {bookingData.pick_address}
               </Text>
             </View>
@@ -342,8 +342,8 @@ const BookingDetailsScreen = ({ navigation, route }) => {
           {/* Customer Details */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Customer Details</Text>
-            <Text style={styles.value}>Name : {bookingData.customer_name}</Text>
-            <Text style={styles.value}>Mobile Number : {bookingData.customer_mobile}</Text>
+            <Text style={styles.value}>Name : <Text style={{color:'#5C5F5F'}}> {bookingData.customer_name}</Text></Text>
+            <Text style={styles.value}>Mobile Number : <Text style={{color:'#5C5F5F'}}>{bookingData.customer_mobile}</Text></Text>
           </View>
 
           <View style={styles.divider} />
@@ -603,7 +603,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   bookingIdText: {
-    fontSize: 16,
+      fontSize: Fonts.size.PageHeading,
     fontWeight: 'bold',
     color: '#000',
   },
@@ -656,7 +656,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   locationValue: {
-    fontSize: 14,
+    fontSize: Fonts.size.PageHeading,
     color: '#555',
     paddingLeft: 22,
   },
@@ -722,12 +722,12 @@ const styles = StyleSheet.create({
     right:10
   },
   otpTitle: {
-    fontSize: 16,
+     fontSize: Fonts.size.PageHeading,
     fontWeight: 'bold',
     color: '#ffffff',
   },
   otpValue: {
-    fontSize: 16,
+    fontSize: Fonts.size.PageHeading,
     fontWeight: 'bold',
     color: '#ffffff',
     letterSpacing: 4,
