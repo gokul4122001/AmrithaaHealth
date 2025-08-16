@@ -8,6 +8,8 @@ import {
   FlatList,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Entypo from 'react-native-vector-icons/Entypo';
+
 import { useNavigation } from '@react-navigation/native';
 import Fonts from '../../Fonts/Fonts';
 import { useSelector } from 'react-redux';
@@ -58,8 +60,11 @@ const CurrentBookingCardScreen = () => {
             style={styles.image}
           />
           <View style={{ flex: 1 }}>
-            <Text style={styles.title}>{item.ambulance_type}</Text>
-            <Text style={styles.subtitle}>{item.ambulance_details}</Text>
+              <Text style={styles.bookingId}>Booking Id : {item.booking_id}</Text>
+            <Text style={styles.typeAndDetails}>
+                     {item.ambulance_type}{' '}
+                     <Text style={styles.subtitle}>({item.ambulance_details})</Text>
+                   </Text>
           </View>
           <View style={styles.badge}>
             <Text style={styles.badgeText}>{item.status}</Text>
@@ -77,7 +82,8 @@ const CurrentBookingCardScreen = () => {
               color="#C91C1C"
               style={styles.icon}
             />
-            <Text style={styles.locationText}>
+            <Text style={styles.locationText}   numberOfLines={2}             
+      ellipsizeMode="tail"  >
               <Text style={styles.boldLabel}>Pickup :</Text> {item.pick_address}
             </Text>
           </View>
@@ -89,7 +95,8 @@ const CurrentBookingCardScreen = () => {
               style={styles.icon}
             />
             <Text style={styles.locationText}>
-              <Text style={styles.boldLabel}>Drop :</Text> {item.drop_address}
+              <Text style={styles.boldLabel}   numberOfLines={2}          
+      ellipsizeMode="tail"  >Drop :</Text> {item.drop_address}
             </Text>
           </View>
         </View>
@@ -142,12 +149,14 @@ const CurrentBookingCardScreen = () => {
                   navigation.navigate('ScheduleBooking', { id: item.id })
                 }
               >
+
                 <Text style={styles.rejectText}>View Details</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.acceptButton}
                 onPress={handleCancelBooking}
               >
+                  <Entypo name="cross" size={20} color="#ffffff" />
                 <Text style={styles.acceptText}>Cancel Booking</Text>
               </TouchableOpacity>
             </>
@@ -237,9 +246,7 @@ const styles = StyleSheet.create({
   image: { width: 50, height: 50, resizeMode: 'contain', marginRight: 12 },
   title: { fontSize: Fonts.size.PageHeading, fontWeight: 'bold' },
   subtitle: {
-    color: '#7f8c8d',
-    marginTop: 4,
-    fontSize: Fonts.size.PageSubheading,
+   color: '#4D2161', fontSize: Fonts.size.PageSubheading,  marginTop: 4,
   },
   badge: {
     backgroundColor: '#FAF0FF',
@@ -250,7 +257,7 @@ const styles = StyleSheet.create({
   badgeText: {
     color: '#C91C1C',
     fontWeight: 'bold',
-    fontSize: Fonts.size.PageHeading,
+    fontSize: Fonts.size.PageSubheading,
   },
   icon: {
     borderWidth: 1,
@@ -290,8 +297,8 @@ const styles = StyleSheet.create({
     marginTop: 12,
     alignItems: 'center',
   },
-  totalLabel: { fontSize: 16, fontWeight: 'bold' },
-  totalAmount: { fontSize: 20, fontWeight: 'bold', color: '#000' },
+  totalLabel: { fontSize: Fonts.size.addition, fontWeight: 'bold' },
+  totalAmount: { fontSize: Fonts.size.addition, fontWeight: 'bold', color: '#000' },
   buttonRow: {
     flexDirection: 'row',
     marginTop: 16,
@@ -299,22 +306,30 @@ const styles = StyleSheet.create({
   },
   rejectButton: {
     flex: 1,
+    flexDirection: 'row',
     borderWidth: 1,
     borderColor: '#7518AA',
-    padding: 12,
+    paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 8,
+    height: 48,
   },
-  rejectText: { color: '#7518AA', fontWeight: 'bold', fontSize: 16 },
+  typeAndDetails: { fontSize: Fonts.size.PageHeading, fontWeight: 'bold', color: '#000' },
+    bookingId: { fontSize: Fonts.size.addition, fontWeight: 'bold', color: '#000',paddingBottom:6 },
+  rejectText: { color: '#7518AA', fontWeight: 'bold',  fontSize: Fonts.size.PageSubSubHeading, },
   acceptButton: {
-    flex: 1,
+   flex: 1,
+    flexDirection: 'row',
     backgroundColor: '#7518AA',
-    padding: 12,
+    paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
+    height: 48,
   },
-  acceptText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  acceptText: { color: '#fff', fontWeight: 'bold',   fontSize: Fonts.size.PageSubSubHeading, },
 });
 
 export default CurrentBookingCardScreen;

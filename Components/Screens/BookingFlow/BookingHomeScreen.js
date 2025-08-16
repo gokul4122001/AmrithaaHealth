@@ -33,10 +33,10 @@ const BookingListScreen = ({ navigation }) => {
   const [customDate, setCustomDate] = useState(new Date());
 
   const tabs = [
-    { id: 'current', label: 'Emergency Booking', key: 'current' },
-    { id: 'schedule', label: 'Schedule Booking', key: 'schedule' },
-    { id: 'complete', label: 'Completed Booking', key: 'complete' },
-    { id: 'cancellation', label: 'Cancelled Booking', key: 'cancellation' },
+    { id: 'current', label: 'Emergency Bookings', key: 'current' },
+    { id: 'schedule', label: 'Schedule Bookings', key: 'schedule' },
+    { id: 'complete', label: 'Completed Bookings', key: 'complete' },
+    { id: 'cancellation', label: 'Cancelled Bookings', key: 'cancellation' },
   ];
 
   const dateFilterOptions = [

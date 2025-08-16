@@ -51,10 +51,15 @@ const CurrentBookingCardScreen = () => {
           source={{ uri: `${IMAGE_URL}${item.ambulance_icon}` }}
           style={styles.image}
         />
-        <View style={{ flex: 1 }}>
-          <Text style={styles.title}>{item.ambulance_type}</Text>
-          <Text style={styles.subtitle}>{item.ambulance_details}</Text>
-        </View>
+      <View style={{ flex: 1 }}>
+              <Text style={styles.bookingId}>Booking Id : {item.booking_id}</Text>
+    
+            
+              <Text style={styles.typeAndDetails}>
+                {item.ambulance_type}{' '}
+                <Text style={styles.subtitle}>({item.ambulance_details})</Text>
+              </Text>
+            </View>
       </View>
       <View style={styles.divider} />
 
@@ -67,7 +72,8 @@ const CurrentBookingCardScreen = () => {
             color="#C91C1C"
             style={styles.iconStyle}
           />
-          <Text style={styles.locationText}>
+          <Text style={styles.locationText}   numberOfLines={2}            
+      ellipsizeMode="tail" >
             <Text style={styles.boldLabel}>Pickup :</Text> {item.pick_address}
           </Text>
         </View>
@@ -78,7 +84,8 @@ const CurrentBookingCardScreen = () => {
             color="#C91C1C"
             style={styles.iconStyle}
           />
-          <Text style={styles.locationText}>
+          <Text style={styles.locationText}   numberOfLines={2}     
+      ellipsizeMode="tail" >
             <Text style={styles.boldLabel}>Drop :</Text> {item.drop_address}
           </Text>
         </View>
@@ -195,7 +202,10 @@ const styles = StyleSheet.create({
   headerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   image: { width: 50, height: 50, resizeMode: 'contain', marginRight: 12 },
   title: { fontSize: Fonts.size.PageHeading, fontWeight: 'bold' },
-  subtitle: { color: '#7f8c8d', marginTop: 4, fontSize: Fonts.size.PageSubheading },
+   bookingId: { fontSize: Fonts.size.addition, fontWeight: 'bold', color: '#000',paddingBottom:6 },
+
+  typeAndDetails: { fontSize: Fonts.size.PageHeading, fontWeight: 'bold', color: '#000' },
+  subtitle: { color: '#4D2161', fontSize: Fonts.size.PageSubheading,  marginTop: 4, },
 
   locationContainer: { marginVertical: 10 },
   row: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 4 },
@@ -228,8 +238,8 @@ const styles = StyleSheet.create({
     marginTop: 12,
     alignItems: 'center',
   },
-  totalLabel: { fontSize: 16, fontWeight: 'bold' },
-  totalAmount: { fontSize: 20, fontWeight: 'bold', color: '#000' },
+  totalLabel: {  fontSize: Fonts.size.addition, fontWeight: 'bold' },
+  totalAmount: {  fontSize: Fonts.size.addition, fontWeight: 'bold', color: '#000' },
   buttonRow: {
     flexDirection: 'row',
     marginTop: 16,
@@ -245,15 +255,18 @@ const styles = StyleSheet.create({
     marginRight: 8,
     backgroundColor: '#E1FFE8',
   },
-  rejectText: { color: '#1C7C09', fontWeight: 'bold', fontSize: 16 },
+  rejectText: { color: '#1C7C09', fontWeight: 'bold',  fontSize: Fonts.size.PageSubSubHeading, },
   acceptButton: {
-    flex: 1,
+  flex: 1,
+    flexDirection: 'row',
     backgroundColor: '#7518AA',
-    padding: 12,
+    paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
+    height: 48,
   },
-  acceptText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  acceptText: {  color: '#fff', fontWeight: 'bold',   fontSize: Fonts.size.PageSubSubHeading, },
   iconStyle: {
     borderWidth: 1,
     padding: 3,
