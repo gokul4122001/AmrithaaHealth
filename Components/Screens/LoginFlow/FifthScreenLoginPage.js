@@ -2,45 +2,49 @@ import React from 'react';
 import {
   View,
   Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
   Image,
-  SafeAreaView,
+  StyleSheet,
   Dimensions,
-  StatusBar as RNStatusBar,
-  Platform,
+  TouchableOpacity,
   StatusBar,
+  SafeAreaView,
+  Platform,
+  StatusBar as RNStatusBar,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
 import Fonts from '../../Fonts/Fonts';
-import Colors from '../../Colors/Colors';
 const { width, height } = Dimensions.get('window');
-
-const HealthUmbrellaScreen = () => {
+import Colors from '../../Colors/Colors';
+export default function Onboarding() {
   const navigation = useNavigation();
 
   return (
-    <LinearGradient
-      colors={['#ffffff', '#C3DFFF']}
-      start={{ x: 0, y: 0.3 }}
-      end={{ x: 0, y: 0 }}
-      style={styles.gradientContainer}
-    >
-      <StatusBar backgroundColor={Colors.statusBar} barStyle="light-content" />
+    <>
+      {/* StatusBar config */}
+      <StatusBar backgroundColor={Colors.statusBar} barStyle="light-content" translucent />
 
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView style={styles.container}>
- 
-          <View style={styles.skipContainer}>
-            <TouchableOpacity onPress={() => navigation.navigate('Login6')}>
-              <Text style={styles.skipText}>Skip ⏭</Text>
-            </TouchableOpacity>
-          </View>
+      <LinearGradient
+        colors={['#ffffff', '#C3DFFF']}
+        start={{ x: 0, y: 0.3 }}
+        end={{ x: 0, y: 0 }}
+        style={styles.gradientContainer}
+      >
+        <SafeAreaView style={styles.safeArea}>
+          <View
+            style={[
+              styles.container,
+              Platform.OS === 'android' && { paddingTop: StatusBar.currentHeight },
+            ]}
+          >
+            {/* Skip Button */}
+            <View style={styles.skipContainer}>
+              <TouchableOpacity onPress={() => navigation.navigate('Login6')}>
+                <Text style={styles.skipText}>Skip ⏭</Text>
+              </TouchableOpacity>
+            </View>
 
-       
-          <View style={styles.header}>
+            {/* Logo and Title */}
             <View style={styles.logoRow1}>
               <View style={styles.logoRow}>
                 <Image
@@ -48,61 +52,97 @@ const HealthUmbrellaScreen = () => {
                   style={styles.logoImage}
                 />
               </View>
-              <View>
-                <Text style={styles.logoTitle}>Health</Text>
-                <Text style={styles.logoTitle}>Umbrella</Text>
+              <View style={{ top: 12 }}>
+                <Text style={styles.logoText}>Health</Text>
+                <Text style={styles.logoText}>Umbrella</Text>
               </View>
             </View>
 
-          
-            <View style={styles.centeredContent}>
-              <Text style={styles.title}>A - Z Health care service</Text>
-              <Text style={styles.subtitle}>
-                All your health needs connect with us For all emergency and routine health care needs
-              </Text>
+            <Text style={styles.title2}>A - Z Healthcare Services</Text>
+            <Text style={styles.title1}>Connect with us for all your emergency and routine healthcare needs.</Text>
+
+           
+        
+            {/* Center Circle Image */}
+            <View style={styles.spinContainer}>
+              <Image
+                source={require('../../Assets/log.png')}
+                style={styles.spinImage}
+              />
             </View>
           </View>
-        </ScrollView>
-
-       
-        <View style={styles.bottomImageContainer}>
-          <Image
-            source={require('../../Assets/log.png')}
-            style={styles.bottomImage}
-          />
-        </View>
-      </SafeAreaView>
-    </LinearGradient>
+        </SafeAreaView>
+      </LinearGradient>
+    </>
   );
-};
-
-export default HealthUmbrellaScreen;
+}
 
 const styles = StyleSheet.create({
   gradientContainer: {
     flex: 1,
-    paddingTop: Platform.OS === 'android' ? RNStatusBar.currentHeight : 0,
+      paddingTop: Platform.OS === 'android' ? RNStatusBar.currentHeight : 0,
   },
   safeArea: {
     flex: 1,
   },
   container: {
     flex: 1,
+    alignItems: 'center',
+  },
+  title2: {
+    textAlign: 'center',
+  fontSize:  Fonts.size.FlashScreenHeader,
+     fontWeight: '700',
+    marginTop: height * 0.01,
+    color:Colors.black ,
+     fontFamily:Fonts.family.regular,
+  },
+  title1: {
+    textAlign: 'center',
+        fontSize:  Fonts.size.PageHeading,
+    fontWeight: '500',
+    marginTop: height * 0.01,
+    color: '#4D4C4C',
+   
+     top:10
+  },
+  description: {
+    fontSize: width * 0.04,
+    textAlign: 'center',
+  
+    color: '#ffff',
+    paddingHorizontal: 20,
+    lineHeight: 22,
+   
+  },
+  spinContainer: {
+   
+   
+  },
+  spinImage: {
+    width: width * 1,
+    height: width *1.29,
+    resizeMode: 'contain',
+   top:'20%',
+   left:2
   },
   skipContainer: {
-    alignItems: 'flex-end',
-    padding: 16,
+    position: 'absolute',
+    top: height * 0.02,
+    right: width * 0.05,
+    zIndex: 1,
   },
   skipText: {
     color: '#555',
     fontWeight: 'bold',
-     fontFamily:Fonts.family.regular,
-         fontSize:  Fonts.size.PageHeading,
+     fontSize:  Fonts.size.PageHeading,
+     fontFamily:Fonts.family.regular
   },
   logoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginTop: height * 0.03,
+    marginBottom: height * 0.01,
     justifyContent: 'center',
   },
   logoImage: {
@@ -110,49 +150,16 @@ const styles = StyleSheet.create({
     height: 70,
     marginRight: 8,
   },
-  logoTitle: {
-     fontSize:  Fonts.size.FlashScreenSubHeading,
-    color:  Colors.statusBar,
+  logoText: {
+   fontSize:  Fonts.size.FlashScreenSubHeading,
+    color: Colors.statusBar,
     fontWeight: '700',
      fontFamily:Fonts.family.regular
-  },
-  centeredContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    marginTop: 20,
-  },
-  title: {
-  fontSize:  Fonts.size.FlashScreenHeader,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 10,
-     fontFamily:Fonts.family.regular
-  },
-  subtitle: {
-    fontSize:  Fonts.size.PageHeading,
-    color: '#666',
-    textAlign: 'center',
-     fontFamily:Fonts.family,
-      lineHeight: 25, 
   },
   logoRow1: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
-    top: 10,
-  },
-  bottomImageContainer: {
-    position: 'absolute',
-    bottom: '10%',
-    width: width,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bottomImage: {
-    width: width * 1,
-    height: width * 1.3,
-    resizeMode: 'contain',
   },
 });

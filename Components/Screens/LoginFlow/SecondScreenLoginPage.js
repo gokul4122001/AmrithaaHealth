@@ -75,14 +75,13 @@ export default function Onboarding() {
             </View>
 
             {/* Headings */}
-            <Text style={styles.title}>For</Text>
+           
             <Text style={styles.title2}>All Your Health Needs</Text>
             <Text style={styles.title1}>Now you can Book services online</Text>
 
             {/* Description */}
             <Text style={styles.description}>
-              Ambulance, Home Care Nurse, Physiotherapist, Lab Tests, 24-hour pharmacy,
-              Hospital Services, Speciality Clinics and Funeral Services
+             Ambulance, HomeCare Nurse, Physiotherapist, Lab Test, 24/7 Pharmacy, Medical Equipments, Hospital, Speciality Clinics and Funeral Service
             </Text>
 
             {/* Center Circle Image */}
@@ -140,7 +139,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   fontSize:  Fonts.size.FlashScreenHeader,
     fontWeight: '700',
-    marginTop: height * 0.01,
+    marginTop: height * 0.04,
     color:Colors.black ,
     fontFamily: Fonts.family.regular,
   },

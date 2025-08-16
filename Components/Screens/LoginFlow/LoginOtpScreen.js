@@ -7,19 +7,20 @@ import {
   StyleSheet,
   StatusBar,
   Image,
-  ScrollView,
-  KeyboardAvoidingView,
   Platform,
   Animated,
+  ScrollView,
+  KeyboardAvoidingView,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
-import { verifyOtp } from '../APICall/LoginApi';
+import { verifyOtp, sendOtp } from '../APICall/LoginApi'; // ✅ import both APIs
 import { useDispatch } from 'react-redux';
 import { setAuthDetails } from '../../redux/slice/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// ✅ Toast Component
 const Toast = ({ message, visible }) => {
   const slideAnim = useRef(new Animated.Value(-100)).current;
 
@@ -41,11 +42,12 @@ const Toast = ({ message, visible }) => {
     }
   }, [visible]);
 
+  if (!visible) return null;
+
   let backgroundColor = 'green';
   if (message === 'Please enter a 4-digit OTP') backgroundColor = 'red';
-  else if (message.includes('New OTP has been sent')) backgroundColor = 'green';
-
-  if (!visible) return null;
+  else if (message.includes('Invalid') || message.includes('failed'))
+    backgroundColor = 'red';
 
   return (
     <Animated.View
@@ -62,12 +64,13 @@ const Toast = ({ message, visible }) => {
   );
 };
 
+// ✅ Main Screen
 const OTPVerificationScreen = ({ route, navigation }) => {
   const [formData, setFormData] = useState({
     otp: ['', '', '', ''],
     mobileNumber: route?.params?.mobileNumber || '9345665442',
   });
-  const [timer, setTimer] = useState(300); // 5 minutes
+  const [timer, setTimer] = useState(300);
   const [isResendEnabled, setIsResendEnabled] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -77,6 +80,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
 
   const formattedMobileNumber = `${formData.mobileNumber}`;
 
+  // ✅ Timer Countdown
   useEffect(() => {
     const interval = setInterval(() => {
       setTimer(prev => {
@@ -126,6 +130,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
     }
   };
 
+  // ✅ Submit OTP
   const handleSubmit = async () => {
     const enteredOtp = formData.otp.join('');
     if (enteredOtp.length !== 4) {
@@ -137,7 +142,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
     try {
       const response = await verifyOtp(formData.mobileNumber, enteredOtp);
 
-      if (response) {
+      if (response?.access_token) {
         await AsyncStorage.setItem('isLoggedIn', 'true');
         await AsyncStorage.setItem('token', response.access_token);
         dispatch(
@@ -150,7 +155,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
         showToast('OTP verified successfully!');
         setTimeout(() => navigation.navigate('Login8'), 2000);
       } else {
-        showToast(response.message || 'Invalid OTP. Please try again.');
+        showToast(response?.message || 'Invalid OTP. Please try again.');
       }
     } catch (error) {
       showToast(error.message || 'OTP verification failed');
@@ -159,13 +164,22 @@ const OTPVerificationScreen = ({ route, navigation }) => {
     }
   };
 
-  const handleResend = () => {
+  // ✅ Resend OTP
+  const handleResend = async () => {
     if (!isResendEnabled) return;
-    setTimer(300); // reset to 5 minutes
+    setTimer(300);
     setIsResendEnabled(false);
     setFormData({ ...formData, otp: ['', '', '', ''] });
     inputRefs.current[0]?.focus();
-    showToast(`New OTP has been sent to ${formattedMobileNumber}`);
+
+    try {
+      const response = await sendOtp(formData.mobileNumber);
+      if (response) {
+        showToast(`New OTP has been sent to ${formattedMobileNumber}`);
+      }
+    } catch (error) {
+      showToast('Failed to resend OTP. Please try again.');
+    }
   };
 
   const handleChangeMobile = () => {
@@ -185,11 +199,11 @@ const OTPVerificationScreen = ({ route, navigation }) => {
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 20}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: 60 }}
-          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
         >
           <View style={styles.logoRow1}>
             <Image
@@ -227,7 +241,6 @@ const OTPVerificationScreen = ({ route, navigation }) => {
                     onKeyPress={e => handleKeyPress(e, index)}
                     keyboardType="numeric"
                     maxLength={1}
-                    textAlign="center"
                   />
                 ))}
               </View>
@@ -236,7 +249,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
 
               <View style={styles.resendContainer}>
                 <Text style={styles.resendQuestion}>
-                  Didn't you receive any code?
+                  Didn't  receive the Otp?
                 </Text>
                 <TouchableOpacity
                   onPress={handleResend}
@@ -257,53 +270,41 @@ const OTPVerificationScreen = ({ route, navigation }) => {
             </View>
           </View>
         </ScrollView>
-
-        <View style={styles.submitContainer}>
-          <TouchableOpacity
-            style={styles.submitButton}
-            onPress={handleSubmit}
-            disabled={isLoading}
-          >
-            <Text style={styles.submitButtonText}>
-              {isLoading ? 'Verifying...' : 'Submit'}
-            </Text>
-          </TouchableOpacity>
-        </View>
       </KeyboardAvoidingView>
+
+      <View style={styles.submitContainer}>
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={handleSubmit}
+          disabled={isLoading}
+        >
+          <Text style={styles.submitButtonText}>
+            {isLoading ? 'Verifying...' : 'Submit'}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </LinearGradient>
   );
 };
 
+// ✅ Styles
 const styles = StyleSheet.create({
-  gradientContainer: {
-    flex: 1,
-  },
+  gradientContainer: { flex: 1 },
   logoRow1: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 60,
   },
-  logoImage: {
-    width: 70,
-    height: 70,
-    marginRight: 8,
-  },
+  logoImage: { width: 70, height: 70, marginRight: 8 },
   logoBrand: {
     fontSize: Fonts.size.FlashScreenSubHeading,
     color: Colors.statusBar,
     fontWeight: '700',
     fontFamily: Fonts.family.regular,
   },
-  mainContent: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  content: {
-    alignItems: 'center',
-    marginTop: 30,
-  },
+  mainContent: { flex: 1, paddingHorizontal: 20, paddingBottom: 20 },
+  content: { alignItems: 'center', marginTop: 30 },
   title: {
     fontSize: Fonts.size.FlashScreenHeader,
     fontWeight: '600',
@@ -372,16 +373,9 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.family.regular,
     left: 5,
   },
-  resendEnabled: {
-    color: '#ff4444',
-  },
-  resendDisabled: {
-    color: '#ccc',
-  },
-  submitContainer: {
-    paddingBottom: 20,
-    backgroundColor: 'transparent',
-  },
+  resendEnabled: { color: '#ff4444' },
+  resendDisabled: { color: '#ccc' },
+  submitContainer: { paddingBottom: 20, backgroundColor: 'transparent' },
   submitButton: {
     backgroundColor: '#7518AA',
     paddingVertical: 18,
@@ -390,10 +384,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '90%',
     shadowColor: '#7c3aed',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,

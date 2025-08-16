@@ -16,7 +16,9 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient';
+import logo from '../../Assets/logos.png';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
 import LottieView from 'lottie-react-native';
@@ -27,31 +29,47 @@ import {
   DeleteEmergencyContactAPI
 } from '../APICall/EmergencyFlowApiCall';
 import { useSelector } from 'react-redux';
-
-// ✅ Import CustomHeader
 import CustomHeader from '../../../Header';
 
 const EmergencyContactScreen = ({ navigation }) => {
+  const [profileData, setProfileData] = useState(null);
   const [contacts, setContacts] = useState([]);
   const [editingContactId, setEditingContactId] = useState(null);
   const [isEmergencyModalVisible, setIsEmergencyModalVisible] = useState(false);
-  const [emergencyContact, setEmergencyContact] = useState({ name: '', contactNumber: '' });
+  const [emergencyContact, setEmergencyContact] = useState({
+    name: '',
+    contactNumber: '',
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+    const token = useSelector(state => state.auth.token);
 
-  const token = useSelector(state => state.auth.token);
 
-  const avatarColors = [
-    '#F44336', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5',
-    '#2196F3', '#03A9F4', '#00BCD4', '#009688', '#4CAF50',
-    '#8BC34A', '#CDDC39', '#FFC107', '#FF9800', '#FF5722',
-  ];
-  const getAvatarColor = (name) => {
-    if (!name || name.length === 0) return '#B0BEC5';
-    const charCode = name.toUpperCase().charCodeAt(0);
-    const index = charCode % avatarColors.length;
-    return avatarColors[index];
-  };
+    const avatarColors = [
+  '#F44336', // Red
+  '#E91E63', // Pink
+  '#9C27B0', // Purple
+  '#673AB7', // Deep Purple
+  '#3F51B5', // Indigo
+  '#2196F3', // Blue
+  '#03A9F4', // Light Blue
+  '#00BCD4', // Cyan
+  '#009688', // Teal
+  '#4CAF50', // Green
+  '#8BC34A', // Light Green
+  '#CDDC39', // Lime
+  '#FFC107', // Amber
+  '#FF9800', // Orange
+  '#FF5722', // Deep Orange
+];
+const getAvatarColor = (name) => {
+  if (!name || name.length === 0) return '#B0BEC5'; // fallback color
+
+  const charCode = name.toUpperCase().charCodeAt(0); // Get ASCII of first letter
+  const index = charCode % avatarColors.length; // Map to one of the colors
+  return avatarColors[index];
+};
+
 
   const fetchContacts = async () => {
     try {
@@ -88,58 +106,116 @@ const EmergencyContactScreen = ({ navigation }) => {
     setIsEmergencyModalVisible(true);
   };
 
-  const handleSaveEmergencyContact = async () => {
-    if (!emergencyContact.name || !emergencyContact.contactNumber) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-    try {
-      setIsLoading(true);
-      if (editingContactId) {
-        await EditEmergencyContactAPI(token, {
-          id: editingContactId,
-          name: emergencyContact.name,
-          mobile: emergencyContact.contactNumber
-        });
-        Alert.alert('Success', 'Contact updated successfully');
-      } else {
-        await AddEmergencyContactAPI(token, {
-          name: emergencyContact.name,
-          mobile: emergencyContact.contactNumber
-        });
-        Alert.alert('Success', 'Contact added successfully');
-      }
+const handleSaveEmergencyContact = async () => {
+  if (!emergencyContact.name || !emergencyContact.contactNumber) {
+    Alert.alert('Error', 'Please fill in all fields');
+    return;
+  }
+
+  // ✅ Validate 10-digit number
+  if (!/^\d{10}$/.test(emergencyContact.contactNumber)) {
+    Alert.alert('Error', 'Contact number must be exactly 10 digits');
+    return;
+  }
+
+  try {
+    setIsLoading(true);
+
+    if (editingContactId) {
+      // ✅ Update existing contact
+      const updatedContact = {
+        id: editingContactId,
+        name: emergencyContact.name,
+        mobile: emergencyContact.contactNumber,
+      };
+      await EditEmergencyContactAPI(token, updatedContact);
       await fetchContacts();
-      setIsEmergencyModalVisible(false);
-      setEmergencyContact({ name: '', contactNumber: '' });
-      setEditingContactId(null);
-    } catch (error) {
-      console.error('Error saving contact:', error);
-      Alert.alert('Error', error.response?.data?.message || 'Failed to save contact');
-    } finally {
-      setIsLoading(false);
+      Alert.alert('Success', 'Contact updated successfully');
+    } else {
+      // ✅ Add new contact
+      const newContact = {
+        name: emergencyContact.name,
+        mobile: emergencyContact.contactNumber,
+      };
+      await AddEmergencyContactAPI(token, newContact);
+      await fetchContacts();
+      Alert.alert('Success', 'Contact added successfully');
     }
+
+    setIsEmergencyModalVisible(false);
+    setEmergencyContact({ name: '', contactNumber: '' });
+    setEditingContactId(null);
+  } catch (error) {
+    console.error('Error saving contact:', error);
+    Alert.alert('Error', error.response?.data?.message || 'Failed to save contact');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+  const handleDeleteContact = async (contactId) => {
+    Alert.alert(
+      'Delete Contact',
+      'Are you sure you want to delete this contact?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setIsLoading(true);
+              await DeleteEmergencyContactAPI(token, contactId);
+              await fetchContacts(); // Refresh the list after delete
+              Alert.alert('Success', 'Contact deleted successfully');
+            } catch (error) {
+              console.error('Error deleting contact:', error);
+              Alert.alert('Error', 'Failed to delete contact');
+            } finally {
+              setIsLoading(false);
+            }
+          },
+        },
+      ],
+    );
   };
 
-  const renderContactItem = (contact) => (
-    <View key={contact.id} style={styles.contactItem}>
-      <View style={styles.contactContent}>
-        <View style={[styles.avatarContainer, { backgroundColor: getAvatarColor(contact.name) }]}>
-          <Text style={styles.avatarText}>
-            {contact.name?.charAt(0)?.toUpperCase() || '?'}
-          </Text>
-        </View>
-        <View style={styles.contactInfo}>
-          <Text style={styles.contactName}>{contact.name}</Text>
-          <Text style={styles.contactNumber}>Contact no: {contact.mobile}</Text>
-        </View>
+  const handleCancelEmergencyContact = () => {
+    setIsEmergencyModalVisible(false);
+    setEmergencyContact({ name: '', contactNumber: '' });
+    setEditingContactId(null);
+  };
+
+const renderContactItem = (contact) => (
+  <View key={contact.id} style={styles.contactItem}>
+    <View style={styles.contactContent}>
+      <View style={[styles.avatarContainer, { backgroundColor: getAvatarColor(contact.name) }]}>
+        <Text style={styles.avatarText}>
+          {contact.name && contact.name.length > 0 ? contact.name.charAt(0).toUpperCase() : '?'}
+        </Text>
       </View>
-      <TouchableOpacity style={styles.editButton} onPress={() => handleEditContact(contact)}>
+
+      <View style={styles.contactInfo}>
+        <Text style={styles.contactName}>{contact.name}</Text>
+        <Text style={styles.contactNumber}>Contact no: {contact.mobile}</Text>
+      </View>
+    </View>
+
+    <View style={styles.contactActions}>
+      <TouchableOpacity 
+        style={styles.editButton} 
+        onPress={() => handleEditContact(contact)}
+      >
         <Icon name="edit" size={16} color="#7518AA" />
         <Text style={styles.editText}>Edit</Text>
       </TouchableOpacity>
     </View>
-  );
+  </View>
+);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -147,11 +223,12 @@ const EmergencyContactScreen = ({ navigation }) => {
 
       <LinearGradient colors={['#ffffff', '#C3DFFF']} start={{ x: 0, y: 0.3 }} end={{ x: 0, y: 0 }} style={styles.topBackground}>
 
-        {/* ✅ Custom Header */}
-        <CustomHeader
-          onNotificationPress={() => console.log('Notification pressed')}
-          onImagePress={() => console.log('Emergency icon pressed')}
+     <CustomHeader
+          username="Janmani Kumar"
+          onNotificationPress={() => console.log('Notification Pressed')}
+          onWalletPress={() => console.log('Wallet Pressed')}
         />
+
 
         <View style={styles.titleSection}>
           <View style={styles.titleRow}>
@@ -170,7 +247,12 @@ const EmergencyContactScreen = ({ navigation }) => {
           style={styles.content}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 50 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
+          }
         >
           {isLoading && contacts.length === 0 ? (
             <View style={styles.loadingContainer}>
@@ -181,19 +263,105 @@ const EmergencyContactScreen = ({ navigation }) => {
               {contacts.map(renderContactItem)}
             </View>
           ) : (
-            <View style={styles.emptyState}>
-              <LottieView
-                source={require('../../Assets/lottie/NoData.json')}
-                autoPlay
-                loop
-                style={styles.lottie}
-              />
-            </View>
+         <View style={styles.emptyState}>
+  <LottieView
+    source={require('../../Assets/lottie/NoData.json')} // 👈 use your local Lottie JSON
+    autoPlay
+    loop
+    style={styles.lottie}
+  />
+  
+  
+</View>
+
           )}
         </ScrollView>
       </LinearGradient>
 
-      {/* Modal Code remains same... */}
+      {/* Emergency Contact Modal */}
+      <Modal
+        visible={isEmergencyModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={handleCancelEmergencyContact}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {editingContactId ? 'Edit Contact' : 'Add Emergency Contact'}
+              </Text>
+              <TouchableOpacity onPress={handleCancelEmergencyContact} style={styles.closeButton}>
+                <Icon name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalSubtitle}>
+              {editingContactId
+                ? 'Update your emergency contact details'
+                : 'Add your emergency contact so an enterprise call will be made in case of an emergency'}
+            </Text>
+
+            <View style={styles.formContainer}>
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Name *</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Enter Name"
+                  placeholderTextColor="#9CA3AF"
+                  value={emergencyContact.name}
+                  onChangeText={(text) =>
+                    setEmergencyContact(prev => ({ ...prev, name: text }))
+                  }
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Contact Number *</Text>
+             <TextInput
+  style={styles.textInput}
+  placeholder="Enter contact number"
+  placeholderTextColor="#9CA3AF"
+  keyboardType="number-pad"
+  maxLength={10} // 👈 cannot type more than 10
+  value={emergencyContact.contactNumber}
+  onChangeText={(text) =>
+    setEmergencyContact(prev => ({
+      ...prev,
+      contactNumber: text.replace(/[^0-9]/g, '') // 👈 only digits allowed
+    }))
+  }
+/>
+
+              </View>
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={handleCancelEmergencyContact}
+                disabled={isLoading}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={handleSaveEmergencyContact}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.saveButtonText}>
+                    {editingContactId ? 'Update' : 'Save'}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -254,7 +422,6 @@ const styles = StyleSheet.create({
   },
   titleSection: {
     paddingTop: 16,
-        paddingHorizontal: wp('3%'),
   },
   titleRow: {
     flexDirection: 'row',
@@ -276,6 +443,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderWidth: 1,
     borderColor: '#7518AA',
+    right:15
   },
   addContactText: {
     color: '#FFFFFF',
@@ -416,39 +584,7 @@ addFirstContactText: {
     paddingHorizontal: wp('4%'),
     height: hp('100%'),
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logo: {
-    width: wp('10%'),
-    height: hp('5%'),
-    resizeMode: 'contain',
-  },
-  greetingContainer: {
-    flex: 1,
-    marginLeft: wp('3%'),
-  },
-  greeting: {
-    fontSize: Fonts.size.TopHeading,
-    color: 'black',
-    opacity: 0.9,
-    fontFamily: Fonts.family.regular
-  },
-  userName: {
-    fontSize: Fonts.size.TopSubheading,
-    fontWeight: 'bold',
-    color: 'black',
-    fontFamily: Fonts.family.regular
-  },
-  notificationButton: {
-    width: wp('10%'),
-    height: wp('10%'),
-    borderRadius: wp('5%'),
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',

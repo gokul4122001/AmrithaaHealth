@@ -58,7 +58,7 @@ const HealthUmbrellaScreen = () => {
             <View style={styles.centeredContent}>
               <Text style={styles.title}>Book Your Physiotherapist</Text>
               <Text style={styles.subtitle}>
-               Home Visit / Clinic Appointment
+Home Visits / In-Clinic Appointments
               </Text>
             </View>
           </View>
@@ -153,8 +153,8 @@ const styles = StyleSheet.create({
   },
   bottomImage: {
     width: width * 1,
-    height: width * 1.2,
+    height: width * 1.5,
     resizeMode: 'contain',
-    top:'10%'
+    top:'20%'
   },
 });

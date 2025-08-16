@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   },
   bottomButtonContainer: {
     paddingHorizontal: 20,
-    paddingBottom: 100,
+    paddingBottom: 90,
     backgroundColor: 'transparent',
   },
   otpButton: {

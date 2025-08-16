@@ -32,11 +32,11 @@ const services = [
 ];
 
 const listings = [
-  { title: 'Hospital', image: require('../../Assets/report1.png') },
-  { title: 'Clinics', image: require('../../Assets/report2.png') },
+  { title: 'Speciality Hospital', image: require('../../Assets/report1.png') },
+  { title: 'Speciality Clinic', image: require('../../Assets/report2.png') },
   { title: 'Blood Bank', image: require('../../Assets/report3.png') },
   { title: 'Pharmacy', image: require('../../Assets/report4.png') },
-  { title: 'Medical Equipment', image: require('../../Assets/report5.png') },
+  { title: 'Medical Equipment"s', image: require('../../Assets/report5.png') },
 ];
 
 const transactions = [
@@ -147,6 +147,8 @@ export default function App({ navigation }) {
           <Image source={item.phoneIcon} style={styles.phoneIcon} />
         </TouchableOpacity>
       </View>
+
+        <View style={styles.divider} />
 
       <View style={styles.scheduleContainer}>
         <View style={styles.scheduleDetailsRow}>
@@ -265,15 +267,21 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   topBackground: { paddingTop: hp('4%'), paddingBottom: hp('2%'), paddingHorizontal: wp('4%'), height: hp('100%') },
   searchContainer: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 5, paddingHorizontal: 10,
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 7, paddingHorizontal: 10,
     marginBottom: 20, height: 50, marginTop: 20
+  },
+    divider: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#aaa',
+    borderStyle: 'dotted',
+    marginVertical: 10,
   },
   searchIcon: { marginRight: 3,paddingHorizontal:10 },
   searchBox: { flex: 1, fontSize: Fonts.size.PageSubheading, color: '#000' },
   sectionTitle: { fontSize: Fonts.size.PageHeading, fontWeight: '600', marginBottom: 15, color: 'black' ,left:'2%'},
   gridRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
   gridCard: { width: '30%', alignItems: 'center', justifyContent: 'center' },
-  cardImage: { width: 80, height: 80, resizeMode: 'contain' },
+  cardImage: { width: 130, height: 100, resizeMode: 'contain' },
   cardTitle: { marginTop: 5, fontSize: Fonts.size.PageSubheading, textAlign: 'center', fontWeight: '500', color: '#000000' },
   stackedCardsContainer: { height: 200, position: 'relative', top: '1%' },
   stackedCard: { position: 'absolute', width: '100%', top: 0, left: 0 },
@@ -285,7 +293,7 @@ const styles = StyleSheet.create({
   scheduleHeader: { flexDirection: 'row', alignItems: 'center', paddingBottom: 10 },
   scheduleAvatar: { width: 40, height: 40, borderRadius: 20 },
   doctorName: { color: '#fff', fontWeight: 'bold', fontFamily: Fonts.family.regular, fontSize: Fonts.size.PageSubheading },
-  specialty: { color: '#ddd', fontFamily: Fonts.family.regular, fontSize: Fonts.size.PageSubSubHeading },
+  specialty: { color: '#ddd', fontFamily: Fonts.family.regular, fontSize: Fonts.size.PageSubSubHeading ,paddingTop:10},
   phoneIcon: { width: 34, height: 34 },
   scheduleContainer: { marginTop: 10 },
   scheduleDetailsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
