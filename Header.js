@@ -3,15 +3,15 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Fonts from './Components/Fonts/Fonts';
 import { useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 
-const CustomHeader = ({ username = 'Akash Ambulance', onNotificationPress, onImagePress }) => {
+const CustomHeader = () => {
   const UserProfile = useSelector(state => state.auth.UserProfile);
+  const navigation = useNavigation();
 
   return (
     <View style={styles.headerContainer}>
-      
-
-
+      {/* Left Section */}
       <View style={styles.leftSection}>
         <Image 
           source={require('./Components/Assets/logos.png')}
@@ -23,11 +23,20 @@ const CustomHeader = ({ username = 'Akash Ambulance', onNotificationPress, onIma
         </View>
       </View>
 
+      {/* Right Section */}
       <View style={styles.rightSection}>
-        <TouchableOpacity onPress={onNotificationPress}>
-          <Ionicons name="notifications-outline" size={24} color="#000000" style={styles.icon} />
+        {/* Notification Button */}
+        <TouchableOpacity onPress={() => navigation.navigate("NotificationScreen")}>
+          <Ionicons 
+            name="notifications-outline" 
+            size={24} 
+            color="#000000" 
+            style={styles.icon} 
+          />
         </TouchableOpacity>
-        <TouchableOpacity onPress={onImagePress}>
+
+        {/* Emergency Icon */}
+        <TouchableOpacity onPress={() => navigation.navigate("EmergencyScreen")}>
           <Image
             source={require('./Components/Assets/emergencyicon.png')} 
             style={styles.profileImage}

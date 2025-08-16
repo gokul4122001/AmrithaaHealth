@@ -101,7 +101,7 @@ const TermsAndConditionsScreen = ({ navigation }) => {
           <ScrollView
             contentContainerStyle={styles.scrollView}
             showsVerticalScrollIndicator={false}
-          >
+          >    
             <Text style={styles.contentText}>{terms?.message}</Text>
           </ScrollView>
         )}

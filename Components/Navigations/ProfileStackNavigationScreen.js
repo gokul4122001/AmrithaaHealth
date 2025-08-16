@@ -8,6 +8,8 @@ import EmergencyContactScreen from '../Screens/ProfileFlow/ProfileEmergencyConta
 import MyReport from '../Screens/ProfileFlow/MyReport';
 import ListofHospitals from '../Screens/ProfileFlow/ReportListOfEnquiryPage';
 import TermsAndConditionsScreen from '../Screens/ProfileFlow/Terms&ConditionPage';
+import NotificationScreen from '../Screens/Notification/Notification';
+
 
 const ProfileStack = createNativeStackNavigator();
 
@@ -54,6 +56,12 @@ const ProfileStackScreen = () => {
         component={TermsAndConditionsScreen}
         options={{ headerShown: false }}
       />
+      <ProfileStack.Screen
+        name="NotificationScreen"
+        component={NotificationScreen}
+        options={{ headerShown: false }}
+      />
+     
 
     </ProfileStack.Navigator>
     

@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import EmergencyHomeScreen from '../Screens/EmergencyFlow/EmergencyHomeScreen';
 import EmergencyHospitalScreen from '../Screens/EmergencyFlow/EmergencyHospitalScreen'
 import EmergencyHospitalDetailScreen from '../Screens/EmergencyFlow/EmergencyHospitaldetailPage'
+import NotificationScreen from '../Screens/Notification/Notification';
 
 
 
@@ -28,6 +29,17 @@ const EmergencyStackScreen = () => {
         component={EmergencyHospitalDetailScreen}
         options={{ headerShown: false }}
       />
+
+      
+      <EmergencyStack.Screen
+        name="NotificationScreen"
+        component={NotificationScreen}
+        options={{ headerShown: false }}
+      />
+
+        
+
+
    
 
     </EmergencyStack.Navigator>

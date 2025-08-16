@@ -7,11 +7,12 @@ import CurrentBookingTab from '../Screens/BookingFlow/CurrentBookingTab';
 import ScheduleBookingTab from '../Screens/BookingFlow/ScheduleBookingTab';
 import CancelBookingTab from '../Screens/BookingFlow/CancelBookingTab';
 import CompleteBookingTab from '../Screens/BookingFlow/CompleteBookingTab';
-
+import NotificationScreen from '../Screens/Notification/Notification';
 import CompleteBookingDetails from '../Screens/BookingFlow/CompleteViewDetails';
 import CancelViewDetails from '../Screens/BookingFlow/CanceledDetailsPage';
 import CurrentBookingDetails from '../Screens/BookingFlow/CurrentBookinDetailPage';
 import ScheduleBooking from '../Screens/BookingFlow/ScheduleBookingdetailsPage';
+
 
 const BookingStack = createNativeStackNavigator();
 
@@ -54,6 +55,13 @@ const BookingStackScreen = () => {
         name="ScheduleBooking"
         component={ScheduleBooking}
       />
+       <BookingStack.Screen
+        name="NotificationScreen"
+        component={NotificationScreen}
+      />
+       
+      
+
     </BookingStack.Navigator>
   );
 };

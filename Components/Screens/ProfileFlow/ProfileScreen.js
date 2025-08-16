@@ -256,18 +256,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingTop: 100,
+    paddingTop: 50,
     paddingHorizontal: 20,
   },
   logoutPopup: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    width: '90%',
-    maxWidth: 320,
+    width: '99%',
     shadowColor: '#000',
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 8,
+    
   },
   logoutContent: { padding: 24, alignItems: 'center' },
   logoutIconContainer: {

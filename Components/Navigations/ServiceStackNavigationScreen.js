@@ -5,6 +5,7 @@ import ServiceHospitalScreen from '../Screens/ServiceFlow/ServiceHospitalOvervie
 import ServiceHospitalDetailScreen from '../Screens/ServiceFlow/SeviceHospitalDetailePage';
 import EnquiryFormpage from '../Screens/ServiceFlow/EnquiryFormPage';
 import BookingSuccessScreen from '../Screens/ServiceFlow/BookingSucessfullyPage';
+import NotificationScreen from '../Screens/Notification/Notification';
 
 
 
@@ -38,6 +39,12 @@ const ServiceStackScreen = () => {
         component={BookingSuccessScreen}
         options={{ headerShown: false }}
       />
+       <ServiceStack.Screen
+        name="NotificationScreen"
+        component={NotificationScreen}
+        options={{ headerShown: false }}
+      />
+     
     </ServiceStack.Navigator>
     
   );

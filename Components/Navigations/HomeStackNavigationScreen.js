@@ -11,6 +11,8 @@ import EmergencyHomeScreen from '../Screens/EmergencyFlow/EmergencyHomeScreen'
 import EmergencyHospitalScreen from '../Screens/EmergencyFlow/EmergencyHospitalScreen'
 import AmbulanceTrackingScreen from '../Screens/HomeScreenFlow/AmbulanceTrackingScreen';
 import Bookingconformation from '../Screens/HomeScreenFlow/Bookingconformation';
+import NotificationScreen from '../Screens/Notification/Notification';
+
 
 import TrackAmulanceDriverPage from  '../Screens/HomeScreenFlow/TrackAmbulanceDriverPage'
 
@@ -81,6 +83,13 @@ const HomeStackScreen = () => {
         component={TrackAmulanceDriverPage}
         options={{ headerShown: false }}
       />
+<HomeStack.Screen
+        name="NotificationScreen"
+        component={NotificationScreen}
+        options={{ headerShown: false }}
+      />
+     
+
     </HomeStack.Navigator>
     
   );
