@@ -13,9 +13,12 @@ import {
   Alert,
   Platform,
   ActivityIndicator,
+  PermissionsAndroid,
+  Modal,
+  Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { launchImageLibrary } from 'react-native-image-picker';
+import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import LinearGradient from 'react-native-linear-gradient';
 import { MAX_IMAGE_SIZE, ALLOWED_IMAGE_TYPES, IMAGE_URL } from '../Config';
 import { updateUserProfile } from '../APICall/ProfileApi';
@@ -28,14 +31,16 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
-import CustomHeader from '../../../Header'; 
+import CustomHeader from '../../../Header';
 import { useDispatch, useSelector } from 'react-redux';
+
+const { width, height } = Dimensions.get('window');
 
 const ProfileFormScreen = ({ navigation, route }) => {
   const authToken = useSelector(state => state?.auth?.token);
   const { profileData: initialData } = route.params || {};
   const addperson = route?.params?.addperson || false;
-  
+
   const [profileData, setProfileData] = useState({
     name: '',
     dob: '',
@@ -51,6 +56,7 @@ const ProfileFormScreen = ({ navigation, route }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [activeDatePickerFor, setActiveDatePickerFor] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -62,11 +68,9 @@ const ProfileFormScreen = ({ navigation, route }) => {
         mobileNumber: initialData?.mobile,
         profile_photo: initialData?.profile_photo || null,
         gender: initialData?.gender || 'Select Gender',
-        // Keep existing family details if they exist
         familyDetails: initialData?.familyDetails || [],
       });
-      
-      // If there are existing family members or if addperson is true, show family section
+
       if (initialData?.familyDetails?.length > 0 || addperson) {
         setIncludeFamilyMembers(true);
       }
@@ -74,30 +78,59 @@ const ProfileFormScreen = ({ navigation, route }) => {
     if (initialData && addperson) {
       setProfileData({
         ...profileData,
-        name:initialData?.name,
-        dob:initialData?.dob,
-        email:initialData?.email,
+        name: initialData?.name,
+        dob: initialData?.dob,
+        email: initialData?.email,
         age: initialData?.age?.toString(),
         mobileNumber: initialData?.mobile,
         profile_photo: initialData?.profile_photo || null,
         gender: initialData?.gender || 'Select Gender',
       });
-      
-      // If there are existing family members or if addperson is true, show family section
+
       if (initialData?.familyDetails?.length > 0 || addperson) {
         setIncludeFamilyMembers(true);
       }
     }
   }, [initialData, addperson]);
 
+  // Calculate age from date of birth
+  const calculateAge = (dateOfBirth) => {
+    if (!dateOfBirth) return '';
+    
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    return age.toString();
+  };
+
   // Helper functions
   const updateProfileData = (field, value) => {
-    setProfileData(prev => ({ ...prev, [field]: value }));
+    setProfileData(prev => {
+      const updatedData = { ...prev, [field]: value };
+      
+      if (field === 'dob' && value) {
+        updatedData.age = calculateAge(value);
+      }
+      
+      return updatedData;
+    });
   };
 
   const updateFamilyMember = (index, field, value) => {
     const updatedMembers = [...profileData.familyDetails];
     updatedMembers[index] = { ...updatedMembers[index], [field]: value };
+    
+    if (field === 'dob' && value) {
+      updatedMembers[index].age = calculateAge(value);
+    }
+    
     setProfileData(prev => ({ ...prev, familyDetails: updatedMembers }));
   };
 
@@ -118,7 +151,7 @@ const ProfileFormScreen = ({ navigation, route }) => {
     }));
   };
 
-  const removeFamilyMember = (index) => {
+  const removeFamilyMember = index => {
     setProfileData(prev => ({
       ...prev,
       familyDetails: prev.familyDetails.filter((_, i) => i !== index),
@@ -128,9 +161,8 @@ const ProfileFormScreen = ({ navigation, route }) => {
   useEffect(() => {
     if (addperson) {
       setIncludeFamilyMembers(true);
-      // Only add a new family member if we don't already have empty ones
-      const hasEmptyMember = profileData.familyDetails.some(member => 
-        !member.name && !member.email && !member.mobile
+      const hasEmptyMember = profileData.familyDetails.some(
+        member => !member.name && !member.email && !member.mobile,
       );
       if (!hasEmptyMember) {
         addFamilyMember();
@@ -138,34 +170,101 @@ const ProfileFormScreen = ({ navigation, route }) => {
     }
   }, [addperson]);
 
-  const selectImage = async () => {
-    if (isSubmitting) return;
+  // Request camera permission for Android
+  const requestCameraPermission = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {
+            title: 'Camera Permission',
+            message: 'App needs access to camera to take photos',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          }
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } catch (err) {
+        console.warn(err);
+        return false;
+      }
+    }
+    return true;
+  };
 
+  // Open camera
+  const openCamera = async () => {
+    setShowImageModal(false);
+    
+    const hasPermission = await requestCameraPermission();
+    if (!hasPermission) {
+      Alert.alert('Permission Denied', 'Camera permission is required to take photos');
+      return;
+    }
+
+    const options = {
+      mediaType: 'photo',
+      quality: 0.8,
+      maxWidth: 2000,
+      maxHeight: 2000,
+      includeBase64: false,
+      saveToPhotos: false,
+    };
+
+    launchCamera(options, handleImageResponse);
+  };
+
+  // Open gallery
+  const openGallery = () => {
+    setShowImageModal(false);
+    
+    const options = {
+      mediaType: 'photo',
+      quality: 0.8,
+      maxWidth: 2000,
+      maxHeight: 2000,
+      includeBase64: false,
+    };
+
+    launchImageLibrary(options, handleImageResponse);
+  };
+
+  // Handle image response
+  const handleImageResponse = (response) => {
     try {
-      const result = await launchImageLibrary({
-        mediaType: 'photo',
-        quality: 0.8,
-        maxWidth: 2000,
-        maxHeight: 2000,
-      });
-
-      if (result.didCancel) return;
-      if (result.errorCode) {
-        throw new Error(result.errorMessage || 'Image selection failed');
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+        return;
       }
 
-      const selectedImage = result.assets?.[0];
-      if (!selectedImage) return;
-
-      if (selectedImage.fileSize > MAX_IMAGE_SIZE) {
-        throw new Error('Image size should be less than 2MB');
+      if (response.errorCode) {
+        throw new Error(response.errorMessage || 'Image selection failed');
       }
 
-      if (!ALLOWED_IMAGE_TYPES.includes(selectedImage.type)) {
-        throw new Error('Only JPEG and PNG images are allowed');
+      const selectedImage = response.assets?.[0];
+      if (!selectedImage) {
+        throw new Error('No image selected');
       }
 
+      // Check file size
+      if (selectedImage.fileSize && selectedImage.fileSize > MAX_IMAGE_SIZE) {
+        Alert.alert('Error', 'Image size should be less than 2MB');
+        return;
+      }
+
+      // Check file type
+      if (selectedImage.type && !ALLOWED_IMAGE_TYPES.includes(selectedImage.type)) {
+        Alert.alert('Error', 'Only JPEG and PNG images are allowed');
+        return;
+      }
+
+      // Immediately update the image
       updateProfileData('profile_photo', selectedImage.uri);
+      
+      // Show success message
+      // Alert.alert('Success', 'Profile image updated successfully!');
+      
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -238,24 +337,27 @@ const ProfileFormScreen = ({ navigation, route }) => {
 
     setIsSubmitting(true);
 
-    const edit= addperson ? {...profileData,...initialData}:profileData
-
     try {
-      await updateUserProfile(
-        {
-          ...edit,
-          familyDetails: includeFamilyMembers ? profileData.familyDetails : [],
-        },
-        authToken,
-        dispatch,
-      );
+      const mergedFamilyDetails = includeFamilyMembers
+        ? [
+            ...(initialData?.familyDetails || []),
+            ...(profileData.familyDetails || []),
+          ]
+        : [];
+
+      const edit = addperson
+        ? { ...profileData, familyDetails: mergedFamilyDetails }
+        : { ...profileData, familyDetails: mergedFamilyDetails };
+
+      console.log('Final payload edit:', edit);
+
+      await updateUserProfile(edit, authToken, dispatch);
 
       Alert.alert('Success', 'Profile updated successfully!', [
         { text: 'OK', onPress: () => navigation.navigate('ProfileTwo') },
       ]);
     } catch (error) {
       console.log('Error', error.message);
-      // Alert.alert('Error', error.message || 'Failed to update profile');
     } finally {
       setIsSubmitting(false);
     }
@@ -270,6 +372,7 @@ const ProfileFormScreen = ({ navigation, route }) => {
     onPress = () => {},
     isDateField = false,
     keyboardType = 'default',
+    isReadOnly = false,
   ) => (
     <View style={styles.fieldContainer}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -310,16 +413,75 @@ const ProfileFormScreen = ({ navigation, route }) => {
         </View>
       ) : (
         <TextInput
-          style={styles.textInput}
+          style={[styles.textInput, isReadOnly && styles.readOnlyInput]}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
           placeholderTextColor="#9CA3AF"
-          editable={!isSubmitting}
+          editable={!isSubmitting && !isReadOnly}
           keyboardType={keyboardType}
         />
       )}
     </View>
+  );
+
+  // Image Picker Modal Component
+  const ImagePickerModal = () => (
+    <Modal
+      visible={showImageModal}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => setShowImageModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Select Profile Image</Text>
+            <TouchableOpacity
+              onPress={() => setShowImageModal(false)}
+              style={styles.modalCloseButton}
+            >
+              <Icon name="close" size={24} color="#6B7280" />
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.modalSubtitle}>Choose an option to select your profile image</Text>
+
+          <View style={styles.modalOptions}>
+            <TouchableOpacity
+              style={styles.modalOption}
+              onPress={openCamera}
+              disabled={isSubmitting}
+            >
+              <View style={styles.modalOptionIcon}>
+                <Icon name="camera-alt" size={32} color="#7518AA" />
+              </View>
+              <Text style={styles.modalOptionText}>Camera</Text>
+              <Text style={styles.modalOptionSubtext}>Take a new photo</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.modalOption}
+              onPress={openGallery}
+              disabled={isSubmitting}
+            >
+              <View style={styles.modalOptionIcon}>
+                <Icon name="photo-library" size={32} color="#7518AA" />
+              </View>
+              <Text style={styles.modalOptionText}>Gallery</Text>
+              <Text style={styles.modalOptionSubtext}>Choose from gallery</Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            style={styles.modalCancelButton}
+            onPress={() => setShowImageModal(false)}
+          >
+            <Text style={styles.modalCancelText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
   );
 
   return (
@@ -330,12 +492,12 @@ const ProfileFormScreen = ({ navigation, route }) => {
         start={{ x: 0, y: 0.3 }}
         end={{ x: 0, y: 0 }}
         style={styles.topBackground}
-      >   
+      >
         <CustomHeader
-                username={profileData.name}
-                onNotificationPress={() => console.log('Notification pressed')}
-                onWalletPress={() => console.log('Wallet pressed')}
-              />
+          username={profileData.name}
+          onNotificationPress={() => console.log('Notification pressed')}
+          onWalletPress={() => console.log('Wallet pressed')}
+        />
 
         <View style={styles.headered}>
           <TouchableOpacity
@@ -405,12 +567,13 @@ const ProfileFormScreen = ({ navigation, route }) => {
                   {renderFormField(
                     'Age',
                     profileData.age,
-                    text => updateProfileData('age', text),
-                    'Enter your Age',
+                    null,
+                    'Auto calculated from DOB',
                     false,
                     null,
                     false,
                     'numeric',
+                    true,
                   )}
                 </View>
                 <View style={styles.halfField}>
@@ -429,23 +592,36 @@ const ProfileFormScreen = ({ navigation, route }) => {
                 <Text style={styles.fieldLabel}>Upload Profile Image</Text>
                 <TouchableOpacity
                   style={styles.uploadContainer}
-                  onPress={selectImage}
+                  onPress={() => setShowImageModal(true)}
                   disabled={isSubmitting}
                 >
                   {profileData.profile_photo ? (
-                    <Image
-                      source={{
-                        uri: profileData.profile_photo.startsWith('http')
-                          ? profileData.profile_photo
-                          : `${IMAGE_URL}${profileData.profile_photo}`,
-                      }}
-                      style={styles.uploadedImage}
-                    />
+                    <View style={styles.imageContainer}>
+                      <Image
+                        source={{
+                          uri: profileData.profile_photo.startsWith('http')
+                            ? profileData.profile_photo
+                            : profileData.profile_photo.startsWith('file://')
+                            ? profileData.profile_photo
+                            : `${IMAGE_URL}${profileData.profile_photo}`,
+                        }}
+                        style={styles.uploadedImage}
+                        resizeMode="cover"
+                      />
+                      <TouchableOpacity
+                        style={styles.changeImageButton}
+                        onPress={() => setShowImageModal(true)}
+                        disabled={isSubmitting}
+                      >
+                        <Icon name="edit" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
                   ) : (
-                    <>
-                      <Icon name="cloud-upload" size={40} color="#7518AA" />
-                      <Text style={styles.uploadText}>Upload image</Text>
-                    </>
+                    <View style={styles.uploadPlaceholder}>
+                      <Icon name="add-a-photo" size={40} color="#7518AA" />
+                      <Text style={styles.uploadText}>Upload Profile Image</Text>
+                      <Text style={styles.uploadSubText}>Tap to select from Camera or Gallery</Text>
+                    </View>
                   )}
                 </TouchableOpacity>
               </View>
@@ -543,12 +719,13 @@ const ProfileFormScreen = ({ navigation, route }) => {
                       {renderFormField(
                         'Age',
                         member.age,
-                        text => updateFamilyMember(index, 'age', text),
-                        'Enter your Age',
+                        null,
+                        'Auto calculated from DOB',
                         false,
                         null,
                         false,
                         'numeric',
+                        true,
                       )}
                     </View>
                     <View style={styles.halfField}>
@@ -607,6 +784,9 @@ const ProfileFormScreen = ({ navigation, route }) => {
             maximumDate={new Date()}
           />
         )}
+
+        {/* Image Picker Modal */}
+        <ImagePickerModal />
       </LinearGradient>
     </SafeAreaView>
   );
@@ -621,9 +801,8 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: hp('4%'),
     paddingHorizontal: wp('4%'),
-     height: hp('100%'),
+    height: hp('100%'),
   },
-  
   headered: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -674,30 +853,33 @@ const styles = StyleSheet.create({
     marginBottom: hp('1%'),
     fontFamily: Fonts.family.regular,
   },
-textInput: {
-  borderWidth: 1,
-  borderColor: '#D1D5DB',
-  borderRadius: 8,
-  paddingHorizontal: wp('3%'),
-  paddingVertical: hp('1.5%'),
-  fontSize: Fonts.size.PageHeading,
-  color: '#1F2937',
-  backgroundColor: '#FFFFFF',
-  minHeight: hp('6%'), // Optional: ensures consistent height
-},
-dropdownContainer: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  borderWidth: 1,
-  borderColor: '#D1D5DB',
-  borderRadius: 8,
-  paddingHorizontal: wp('3%'),
-  paddingVertical: hp('1.5%'),
-  backgroundColor: '#FFFFFF',
-  minHeight: hp('6%'), // Match height with textInput
-},
-
+  textInput: {
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    paddingHorizontal: wp('3%'),
+    paddingVertical: hp('1.5%'),
+    fontSize: Fonts.size.PageHeading,
+    color: '#1F2937',
+    backgroundColor: '#FFFFFF',
+    minHeight: hp('6%'),
+  },
+  readOnlyInput: {
+    backgroundColor: '#F9FAFB',
+    color: '#6B7280',
+  },
+  dropdownContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    paddingHorizontal: wp('3%'),
+    paddingVertical: hp('1.5%'),
+    backgroundColor: '#FFFFFF',
+    minHeight: hp('6%'),
+  },
   dropdownText: {
     fontSize: Fonts.size.PageHeading,
     color: '#1F2937',
@@ -736,24 +918,61 @@ dropdownContainer: {
   },
   uploadContainer: {
     borderWidth: 2,
-    borderColor: '#D1D5DB',
+    borderColor: '#E5E7EB',
     borderStyle: 'dashed',
-    borderRadius: 8,
-    padding: wp('6%'),
+    borderRadius: 12,
+    padding: wp('4%'),
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F9FAFB',
+    minHeight: hp('15%'),
+  },
+  uploadPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  imageContainer: {
+    position: 'relative',
+    alignItems: 'center',
   },
   uploadedImage: {
-    width: wp('20%'),
-    height: wp('20%'),
-    borderRadius: wp('10%'),
+    width: wp('24%'),
+    height: wp('24%'),
+    borderRadius: wp('12%'),
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+  },
+  changeImageButton: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    backgroundColor: '#7518AA',
+    borderRadius: 18,
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   uploadText: {
     marginTop: hp('1%'),
     fontSize: Fonts.size.PageHeading,
-    color: '#6B7280',
+    color: '#374151',
     fontFamily: Fonts.family.regular,
+    fontWeight: '600',
+  },
+  uploadSubText: {
+    fontSize: Fonts.size.PageSubheading,
+    color: '#9CA3AF',
+    fontFamily: Fonts.family.regular,
+    marginTop: hp('0.5%'),
+    textAlign: 'center',
   },
   toggleContainer: {
     flexDirection: 'row',
@@ -826,6 +1045,103 @@ dropdownContainer: {
     color: '#FFFFFF',
     fontSize: Fonts.size.PageHeading,
     fontWeight: '600',
+    fontFamily: Fonts.family.regular,
+  },
+  
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: wp('5%'),
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: wp('5%'),
+    width: '100%',
+    maxWidth: 400,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: hp('1%'),
+  },
+  modalTitle: {
+    fontSize: Fonts.size.PageHeading,
+    fontWeight: '700',
+    color: '#1F2937',
+    fontFamily: Fonts.family.regular,
+  },
+  modalCloseButton: {
+    padding: wp('2%'),
+    borderRadius: 20,
+    backgroundColor: '#F3F4F6',
+  },
+  modalSubtitle: {
+    fontSize: Fonts.size.PageSubheading,
+    color: '#6B7280',
+    fontFamily: Fonts.family.regular,
+    marginBottom: hp('3%'),
+    lineHeight: 20,
+  },
+  modalOptions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: hp('3%'),
+  },
+  modalOption: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: hp('3%'),
+    paddingHorizontal: wp('3%'),
+    marginHorizontal: wp('1%'),
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FAFBFC',
+  },
+  modalOptionIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#F3E8FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: hp('1.5%'),
+  },
+  modalOptionText: {
+    fontSize: Fonts.size.PageHeading,
+    fontWeight: '600',
+    color: '#1F2937',
+    fontFamily: Fonts.family.regular,
+    marginBottom: hp('0.5%'),
+  },
+  modalOptionSubtext: {
+    fontSize: Fonts.size.PageSubheading,
+    color: '#6B7280',
+    fontFamily: Fonts.family.regular,
+    textAlign: 'center',
+  },
+  modalCancelButton: {
+    paddingVertical: hp('1.5%'),
+    alignItems: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    backgroundColor: '#F9FAFB',
+  },
+  modalCancelText: {
+    fontSize: Fonts.size.PageHeading,
+    color: '#6B7280',
+    fontWeight: '500',
     fontFamily: Fonts.family.regular,
   },
 });

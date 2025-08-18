@@ -44,7 +44,11 @@ const AmbulanceSelectionScreen = ({ navigation, route }) => {
     dropCoords,
     booking_type,
     booking_for,
+    scheduled_at
   } = route?.params || {};
+
+  console.log(scheduled_at,"scheduled_at");
+  
 
   const [data, setData] = useState([]);
   const { token } = useSelector(state => state.auth);
@@ -145,6 +149,7 @@ const AmbulanceSelectionScreen = ({ navigation, route }) => {
       selectedAmbulance,
       booking_type,
       booking_for,
+      scheduled_at
     });
   };
 

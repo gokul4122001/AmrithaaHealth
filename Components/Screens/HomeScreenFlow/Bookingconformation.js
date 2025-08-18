@@ -61,8 +61,8 @@ const CongratulationsScreen = ({ navigation, route }) => {
   // Check booking status from backend
   const checkBookingStatus = async () => {
     try {
-      const tokenValue = await getAuthToken();
-      if (!tokenValue) return;
+      // const tokenValue = await getAuthToken();
+      if (!reduxToken) return;
 
       const response = await fetch(
         `https://www.myhealth.amrithaa.net/backend/api/user/booking/is_accepted?booking_id=${id}`,
@@ -71,7 +71,7 @@ const CongratulationsScreen = ({ navigation, route }) => {
           headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${tokenValue}`,
+            Authorization: `Bearer ${reduxToken}`,
           },
         }
       );

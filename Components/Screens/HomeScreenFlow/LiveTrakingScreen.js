@@ -46,6 +46,9 @@ const RideBookingScreen = ({ navigation, route }) => {
     goToTracking,
   } = route.params || {};
 
+  console.log(scheduled_at,"scheduled_at");
+  
+
   const [pickup, setPickup] = useState(pickupLocation || '');
   const [destination, setDestination] = useState(destinationLocation || '');
   const [mapRegion, setMapRegion] = useState({
@@ -84,6 +87,7 @@ const RideBookingScreen = ({ navigation, route }) => {
           destinationLocation,
           booking_type,
           booking_for,
+          scheduled_at
         });
       }, 1000);
       return () => clearTimeout(timeout);
@@ -110,6 +114,7 @@ const RideBookingScreen = ({ navigation, route }) => {
       destinationLocation,
       booking_type,
       booking_for,
+      scheduled_at
     });
   };
     

@@ -32,6 +32,7 @@ import {
   Select_AmbulanceDetails,
 } from '../APICall/HomeScreenApi';
 import { useSelector } from 'react-redux';
+import moment from 'moment';
 
 const AmbulanceBookingScreen = ({ navigation, route }) => {
   const {
@@ -42,8 +43,19 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
     selectedAmbulance,
     booking_type,
     booking_for,
-    scheduledTime,
+    scheduled_at,
   } = route.params;
+
+  console.log(
+    pickup,
+    destination,
+    pickupCoords,
+    dropCoords,
+    selectedAmbulance,
+    booking_type,
+    booking_for,
+    scheduled_at,
+  );
 
   // State Management
   const [selectedAssistance, setSelectedAssistance] = useState('not-required');
@@ -86,25 +98,31 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
     return Object.keys(errors).length === 0;
   };
 
+
   // Enhanced API call function
-  const createBooking = async (bookingData) => {
+  const createBooking = async bookingData => {
     try {
-      const response = await fetch('https://www.myhealth.amrithaa.net/backend/api/user/booking/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
+      const response = await fetch(
+        'https://www.myhealth.amrithaa.net/backend/api/user/booking/create',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+          body: JSON.stringify(bookingData),
         },
-        body: JSON.stringify(bookingData)
-      });
+      );
 
       const data = await response.json();
-   
-      console.log(data,"fedhbgiuherwhngv")
+
+      console.log(data, 'fedhbgiuherwhngv');
 
       if (!response.ok) {
-        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+        throw new Error(
+          data.message || `HTTP error! status: ${response.status}`,
+        );
       }
 
       return data;
@@ -128,10 +146,10 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
     try {
       setIsBookingLoading(true);
 
-      const totalAmount = selectedAssistance === 'required' && selectedSubOption === 'common'
-        ? data?.total_fare_with_patient_assistent || 0
-        : data?.total_fare || 0;
-
+      const totalAmount =
+        selectedAssistance === 'required' && selectedSubOption === 'common'
+          ? data?.total_fare_with_patient_assistent || 0
+          : data?.total_fare || 0;
       // Prepare booking payload
       const bookingPayload = {
         pickup_lat: pickupCoords.latitude,
@@ -140,20 +158,25 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
         drop_lng: dropCoords.longitude,
         pick_address: pickup,
         drop_address: destination,
-        booking_type: booking_type,
+        booking_type: booking_type === 'scheduled' ? 'scheduled' : booking_type,
         booking_for: booking_for,
         ambulance_type_id: selectedAmbulance?.id,
-        patient_assist: selectedAssistance === 'required' && selectedSubOption === 'common' ? 1 : 0,
+        patient_assist:
+          selectedAssistance === 'required' && selectedSubOption === 'common'
+            ? 1
+            : 0,
         customer_name: customerName.trim(),
         customer_mobile: customerMobile.trim(),
-        ...(additionalInfo.trim() && { additional_info: additionalInfo.trim() }),
-        ...(booking_type === 'scheduled' && scheduledTime && { scheduled_at: scheduledTime })
+        ...(additionalInfo.trim() && {
+          additional_info: additionalInfo.trim(),
+        }),
+        ...(booking_type === 'scheduled' && scheduled_at && { scheduled_at: scheduled_at }),
       };
 
       console.log('Booking payload:', bookingPayload);
 
       const response = await createBooking(bookingPayload);
-      
+
       console.log('Booking response:', response);
 
       if (response?.status && response?.data?.booking) {
@@ -171,24 +194,25 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
           destination,
           otp: response.data.booking.otp,
           eta: response.data.booking.eta_minutes,
-          bookingData: response.data.booking
+          bookingData: response.data.booking,
         });
 
         // Show success message
         Alert.alert(
-          'Booking Confirmed!', 
-          `Your booking ID is ${response.data.booking.booking_id}\nOTP: ${response.data.booking.otp}\nETA: ${Math.round(response.data.booking.eta_minutes)} minutes`,
-          [{ text: 'OK' }]
+          'Booking Confirmed!',
+          `Your booking ID is ${response.data.booking.booking_id}\nOTP: ${
+            response.data.booking.otp
+          }\nETA: ${Math.round(response.data.booking.eta_minutes)} minutes`,
+          [{ text: 'OK' }],
         );
       } else {
         throw new Error(response?.message || 'Booking failed');
       }
-
     } catch (error) {
       console.error('Booking error:', error);
-      
+
       let errorMessage = 'Failed to create booking. Please try again.';
-      
+
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.message) {
@@ -198,12 +222,12 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
       Alert.alert('Booking Failed', errorMessage, [
         {
           text: 'Retry',
-          onPress: () => handlePayment()
+          onPress: () => handlePayment(),
         },
         {
           text: 'Cancel',
-          style: 'cancel'
-        }
+          style: 'cancel',
+        },
       ]);
     } finally {
       setIsBookingLoading(false);
@@ -229,13 +253,13 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
       Alert.alert('Error', 'Failed to load ambulance details', [
         {
           text: 'Retry',
-          onPress: () => fetchData()
+          onPress: () => fetchData(),
         },
         {
           text: 'Go Back',
           onPress: () => navigation.goBack(),
-          style: 'cancel'
-        }
+          style: 'cancel',
+        },
       ]);
     } finally {
       setIsLoading(false);
@@ -246,8 +270,6 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
     fetchData();
   }, []);
 
- 
-  
   const getTotalAmount = () => {
     if (!data) return 0;
     return selectedAssistance === 'required' && selectedSubOption === 'common'
@@ -280,7 +302,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
           <TouchableOpacity
             style={[
               styles.dropdownInput,
-              formErrors.customerName && styles.errorInput
+              formErrors.customerName && styles.errorInput,
             ]}
             onPress={() => setShowNameDropdown(!showNameDropdown)}
           >
@@ -330,10 +352,10 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
           <TextInput
             style={[
               styles.textInput,
-              formErrors.customerName && styles.errorInput
+              formErrors.customerName && styles.errorInput,
             ]}
             value={customerName}
-            onChangeText={(text) => {
+            onChangeText={text => {
               setCustomerName(text);
               if (formErrors.customerName) {
                 setFormErrors(prev => ({ ...prev, customerName: '' }));
@@ -395,15 +417,16 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
 
   // Enhanced Book Now Button Component
   const renderBookNowButton = () => {
-    const isDisabled = isBookingLoading || isLoading || !customerName.trim() || !customerMobile.trim();
-    
+    const isDisabled =
+      isBookingLoading ||
+      isLoading ||
+      !customerName.trim() ||
+      !customerMobile.trim();
+
     return (
       <View style={styles.floatingButtonWrapper}>
         <TouchableOpacity
-          style={[
-            styles.payNowButton,
-            isDisabled && styles.disabledButton
-          ]}
+          style={[styles.payNowButton, isDisabled && styles.disabledButton]}
           onPress={handlePayment}
           disabled={isDisabled}
           activeOpacity={0.8}
@@ -415,10 +438,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
             </View>
           ) : (
             <View style={styles.buttonContent}>
-              <Text style={styles.payNowButtonText}>
-                Book Now
-              </Text>
-            
+              <Text style={styles.payNowButtonText}>Book Now</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -445,7 +465,7 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.statusBar} />
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
@@ -505,22 +525,22 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
                 <View style={styles.ambulanceCard}>
                   <View style={styles.ambulanceHeader}>
                     <View>
-                    <Image
-                      source={{ uri: data.icon }}
-                      style={styles.ambulanceImage}
-                      defaultSource={require('../../Assets/ambualnce.png')}
-                    />
-                     <Text style={styles.arrivalTime}>
+                      <Image
+                        source={{ uri: data.icon }}
+                        style={styles.ambulanceImage}
+                        defaultSource={require('../../Assets/ambualnce.png')}
+                      />
+                      <Text style={styles.arrivalTime}>
                         Arrival Timing: {data.average_arrival_minutes} mins
                       </Text>
-                      </View> 
+                    </View>
                     <View style={styles.ambulanceInfo}>
                       <Text style={styles.ambulanceTitle}>
                         {data.ambulance_type}
                       </Text>
-                      <Text style={styles.ambulanceSubTitle}>{data.details}</Text>
-                     
-                    
+                      <Text style={styles.ambulanceSubTitle}>
+                        {data.details}
+                      </Text>
                     </View>
                     <Text style={styles.price}>₹ {data.total_fare}</Text>
                   </View>
@@ -546,7 +566,8 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
                 <View
                   style={[
                     styles.radioButton,
-                    selectedAssistance === 'not-required' && styles.radioSelected,
+                    selectedAssistance === 'not-required' &&
+                      styles.radioSelected,
                   ]}
                 >
                   {selectedAssistance === 'not-required' && (
@@ -612,7 +633,6 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
             <View style={styles.section}>
               <TouchableOpacity style={styles.expandableHeader}>
                 <Text style={styles.sectionTitle}>Add Customer Details</Text>
-               
               </TouchableOpacity>
 
               <View style={styles.formContainer}>
@@ -622,13 +642,16 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
                   <TextInput
                     style={[
                       styles.textInput,
-                      formErrors.customerMobile && styles.errorInput
+                      formErrors.customerMobile && styles.errorInput,
                     ]}
                     value={customerMobile}
-                    onChangeText={(text) => {
+                    onChangeText={text => {
                       setCustomerMobile(text);
                       if (formErrors.customerMobile) {
-                        setFormErrors(prev => ({ ...prev, customerMobile: '' }));
+                        setFormErrors(prev => ({
+                          ...prev,
+                          customerMobile: '',
+                        }));
                       }
                     }}
                     placeholder="Customer Mobile Number"
@@ -637,7 +660,9 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
                     maxLength={10}
                   />
                   {formErrors.customerMobile && (
-                    <Text style={styles.errorText}>{formErrors.customerMobile}</Text>
+                    <Text style={styles.errorText}>
+                      {formErrors.customerMobile}
+                    </Text>
                   )}
                 </View>
 
@@ -674,14 +699,18 @@ const AmbulanceBookingScreen = ({ navigation, route }) => {
                       <Text style={styles.priceLabel}>
                         Extra Distance ({data.extra_km.toFixed(2)} km)
                       </Text>
-                      <Text style={styles.priceValue}>₹ {data.extra_charge}</Text>
+                      <Text style={styles.priceValue}>
+                        ₹ {data.extra_charge}
+                      </Text>
                     </View>
                   )}
 
                   {selectedAssistance === 'required' &&
                     selectedSubOption === 'common' && (
                       <View style={styles.priceRow}>
-                        <Text style={styles.priceLabel}>Patient Assistance</Text>
+                        <Text style={styles.priceLabel}>
+                          Patient Assistance
+                        </Text>
                         <Text style={styles.priceValue}>
                           ₹ {data.patient_assistance}
                         </Text>
@@ -783,9 +812,7 @@ const styles = StyleSheet.create({
     color: '#000',
     flex: 1,
   },
-  ambulanceCard: {
-  
-  },
+  ambulanceCard: {},
   ambulanceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -891,7 +918,7 @@ const styles = StyleSheet.create({
     fontSize: Fonts.size.PageSubheading,
     color: '#000',
     flex: 1,
-    top:5
+    top: 5,
   },
   radioContent: {
     flex: 1,
@@ -962,9 +989,7 @@ const styles = StyleSheet.create({
     height: 80,
     textAlignVertical: 'top',
   },
-  priceContainer: {
-   
-  },
+  priceContainer: {},
   priceRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1086,5 +1111,5 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 2,
   },
-}); 
+});
 export default AmbulanceBookingScreen;

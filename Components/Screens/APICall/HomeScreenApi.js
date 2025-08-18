@@ -17,7 +17,7 @@ export const Select_Ambulance = async (
         pickup_long: pickupCoords.longitude,
         drop_lat: dropCoords.latitude,
         drop_long: dropCoords.longitude,
-        book_type: book_type,
+        book_type: book_type === "scheduled" ? "sheduled" :book_type,
       },
       {
         headers: {
