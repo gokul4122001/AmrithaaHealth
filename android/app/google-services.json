@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "780460541968",
+    "firebase_url": "https://hu-amrithaa-default-rtdb.firebaseio.com",
+    "project_id": "hu-amrithaa",
+    "storage_bucket": "hu-amrithaa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:780460541968:android:ec0eef2f6e73b59ee0e295",
+        "android_client_info": {
+          "package_name": "com.hu"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlELROOdwpcXmsfyt0JWCAi-munJM2mtM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

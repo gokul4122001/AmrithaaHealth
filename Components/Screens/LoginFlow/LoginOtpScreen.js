@@ -11,11 +11,13 @@ import {
   Animated,
   ScrollView,
   KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Fonts from '../../Fonts/Fonts';
 import Colors from '../../Colors/Colors';
-import { verifyOtp, sendOtp } from '../APICall/LoginApi'; // ✅ import both APIs
+import { verifyOtp, sendOtp } from '../APICall/LoginApi'; 
 import { useDispatch } from 'react-redux';
 import { setAuthDetails } from '../../redux/slice/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -83,7 +85,7 @@ const OTPVerificationScreen = ({ route, navigation }) => {
   // ✅ Timer Countdown
   useEffect(() => {
     const interval = setInterval(() => {
-      setTimer(prev => {
+      setTimer((prev) => {
         if (prev <= 1) {
           setIsResendEnabled(true);
           clearInterval(interval);
@@ -95,13 +97,13 @@ const OTPVerificationScreen = ({ route, navigation }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const showToast = msg => {
+  const showToast = (msg) => {
     setToastMessage(msg);
     setToastVisible(true);
     setTimeout(() => setToastVisible(false), 4000);
   };
 
-  const formatTime = seconds => {
+  const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs
@@ -198,91 +200,95 @@ const OTPVerificationScreen = ({ route, navigation }) => {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
       >
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.logoRow1}>
-            <Image
-              source={require('../../Assets/logos.png')}
-              style={styles.logoImage}
-            />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1, justifyContent: 'space-between' }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
             <View>
-              <Text style={styles.logoBrand}>Health</Text>
-              <Text style={styles.logoBrand}>Umbrella</Text>
-            </View>
-          </View>
+              <View style={styles.logoRow1}>
+                <Image
+                  source={require('../../Assets/logos.png')}
+                  style={styles.logoImage}
+                />
+                <View>
+                  <Text style={styles.logoBrand}>Health</Text>
+                  <Text style={styles.logoBrand}>Umbrella</Text>
+                </View>
+              </View>
 
-          <View style={styles.mainContent}>
-            <View style={styles.content}>
-              <Text style={styles.title}>
-                OTP Sent to {formattedMobileNumber}
-              </Text>
-              <TouchableOpacity onPress={handleChangeMobile}>
-                <Text style={styles.changeMobileText}>
-                  Change Mobile number
+              <View style={styles.mainContent}>
+                <View style={styles.content}>
+                  <Text style={styles.title}>
+                    OTP Sent to {formattedMobileNumber}
+                  </Text>
+                  <TouchableOpacity onPress={handleChangeMobile}>
+                    <Text style={styles.changeMobileText}>
+                      Change Mobile number
+                    </Text>
+                  </TouchableOpacity>
+
+                  <View style={styles.otpContainer}>
+                    {formData.otp.map((digit, index) => (
+                      <TextInput
+                        key={index}
+                        ref={(ref) => (inputRefs.current[index] = ref)}
+                        style={[
+                          styles.otpInput,
+                          digit ? styles.otpInputFilled : styles.otpInputEmpty,
+                        ]}
+                        value={digit}
+                        onChangeText={(value) => handleOtpChange(value, index)}
+                        onKeyPress={(e) => handleKeyPress(e, index)}
+                        keyboardType="numeric"
+                        maxLength={1}
+                      />
+                    ))}
+                  </View>
+
+                  <Text style={styles.timerText}>{formatTime(timer)}</Text>
+
+                  <View style={styles.resendContainer}>
+                    <Text style={styles.resendQuestion}>
+                      Didn't receive the Otp?
+                    </Text>
+                    <TouchableOpacity
+                      onPress={handleResend}
+                      disabled={!isResendEnabled}
+                    >
+                      <Text
+                        style={[
+                          styles.resendLink,
+                          isResendEnabled ? styles.resendEnabled : styles.resendDisabled,
+                        ]}
+                      >
+                        Resend
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            {/* Submit button inside ScrollView to move with keyboard */}
+            <View style={styles.submitContainer}>
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={handleSubmit}
+                disabled={isLoading}
+              >
+                <Text style={styles.submitButtonText}>
+                  {isLoading ? 'Verifying...' : 'Submit'}
                 </Text>
               </TouchableOpacity>
-
-              <View style={styles.otpContainer}>
-                {formData.otp.map((digit, index) => (
-                  <TextInput
-                    key={index}
-                    ref={ref => (inputRefs.current[index] = ref)}
-                    style={[
-                      styles.otpInput,
-                      digit ? styles.otpInputFilled : styles.otpInputEmpty,
-                    ]}
-                    value={digit}
-                    onChangeText={value => handleOtpChange(value, index)}
-                    onKeyPress={e => handleKeyPress(e, index)}
-                    keyboardType="numeric"
-                    maxLength={1}
-                  />
-                ))}
-              </View>
-
-              <Text style={styles.timerText}>{formatTime(timer)}</Text>
-
-              <View style={styles.resendContainer}>
-                <Text style={styles.resendQuestion}>
-                  Didn't  receive the Otp?
-                </Text>
-                <TouchableOpacity
-                  onPress={handleResend}
-                  disabled={!isResendEnabled}
-                >
-                  <Text
-                    style={[
-                      styles.resendLink,
-                      isResendEnabled
-                        ? styles.resendEnabled
-                        : styles.resendDisabled,
-                    ]}
-                  >
-                    Resend
-                  </Text>
-                </TouchableOpacity>
-              </View>
             </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
-
-      <View style={styles.submitContainer}>
-        <TouchableOpacity
-          style={styles.submitButton}
-          onPress={handleSubmit}
-          disabled={isLoading}
-        >
-          <Text style={styles.submitButtonText}>
-            {isLoading ? 'Verifying...' : 'Submit'}
-          </Text>
-        </TouchableOpacity>
-      </View>
     </LinearGradient>
   );
 };
@@ -388,9 +394,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    position: 'absolute',
-    bottom: 100,
     alignSelf: 'center',
+    marginBottom: 40,
   },
   submitButtonText: {
     color: 'white',
